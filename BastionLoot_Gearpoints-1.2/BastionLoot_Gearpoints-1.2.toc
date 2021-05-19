@@ -1,6 +1,6 @@
-## Interface: 11305
-## Title: BastionLoot - EPGP Classic Prices
-## Notes: EPGP Clasic prices plugin for BastionEPGP
+## Interface: 20501
+## Title: BastionLoot - GearPoints-1.2 Prices
+## Notes: GearPoints-1.2 Prices plugin for BastionLoot
 ## Author: Roadblock
 ## Dependencies: BastionLoot
 ## Version: 1.0

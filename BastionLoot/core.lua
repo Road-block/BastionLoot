@@ -21,7 +21,7 @@ bepgp.VARS = {
   decay = 0.8,
   max = 1000,
   timeout = 60,
-  minlevel = 60,
+  minlevel = 61,
   maxloglines = 500,
   prefix = "BASTIONLOOT_PFX",
   pricesystem = "BastionEPGPFixed_bc-1.0",
@@ -174,7 +174,12 @@ local defaults = {
   },
   char = {
     raidonly = false,
-    tooltip = true,
+    tooltip = {
+      prinfo = true,
+      mlinfo = true,
+      favinfo = true,
+      useinfo = false,
+    },
     classgroup = false,
     standby = false,
     bidpopup = false,
@@ -382,14 +387,78 @@ end
 
 function bepgp:options()
   if not (self._options) then
-    self._options = {
+    self._options = 
+    {
       type = "group",
-      name = "",
-      desc = L["BastionLoot options"],
       handler = bepgp,
-      args = { }
+      args = {
+        general = {
+          type = "group",
+          name = _G.OPTIONS,
+          childGroups = "tab",
+          args = {
+            main = {
+              type = "group",
+              name = _G.GENERAL,
+              order = 1,
+              args = { },
+            },
+            ttip = {
+              type = "group",
+              name = L["Tooltip"],
+              desc = L["Tooltip Additions"],
+              order = 2,
+              args = { },
+            }
+          }
+        }
+      }
     }
-    self._options.args["set_main"] = {
+    self._options.args.general.args.ttip.args["prinfo"] = {
+      type = "toggle",
+      name = L["EPGP Info"],
+      desc = L["Add EPGP Information to Item Tooltips"],
+      order = 10,
+      get = function() return not not bepgp.db.char.tooltip.prinfo end,
+      set = function(info, val)
+        bepgp.db.char.tooltip.prinfo = not bepgp.db.char.tooltip.prinfo
+        bepgp:tooltipHook()
+      end,
+    }
+    self._options.args.general.args.ttip.args["mlinfo"] = {
+      type = "toggle",
+      name = L["Masterlooter Hints"],
+      desc = L["Show Masterlooter click action hints on item tooltips"],
+      order = 11,
+      get = function() return not not bepgp.db.char.tooltip.mlinfo end,
+      set = function(info, val)
+        bepgp.db.char.tooltip.mlinfo = not bepgp.db.char.tooltip.mlinfo
+        bepgp:tooltipHook()
+      end,
+    }
+    self._options.args.general.args.ttip.args["favinfo"] = {
+      type = "toggle",
+      name = L["Favorites Info"],
+      desc = L["Show Favorite ranking on item tooltips"],
+      order = 12,
+      get = function() return not not bepgp.db.char.tooltip.favinfo end,
+      set = function(info, val)
+        bepgp.db.char.tooltip.favinfo = not bepgp.db.char.tooltip.favinfo
+        bepgp:tooltipHook()
+      end,
+    }
+    self._options.args.general.args.ttip.args["useinfo"] = {
+      type = "toggle",
+      name = L["Usable Info"],
+      desc = L["Show Class and Spec Hints on item tooltips"],
+      order = 13,
+      get = function() return not not bepgp.db.char.tooltip.useinfo end,
+      set = function(info, val)
+        bepgp.db.char.tooltip.useinfo = not bepgp.db.char.tooltip.useinfo
+        bepgp:tooltipHook()
+      end,
+    }
+    self._options.args.general.args.main.args["set_main"] = {
       type = "input",
       name = L["Set Main"],
       desc = L["Set your Main Character for Standby List."],
@@ -398,7 +467,7 @@ function bepgp:options()
       get = function() return bepgp.db.profile.main end,
       set = function(info, val) bepgp.db.profile.main = (bepgp:verifyGuildMember(val)) end,
     }
-    self._options.args["raid_only"] = {
+    self._options.args.general.args.main.args["raid_only"] = {
       type = "toggle",
       name = L["Raid Only"],
       desc = L["Only show members in raid."],
@@ -413,7 +482,7 @@ function bepgp:options()
         bepgp:refreshPRTablets()
       end,
     }
-    self._options.args["class_grouping"] = {
+    self._options.args.general.args.main.args["class_grouping"] = {
       type = "toggle",
       name = L["Group by class"],
       desc = L["Group members by class."],
@@ -428,18 +497,7 @@ function bepgp:options()
         bepgp:refreshPRTablets()
       end,
     }
-    self._options.args["tooltip"] = {
-      type = "toggle",
-      name = L["Tooltip Info"],
-      desc = L["Add EPGP Information to Item Tooltips"],
-      order = 82,
-      get = function() return not not bepgp.db.char.tooltip end,
-      set = function(info, val)
-        bepgp.db.char.tooltip = not bepgp.db.char.tooltip
-        bepgp:tooltipHook(bepgp.db.char.tooltip)
-      end,
-    }
-    self._options.args["bid_popup"] = {
+    self._options.args.general.args.main.args["bid_popup"] = {
       type = "toggle",
       name = L["Bid Popup"],
       desc = L["Show a Bid Popup in addition to chat links"],
@@ -449,7 +507,7 @@ function bepgp:options()
         bepgp.db.char.bidpopup = not bepgp.db.char.bidpopup
       end,
     }
-    self._options.args["minimap"] = {
+    self._options.args.general.args.main.args["minimap"] = {
       type = "toggle",
       name = L["Hide from Minimap"],
       desc = L["Hide from Minimap"],
@@ -464,7 +522,7 @@ function bepgp:options()
         end
       end
     }
-    self._options.args["rollfilter"] = {
+    self._options.args.general.args.main.args["rollfilter"] = {
       type = "toggle",
       name = L["Hide Rolls"],
       desc = L["Hide other player rolls from the chatframe"],
@@ -475,7 +533,7 @@ function bepgp:options()
       end,
       --hidden = function() return bepgp.db.char.mode ~= "plusroll" end,
     }
-    self._options.args["favalert"] = {
+    self._options.args.general.args.main.args["favalert"] = {
       type = "toggle",
       name = L["Favorite Alert"],
       desc = L["Alert presence of Favorite Link or Loot"],
@@ -485,19 +543,19 @@ function bepgp:options()
         bepgp.db.char.favalert = not bepgp.db.char.favalert
       end,
     }
-    self._options.args["admin_options_header"] = {
+    self._options.args.general.args.main.args["admin_options_header"] = {
       type = "header",
       name = L["Admin Options"],
       order = 87,
       hidden = function() return (not bepgp:admin()) end,
     }
-    self._options.args["progress_tier_header"] = {
+    self._options.args.general.args.main.args["progress_tier_header"] = {
       type = "header",
       name = string.format(L["Progress Setting: %s"],bepgp.db.profile.progress),
       order = 88,
       hidden = function() return bepgp:admin() end,
     }
-    self._options.args["progress_tier"] = {
+    self._options.args.general.args.main.args["progress_tier"] = {
       type = "select",
       name = L["Raid Progress"],
       desc = L["Highest Tier the Guild is raiding.\nUsed to adjust GP Prices.\nUsed for suggested EP awards."],
@@ -518,7 +576,7 @@ function bepgp:options()
         ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]},
       sorting = {"T6.5", "T6", "T5", "T4"},
     }
-    self._options.args["report_channel"] = {
+    self._options.args.general.args.main.args["report_channel"] = {
       type = "select",
       name = L["Reporting channel"],
       desc = L["Channel used by reporting functions."],
@@ -528,7 +586,7 @@ function bepgp:options()
       set = function(info, val) bepgp.db.profile.announce = val end,
       values = { ["PARTY"]=_G.PARTY, ["RAID"]=_G.RAID, ["GUILD"]=_G.GUILD, ["OFFICER"]=_G.OFFICER },
     }
-    self._options.args["decay"] = {
+    self._options.args.general.args.main.args["decay"] = {
       type = "execute",
       name = L["Decay EPGP"],
       desc = string.format(L["Decays all EPGP by %s%%"],(1-(bepgp.db.profile.decay or bepgp.VARS.decay))*100),
@@ -536,13 +594,13 @@ function bepgp:options()
       hidden = function() return not (bepgp:admin()) end,
       func = function() bepgp:decay_epgp() end
     }
-    self._options.args["set_decay_header"] = {
+    self._options.args.general.args.main.args["set_decay_header"] = {
       type = "header",
       name = string.format(L["Weekly Decay: %s%%"],(1-(bepgp.db.profile.decay or bepgp.VARS.decay))*100),
       order = 105,
       hidden = function() return bepgp:admin() end,
     }
-    self._options.args["set_decay"] = {
+    self._options.args.general.args.main.args["set_decay"] = {
       type = "range",
       name = L["Set Decay %"],
       desc = L["Set Decay percentage (Admin only)."],
@@ -550,7 +608,7 @@ function bepgp:options()
       get = function() return (1.0-bepgp.db.profile.decay) end,
       set = function(info, val)
         bepgp.db.profile.decay = (1 - val)
-        self._options.args["decay"].desc = string.format(L["Decays all EPGP by %s%%"],(1-bepgp.db.profile.decay)*100)
+        self._options.args.general.args.main.args["decay"].desc = string.format(L["Decays all EPGP by %s%%"],(1-bepgp.db.profile.decay)*100)
         if (IsGuildLeader()) then
           bepgp:shareSettings(true)
         end
@@ -562,13 +620,13 @@ function bepgp:options()
       isPercent = true,
       hidden = function() return not (bepgp:admin()) end,
     }
-    self._options.args["set_discount_header"] = {
+    self._options.args.general.args.main.args["set_discount_header"] = {
       type = "header",
       name = string.format(L["Offspec Price: %s%%"],bepgp.db.profile.discount*100),
       order = 111,
       hidden = function() return bepgp:admin() end,
     }
-    self._options.args["set_discount"] = {
+    self._options.args.general.args.main.args["set_discount"] = {
       type = "range",
       name = L["Offspec Price %"],
       desc = L["Set Offspec Items GP Percent."],
@@ -586,13 +644,13 @@ function bepgp:options()
       step = 0.05,
       isPercent = true
     }
-    self._options.args["set_min_ep_header"] = {
+    self._options.args.general.args.main.args["set_min_ep_header"] = {
       type = "header",
       name = string.format(L["Minimum EP: %s"],bepgp.db.profile.minep),
       order = 117,
       hidden = function() return bepgp:admin() end,
     }
-    self._options.args["set_min_ep"] = {
+    self._options.args.general.args.main.args["set_min_ep"] = {
       type = "input",
       name = L["Minimum EP"],
       desc = L["Set Minimum EP"],
@@ -616,7 +674,7 @@ function bepgp:options()
       end,
       hidden = function() return not bepgp:admin() end,
     }
-    self._options.args["reset"] = {
+    self._options.args.general.args.main.args["reset"] = {
      type = "execute",
      name = L["Reset EPGP"],
      desc = string.format(L["Resets everyone\'s EPGP to 0/%d (Guild Leader only)."],bepgp.VARS.basegp),
@@ -624,7 +682,7 @@ function bepgp:options()
      hidden = function() return not (IsGuildLeader()) end,
      func = function() LD:Spawn(addonName.."DialogResetPoints") end
     }
-    self._options.args["system"] = {
+    self._options.args.general.args.main.args["system"] = {
       type = "select",
       name = L["Select Price Scheme"],
       desc = L["Select From Registered Price Systems"],
@@ -644,12 +702,12 @@ function bepgp:options()
         return v
       end,
     }
-    self._options.args["mode_options_header"] = {
+    self._options.args.general.args.main.args["mode_options_header"] = {
       type = "header",
       name = L["PlusRoll"].."/"..L["EPGP"],
       order = 137,
     }
-    self._options.args["mode"] = {
+    self._options.args.general.args.main.args["mode"] = {
       type = "select",
       name = L["Mode of Operation"],
       desc = L["Select mode of operation."],
@@ -664,7 +722,7 @@ function bepgp:options()
       sorting = {"epgp", "plusroll"},
       order = 140,
     }
-    self._options.args["lootclear"] = {
+    self._options.args.general.args.main.args["lootclear"] = {
       type = "execute",
       name = L["Clear Loot"],
       desc = L["Clear Loot"],
@@ -677,7 +735,7 @@ function bepgp:options()
       end,
       hidden = function() return (bepgp.db.char.mode ~= "epgp") or (bepgp.db.char.mode == "epgp" and not bepgp:admin()) end,
     }
-    self._options.args["wincountclear"] = {
+    self._options.args.general.args.main.args["wincountclear"] = {
       type = "execute",
       name = L["Clear Wincount"],
       desc = L["Clear Wincount"],
@@ -692,7 +750,7 @@ function bepgp:options()
         return (bepgp.db.char.mode ~= "plusroll") or (not bepgp.db.char.wincountmanual)
       end,
     }
-    self._options.args["reserveclear"] = {
+    self._options.args.general.args.main.args["reserveclear"] = {
       type = "execute",
       name = L["Clear reserves"],
       desc = L["Clear reserves"],
@@ -705,7 +763,7 @@ function bepgp:options()
       end,
       hidden = function() return bepgp.db.char.mode ~= "plusroll" end,
     }
-    self._options.args["wincountopt"] = {
+    self._options.args.general.args.main.args["wincountopt"] = {
       type = "toggle",
       name = L["Manual Wincount"],
       desc = L["Manually reset Wincount at end of raid."],
@@ -716,7 +774,7 @@ function bepgp:options()
       end,
       hidden = function() return bepgp.db.char.mode ~= "plusroll" end,
     }
-    self._options.args["wincounttoken"] = {
+    self._options.args.general.args.main.args["wincounttoken"] = {
       type = "toggle",
       name = L["Skip Autoroll Items"],
       desc = L["Skip Autoroll Items from Wincount Prompts."],
@@ -727,7 +785,7 @@ function bepgp:options()
       end,
       hidden = function() return bepgp.db.char.mode ~= "plusroll" end,
     }
-    self._options.args["wincountstack"] = {
+    self._options.args.general.args.main.args["wincountstack"] = {
       type = "toggle",
       name = L["Skip Stackable Items"],
       desc = L["Skip Stackable Items from Wincount Prompts."],
@@ -1682,12 +1740,12 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
   self._options.args.profile.cmdHidden = true
   AC:RegisterOptionsTable(addonName.."_cmd", self.cmdtable, {"bastionloot"})
   AC:RegisterOptionsTable(addonName, self._options)
-  self.blizzoptions = ACD:AddToBlizOptions(addonName)
-  self.blizzoptions:SetParent(InterfaceOptionsFramePanelContainer)
-  InterfaceOptionsFrame.categoryList = InterfaceOptionsFrame.categoryList or {}
+  self.blizzoptions = ACD:AddToBlizOptions(addonName,nil,nil,"general")
+  --self.blizzoptions:SetParent(InterfaceOptionsFramePanelContainer)
+  --InterfaceOptionsFrame.categoryList = InterfaceOptionsFrame.categoryList or {}
   self.blizzoptions.profile = ACD:AddToBlizOptions(addonName, "Profiles", addonName, "profile")
-  self.blizzoptions.profile:SetParent(InterfaceOptionsFramePanelContainer)
-  tinsert(InterfaceOptionsFrame.categoryList, self.blizzoptions.profile)
+  --self.blizzoptions.profile:SetParent(InterfaceOptionsFramePanelContainer)
+  --tinsert(InterfaceOptionsFrame.categoryList, self.blizzoptions.profile)
   self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
   self.db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
   self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
@@ -1757,14 +1815,15 @@ function bepgp:deferredInit(guildname)
   if self._initdone then return end
   local realmname = GetRealmName()
   if not realmname then return end
-  local panelHeader = self:admin() and string.format("%s %s",self._labelfull,L["Admin Options"]) or string.format("%s %s",self._labelfull,L["Member Options"])
+  local panelHeader = self:admin() and L["Admin Options"] or L["Member Options"]
   if guildname then
     self._guildName = guildname
     self:guildInfoSettings()
     self:guildBranding()
 
     local profilekey = guildname.." - "..realmname
-    self._options.name = panelHeader
+    self._options.name = self._labelfull
+    self._options.args.general.name = panelHeader
     self.db:SetProfile(profilekey)
     -- register our dialogs
     LD:Register(addonName.."DialogMemberPoints", self:templateCache("DialogMemberPoints"))
@@ -1772,7 +1831,7 @@ function bepgp:deferredInit(guildname)
     LD:Register(addonName.."DialogSetMain", self:templateCache("DialogSetMain"))
     LD:Register(addonName.."DialogClearLoot", self:templateCache("DialogClearLoot"))
     LD:Register(addonName.."DialogResetPoints", self:templateCache("DialogResetPoints"))
-    self:tooltipHook(bepgp.db.char.tooltip)
+    self:tooltipHook()
     -- handle unnamed frames Esc
     self:RawHook("CloseSpecialWindows",true)
     -- comms
@@ -1807,9 +1866,10 @@ function bepgp:deferredInit(guildname)
   else
     local profilekey = realmname
     local profilekey = realmname
-    self._options.name = panelHeader
+    self._options.name = self._labelfull
+    self._options.args.general.name = panelHeader
     self.db:SetProfile(profilekey)
-    self:tooltipHook(bepgp.db.char.tooltip)
+    self:tooltipHook()
     -- handle unnamed frames Esc
     self:RawHook("CloseSpecialWindows",true)
     -- set price system
@@ -1822,7 +1882,9 @@ function bepgp:deferredInit(guildname)
   end
 end
 
-function bepgp:tooltipHook(status)
+function bepgp:tooltipHook()
+  local tipOptionGroup = bepgp.db.char.tooltip
+  local status = tipOptionGroup.prinfo or tipOptionGroup.mlinfo or tipOptionGroup.favinfo or tipOptionGroup.useinfo
   if status then
     -- tooltip
     if not self:IsHooked(GameTooltip, "OnTooltipSetItem") then
@@ -1844,6 +1906,7 @@ end
 
 function bepgp:AddTipInfo(tooltip,...)
   local name, link = tooltip:GetItem()
+  local tipOptionGroup = bepgp.db.char.tooltip
   if name and link then
     local mode_epgp = bepgp.db.char.mode == "epgp"
     local mode_plusroll = bepgp.db.char.mode == "plusroll"
@@ -1854,32 +1917,36 @@ function bepgp:AddTipInfo(tooltip,...)
     local item = Item:CreateFromItemLink(link)
     local itemid = item:GetItemID()
     if price then
-      local off_price = math.floor(price*self.db.profile.discount)
-      local ep,gp = (self:get_ep(self._playerName) or 0), (self:get_gp(self._playerName) or bepgp.VARS.basegp)
-      local pr,new_pr,new_pr_off = ep/gp, ep/(gp+price), ep/(gp+off_price)
-      local pr_delta = new_pr - pr
-      local pr_delta_off = new_pr_off - pr
-      local textRight2 = string.format(L["pr:|cffff0000%.02f|r(%.02f) pr_os:|cffff0000%.02f|r(%.02f)"],pr_delta,new_pr,pr_delta_off,new_pr_off)
-      local off_price = price*self.db.profile.discount
-      local textRight = string.format(L["gp:|cff32cd32%d|r gp_os:|cff20b2aa%d|r"],price,off_price)
-      tooltip:AddDoubleLine(label, textRight)
-      tooltip:AddDoubleLine(" ", textRight2)
-      if roll_admin and is_admin and mode_epgp then
-        if owner and owner._bepgpclicks then
-          tooltip:AddDoubleLine(C:Yellow(L["Alt Click/RClick/MClick"]), C:Orange(L["Call for: MS/OS/Both"]))
+      if tipOptionGroup.prinfo then
+        local off_price = math.floor(price*self.db.profile.discount)
+        local ep,gp = (self:get_ep(self._playerName) or 0), (self:get_gp(self._playerName) or bepgp.VARS.basegp)
+        local pr,new_pr,new_pr_off = ep/gp, ep/(gp+price), ep/(gp+off_price)
+        local pr_delta = new_pr - pr
+        local pr_delta_off = new_pr_off - pr
+        local textRight2 = string.format(L["pr:|cffff0000%.02f|r(%.02f) pr_os:|cffff0000%.02f|r(%.02f)"],pr_delta,new_pr,pr_delta_off,new_pr_off)
+        local off_price = price*self.db.profile.discount
+        local textRight = string.format(L["gp:|cff32cd32%d|r gp_os:|cff20b2aa%d|r"],price,off_price)
+        tooltip:AddDoubleLine(label, textRight)
+        tooltip:AddDoubleLine(" ", textRight2)
+      end
+      if tipOptionGroup.mlinfo then
+        if roll_admin and is_admin and mode_epgp then
+          if owner and owner._bepgpclicks then
+            tooltip:AddDoubleLine(C:Yellow(L["Alt Click/RClick/MClick"]), C:Orange(L["Call for: MS/OS/Both"]))
+          end
         end
       end
     end
-    if roll_admin and mode_plusroll then
+    if tipOptionGroup.mlinfo and (roll_admin and mode_plusroll) then
       if owner and owner._bepgprollclicks then
         tooltip:AddDoubleLine(C:Yellow(L["Alt Click"]), C:Orange(L["Call for Rolls"]))
       end
     end
     local favorite = self.db.char.favorites[itemid]
-    if favorite then
+    if tipOptionGroup.favinfo and favorite  then
       tooltip:AddLine(self._favmap[favorite])
     end
-    if type(useful)=="table" and #(useful)>0 then
+    if tipOptionGroup.useinfo and (type(useful)=="table" and #(useful)>0) then
       local line1,line2,line3 = "","",""
       for prio,class_specs in ipairs(useful) do
         if prio == 1 then -- 90%+ of top
@@ -2329,9 +2396,9 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
           local sender_rank = string.format("%s(%s)",C:Colorize(hexclass,sender),rank)
           settings_notice = settings_notice..string.format(L[" settings accepted from %s"],sender_rank)
           self:Print(settings_notice)
-          self._options.args["progress_tier_header"].name = string.format(L["Progress Setting: %s"],bepgp.db.profile.progress)
-          self._options.args["set_discount_header"].name = string.format(L["Offspec Price: %s%%"],bepgp.db.profile.discount*100)
-          self._options.args["set_min_ep_header"].name = string.format(L["Minimum EP: %s"],bepgp.db.profile.minep)
+          self._options.args.general.args.main.args["progress_tier_header"].name = string.format(L["Progress Setting: %s"],bepgp.db.profile.progress)
+          self._options.args.general.args.main.args["set_discount_header"].name = string.format(L["Offspec Price: %s%%"],bepgp.db.profile.discount*100)
+          self._options.args.general.args.main.args["set_min_ep_header"].name = string.format(L["Minimum EP: %s"],bepgp.db.profile.minep)
         end
       end
     end
@@ -2643,25 +2710,25 @@ function bepgp:GroupStatus()
 end
 
 local raidZones = {
-  [(GetRealZoneText(249))] = "T1.5", -- Onyxia's Lair
-  [(GetRealZoneText(409))] = "T1",   -- Molten Core
-  [(GetRealZoneText(469))] = "T2",   -- Blackwing Lair
-  [(GetRealZoneText(531))] = "T2.5", -- Ahn'Qiraj Temple
-  [(GetRealZoneText(533))] = "T3",   -- Naxxramas
+  [(GetRealZoneText(532))] = "T4",   -- Karazhan
+  [(GetRealZoneText(565))] = "T4",   -- Gruul's Lair
+  [(GetRealZoneText(544))] = "T4",   -- Magtheridon's Lair
+  [(GetRealZoneText(550))] = "T5",   -- Tempest Keep (The Eye)
+  [(GetRealZoneText(548))] = "T5",   -- Coilfang: Serpentshrine Cavern
+  [(GetRealZoneText(564))] = "T6",   -- Black Temple
+  [(GetRealZoneText(534))] = "T6",   -- The Battle for Mount Hyjal
+  [(GetRealZoneText(568))] = "T5",   -- Zul'Aman
+  [(GetRealZoneText(580))] = "T6.5"  -- The Sunwell
 }
 local mapZones = {
-  [(C_Map.GetAreaInfo(4))] = {"T1.5",(C_Map.GetAreaInfo(73))}, -- Blasted Lands - Tainted Scar, Kazzak
-  [(C_Map.GetAreaInfo(16))] = {"T1.5",(C_Map.GetAreaInfo(1221))}, -- Azshara - Ruins of Eldarath, Azuregos
-  [(C_Map.GetAreaInfo(10))] = {"T2",(C_Map.GetAreaInfo(856))}, -- Duskwood - Twilight Grove, 4Dragons
-  [(C_Map.GetAreaInfo(47))] = {"T2",(C_Map.GetAreaInfo(356))}, -- The Hinterlands - Seradane, 4Dragons
-  [(C_Map.GetAreaInfo(331))] = {"T2",(C_Map.GetAreaInfo(438))}, -- Ashenvale - Bough Shadow, 4Dragons
-  [(C_Map.GetAreaInfo(357))] = {"T2",(C_Map.GetAreaInfo(1111))}, -- Feralas - Dream Bough, 4Dragons
+  [(C_Map.GetAreaInfo(3483))] = {"T4",(C_Map.GetAreaInfo(3547))}, -- Hellfire Peninsula - Throne of Kil'jaeden, Doom Lord Kazzak
+  [(C_Map.GetAreaInfo(3520))] = {"T4",""}, -- Shadowmoon Valley, Doomwalker
 }
 local tier_multipliers = {
-  ["T3"] =   {["T3"]=1,["T2.5"]=0.75,["T2"]=0.5,["T1.5"]=0.25,["T1"]=0.25},
-  ["T2.5"] = {["T3"]=1,["T2.5"]=1,   ["T2"]=0.7,["T1.5"]=0.4, ["T1"]=0.4},
-  ["T2"] =   {["T3"]=1,["T2.5"]=1,   ["T2"]=1,  ["T1.5"]=0.5, ["T1"]=0.5},
-  ["T1"] =   {["T3"]=1,["T2.5"]=1,   ["T2"]=1,  ["T1.5"]=1,   ["T1"]=1}
+  ["T6.5"] =   {["T6.5"]=1,["T6"]=0.75,["T5"]=0.5,["T4"]=0.25},
+  ["T6"]   =   {["T6.5"]=1,["T6"]=1,   ["T5"]=0.7,["T4"]=0.4},
+  ["T5"]   =   {["T6.5"]=1,["T6"]=1,   ["T5"]=1,  ["T4"]=0.5},
+  ["T4"]   =   {["T6.5"]=1,["T6"]=1,   ["T5"]=1,  ["T4"]=1}
 }
 function bepgp:suggestEPAward(debug)
   local currentTier, zoneLoc, checkTier, multiplier

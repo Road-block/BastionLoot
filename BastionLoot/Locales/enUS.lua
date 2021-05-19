@@ -234,7 +234,7 @@ Results will print here when done.]]
   L["(greed)"] = true
   L["Mainspec Bids"] = true
   L["Offspec Bids"] = true
-  L["Tooltip Info"] = true
+  L["Tooltip Additions"] = true
   L["Add EPGP Information to Item Tooltips"] = true
   L["Select Price Scheme"] = true
   L["Select From Registered Price Systems"] = true
@@ -385,5 +385,13 @@ You can whisper |cffffd200!PR|r to any higher rank guild member to get back EPGP
   L["All EP and GP data has been reset."] = true
   L["|cffff0000Are you sure you want to wipe all EPGP data?|r"] = true
   L["Useful for"] = true
+  L["EPGP Info"] = true
+  L["Masterlooter Hints"] = true
+  L["Show Masterlooter click action hints on item tooltips"] = true
+  L["Favorites Info"] = true
+  L["Show Favorite ranking on item tooltips"] = true
+  L["Usable Info"] = true
+  L["Show Class and Spec Hints on item tooltips"] = true
+  L["Tooltip"] = true
 
 bepgp.L = L

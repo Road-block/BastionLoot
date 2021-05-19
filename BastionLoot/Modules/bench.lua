@@ -276,12 +276,12 @@ function bepgp_bench:injectOptions()
       }
     },
   }
-  bepgp._options.args.benchcalc = options
-  bepgp._options.args.benchcalc.guiHidden = true
-  bepgp._options.args.benchcalc.cmdHidden = true
-  bepgp.blizzoptions.bench = ACD:AddToBlizOptions(addonName, "Bench", addonName, "benchcalc")
-  bepgp.blizzoptions.bench:SetParent(InterfaceOptionsFramePanelContainer)
-  tinsert(InterfaceOptionsFrame.categoryList, bepgp.blizzoptions.bench)
+  bepgp._options.args.general.args.benchcalc = options
+  --bepgp._options.args.general.args.benchcalc.guiHidden = true
+  bepgp._options.args.general.args.benchcalc.cmdHidden = true
+  --bepgp.blizzoptions.bench = ACD:AddToBlizOptions(addonName, "Bench", addonName, "benchcalc")
+  --bepgp.blizzoptions.bench:SetParent(InterfaceOptionsFramePanelContainer)
+  --tinsert(InterfaceOptionsFrame.categoryList, bepgp.blizzoptions.bench)
 end
 
 function bepgp_bench:delayInit()

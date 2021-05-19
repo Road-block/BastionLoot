@@ -30,8 +30,8 @@ function bepgp_alts:OnEnable()
   self:injectOptions()  
 end
 
-function bepgp_alts:injectOptions()
-  bepgp._options.args["alts"] = {
+function bepgp_alts:injectOptions() -- .general.args.main.args
+  bepgp._options.args.general.args.main.args["alts"] = {
     type = "toggle",
     name = L["Enable Alts"],
     desc = L["Allow Alts to use Main\'s EPGP."],
@@ -46,7 +46,7 @@ function bepgp_alts:injectOptions()
       end
     end,
   }
-  bepgp._options.args["alts_percent"] = {
+  bepgp._options.args.general.args.main.args["alts_percent"] = {
     type = "range",
     name = L["Alts EP %"],
     desc = L["Set the % EP Alts can earn."],

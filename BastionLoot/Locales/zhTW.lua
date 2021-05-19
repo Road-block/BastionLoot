@@ -233,7 +233,7 @@ if not L then return end
   L["(greed)"] = "(greed)"  --(patterns)
   L["Mainspec Bids"] = "主天賦競拍"
   L["Offspec Bids"] = "副天賦競拍"
-  L["Tooltip Info"] = "滑鼠提示資訊"
+  L["Tooltip Additions"] = "滑鼠提示資訊"
   L["Add EPGP Information to Item Tooltips"] = "添加EPGP資訊到物品滑鼠提示"
   L["Export Loot"] = "導出拾取"
   L["Export Logs"] = "導出日誌"
@@ -383,5 +383,13 @@ You can whisper |cffffd200!PR|r to any higher rank guild member to get back EPGP
   L["All EP and GP data has been reset."] = "All EP and GP data has been reset." -- needs translation
   L["|cffff0000Are you sure you want to wipe all EPGP data?|r"] = "|cffff0000Are you sure you want to wipe all EPGP data?|r" -- needs translation
   L["Useful for"] = "Useful for" -- needs translation
+  L["EPGP Info"] = "EPGP Info" -- needs translation
+  L["Masterlooter Hints"] = "Masterlooter Hints" -- needs translation
+  L["Show Masterlooter click action hints on item tooltips"] = "Show Masterlooter click action hints on item tooltips" -- needs translation
+  L["Favorites Info"] = "Favorites Info" -- needs translation
+  L["Show Favorite ranking on item tooltips"] = "Show Favorite ranking on item tooltips" -- needs translation
+  L["Usable Info"] = "Usable Info" -- needs translation
+  L["Show Class and Spec Hints on item tooltips"] = "Show Class and Spec Hints on item tooltips" -- needs translation
+  L["Tooltip"] = "Tooltip" -- needs translation
 
   bepgp.L = L

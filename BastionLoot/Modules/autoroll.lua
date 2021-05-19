@@ -244,7 +244,7 @@ local options = {
     },
   }
 }
-function bepgp_autoroll:injectOptions()
+function bepgp_autoroll:injectOptions() -- .general.args.main.args
   bepgp.db.char.autoroll = bepgp.db.char.autoroll or {
     ["zg_coin"] = 1,
     ["zg_bijou"] = 1,
@@ -262,12 +262,13 @@ function bepgp_autoroll:injectOptions()
     ["class"] = 1,
     ["other"] = 2,
   }
-  bepgp._options.args.autoroll = options
-  bepgp._options.args.autoroll.guiHidden = true
-  bepgp._options.args.autoroll.cmdHidden = true
-  bepgp.blizzoptions.autoroll = ACD:AddToBlizOptions(addonName, "Autoroll", addonName, "autoroll")
-  bepgp.blizzoptions.autoroll:SetParent(InterfaceOptionsFramePanelContainer)
-  tinsert(InterfaceOptionsFrame.categoryList, bepgp.blizzoptions.autoroll)
+  bepgp._options.args.general.args.autoroll = options
+  -- bepgp._options.args.autoroll = options
+  --bepgp._options.args.general.args.autoroll.guiHidden = true
+  bepgp._options.args.general.args.autoroll.cmdHidden = true
+  --bepgp.blizzoptions.autoroll = ACD:AddToBlizOptions(addonName, "Autoroll", addonName, "autoroll")
+  --bepgp.blizzoptions.autoroll:SetParent(InterfaceOptionsFramePanelContainer)
+  --tinsert(InterfaceOptionsFrame.categoryList, bepgp.blizzoptions.autoroll)
 end
 
 function bepgp_autoroll:delayInit()

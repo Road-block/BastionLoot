@@ -37,7 +37,7 @@ function bepgp_standby:injectOptions()
   if bepgp._guildName then
     local sanitized_guild = bepgp._guildName:gsub("[%A]+","")
     self._standbyChannel = string.format("%s%s",sanitized_guild,L["Standby"])
-    bepgp._options.args["standby"] = {
+    bepgp._options.args.general.args.main.args["standby"] = {
       type = "toggle",
       name = L["Enable Standby"],
       desc = L["Participate in Standby Raiders List.\n|cffff0000Requires Main Character Name.|r"],
