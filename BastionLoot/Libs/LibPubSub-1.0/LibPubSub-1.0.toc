@@ -1,0 +1,13 @@
+## Interface: 80205
+## Version: 1.0.9
+## X-Date: 2019-10-01T19:56:25Z
+## X-Website: https://www.wowace.com/projects/libpubsub-1-0
+## X-License: MIT License
+## X-Category: Library
+
+## Title: Lib: PubSub
+## Notes: Simple embeddable publish-subscribe implementation.
+## Author: Timmeh
+## RequiredDeps: LibStub
+
+LibPubSub-1.0.lua

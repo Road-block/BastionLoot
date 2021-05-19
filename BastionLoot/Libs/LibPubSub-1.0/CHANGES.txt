@@ -1,0 +1,24 @@
+tag 860c6bedbff55b0efa3fdebdad26aa43751f64ff 1.0.9
+Author:	Tim Wienk <tim@wienk.name>
+Date:	Tue Oct 1 22:41:18 2019 +0200
+
+Tagging as 1.0.9.
+
+commit 85a8e36966a45277fba185a59a3bef0ef84997bb
+Author: Tim Wienk <tim@wienk.name>
+Date:   Tue Oct 1 21:56:25 2019 +0200
+
+    Update TOC for 8.2.5.
+
+commit af6b441e5bee838852c30d82002f65d97e4745a0
+Author: Tim Wienk <tim@wienk.name>
+Date:   Tue Oct 1 21:56:06 2019 +0200
+
+    Update website in TOC file.
+
+commit 33c7eb2f9f5ebb5a882d2cdda4ff66b12b5b9f49
+Author: Tim Wienk <tim@wienk.name>
+Date:   Fri Nov 18 10:05:27 2016 +0100
+
+    Clean up examples in README.
+

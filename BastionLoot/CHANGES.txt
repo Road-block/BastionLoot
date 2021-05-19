@@ -1,0 +1,13 @@
+tag 1db185c12787c31b940c24a543ee714c28ec2aae 2.5.1
+Author:	Road-block <dridzt.addons@hotmail.com>
+Date:	Thu Feb 4 19:16:12 2021 +0200
+
+tag for release
+
+commit 05abb758b568fac6fb5f1f1fe250f70e475369d3
+Author: Road-block <dridzt.addons@hotmail.com>
+Date:   Thu Feb 4 19:13:00 2021 +0200
+
+    minor code cleanup, improve parsing of player names with special characters
+    users have the option to set all sound channel sliders to 0 and still get loot alert sound on master
+

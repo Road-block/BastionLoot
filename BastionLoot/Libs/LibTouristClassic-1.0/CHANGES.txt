@@ -1,0 +1,16 @@
+lightweight tag 9d8d0b3af911f3cf155112d0332438279a07a063 WoW-1.13
+Author:	Yunohu <kernighan@gmail.com>
+Date:	Fri Nov 15 01:30:45 2019 +0000
+
+commit 9d8d0b3af911f3cf155112d0332438279a07a063
+Author: Yunohu <kernighan@gmail.com>
+Date:   Fri Nov 15 01:30:45 2019 +0000
+
+    Bump release for GA release
+
+commit a2d54e38d5699a6dd526b571ec97f5d792a2a96c
+Author: Odica <odica.jaedenar@gmail.com>
+Date:   Fri Nov 8 22:03:37 2019 +0100
+
+    Fixed unintended global numNodes in GatherFlightNodeData (issue #6)
+

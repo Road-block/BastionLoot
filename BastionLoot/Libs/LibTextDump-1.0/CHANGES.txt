@@ -1,0 +1,34 @@
+lightweight tag d73b2d5e7a62d49a242b51fcd16ca8c6b21c2f71 8.1.0.1
+Author:	Tim West <gethe88@gmail.com>
+Date:	Thu Dec 13 03:20:05 2018 -0600
+
+commit d73b2d5e7a62d49a242b51fcd16ca8c6b21c2f71
+Author: Tim West <gethe88@gmail.com>
+Date:   Thu Dec 13 03:20:05 2018 -0600
+
+    Update ToC to 80100
+
+commit d860765be0d15de884cd4f517ea80839b660c613
+Author: Tim West <gethe88@gmail.com>
+Date:   Wed Dec 12 11:42:52 2018 -0600
+
+    Use a template that doesn't have a NineSlice frame
+    
+    In patch 8.1 Blizzard added a new NineSlice frame to a few templates,
+    including the ubiquitous PortraitFrameTemplate. The use of one of these
+    templates can sometimes cause a taint error like this:
+    
+    https://gist.github.com/Gethe/2eebccbe254419748e735fa6aeff8895
+    
+    Despite this error, I haven't found any trace of this in taint logs. Nor
+    have I found a reliable minimum repro. Regardless, this change seems to
+    eliminate the above linked error.
+
+commit 55afb8fb060e8f383cf3a245f4de10072f84a9ba
+Author: Tim West <gethe88@gmail.com>
+Date:   Fri Nov 16 22:35:34 2018 -0600
+
+    Use the correct widget reference
+    
+    In 8.1 this won't have a global name, but 8.0 already has the parentKey so we can change it now.
+
