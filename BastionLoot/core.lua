@@ -21,7 +21,7 @@ bepgp.VARS = {
   decay = 0.8,
   max = 1000,
   timeout = 60,
-  minlevel = 61,
+  minlevel = 60,
   maxloglines = 500,
   prefix = "BASTIONLOOT_PFX",
   pricesystem = "BastionEPGPFixed_bc-1.0",
@@ -2685,8 +2685,8 @@ function bepgp:inRaid(name)
     if not groupcache[name] then
       groupcache[name] = {}
       local member, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = GetRaidRosterInfo(rid)
-      member = Ambiguate(member,"short")
-      if member and (member == name) and (member ~= UNKNOWNOBJECT) then
+      member = Ambiguate((member or ""),"short")
+      if member and (member == name) and (member ~= _G.UNKNOWNOBJECT) then
         local _,_,hexColor = self:getClassData(lclass)
         local colortab = RAID_CLASS_COLORS[eclass]
         groupcache[member]["level"] = level
@@ -3019,7 +3019,7 @@ function bepgp:guildCache()
   table.wipe(self.db.profile.alts)
   for i = 1, GetNumGuildMembers(true) do
     local member_name,rank,_,level,class,_,note,officernote,_,_ = GetGuildRosterInfo(i)
-    member_name = Ambiguate(member_name,"short") --:gsub("(\-.+)","")
+    member_name = Ambiguate((member_name or ""),"short") --:gsub("(\-.+)","")
     if member_name and level and (member_name ~= UNKNOWNOBJECT) and (level > 0) then
       self.db.profile.guildcache[member_name] = {level,rank,class,(officernote or "")}
     end
@@ -3049,25 +3049,29 @@ function bepgp:buildRosterTable()
   if (self.db.char.raidonly) and self:GroupStatus()=="RAID" then
     for i = 1, GetNumGroupMembers() do
       local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
-      name = Ambiguate(name,"short")
-      if (name) then
-        r[name] = true
+      if name and name ~= _G.UNKNOWNOBJECT then
+        name = Ambiguate(name,"short")
+        if (name) then
+          r[name] = true
+        end
       end
     end
   end
   for i = 1, numGuildMembers do
     local member_name,rank,_,level,class,_,note,officernote,_,_ = GetGuildRosterInfo(i)
-    member_name = Ambiguate(member_name,"short") --:gsub("(\-.+)","")
-    local level = tonumber(level)
-    local is_raid_level = level and level >= bepgp.VARS.minlevel
-    local main, main_class, main_rank = self:parseAlt(member_name,officernote)
-    if (self.db.char.raidonly) and next(r) then
-      if r[member_name] and is_raid_level then
-        table.insert(g,{["name"]=member_name,["class"]=class,["onote"]=officernote,["alt"]=(not not main)})
-      end
-    else
-      if is_raid_level then
-        table.insert(g,{["name"]=member_name,["class"]=class,["onote"]=officernote,["alt"]=(not not main)})
+    if member_name and member_name ~= _G.UNKNOWNOBJECT then
+      member_name = Ambiguate(member_name,"short") --:gsub("(\-.+)","")
+      local level = tonumber(level)
+      local is_raid_level = level and level >= bepgp.VARS.minlevel
+      local main, main_class, main_rank = self:parseAlt(member_name,officernote)
+      if (self.db.char.raidonly) and next(r) then
+        if r[member_name] and is_raid_level then
+          table.insert(g,{["name"]=member_name,["class"]=class,["onote"]=officernote,["alt"]=(not not main)})
+        end
+      else
+        if is_raid_level then
+          table.insert(g,{["name"]=member_name,["class"]=class,["onote"]=officernote,["alt"]=(not not main)})
+        end
       end
     end
   end
@@ -3152,8 +3156,8 @@ function bepgp:groupCache(member,update)
       groupcache[member] = groupcache[member] or {}
       for i=1,GetNumGroupMembers() do
         local name, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
-        name = Ambiguate(name,"short")
-        if name and (name == member) and (name ~= UNKNOWNOBJECT) then
+        name = Ambiguate((name or ""),"short")
+        if name and (name == member) and (name ~= _G.UNKNOWNOBJECT) then
           local _,_,hexColor = self:getClassData(lclass)
           local colortab = RAID_CLASS_COLORS[eclass]
           groupcache[member]["level"] = level
@@ -3175,16 +3179,18 @@ function bepgp:award_raid_ep(ep) -- awards ep to raid members in zone
     local guildcache = self:guildCache()
     for i = 1, GetNumGroupMembers() do
       local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
-      if level == 0 or (not online) then
-        level = (guildcache[name] and guildcache[name][1]) or 0
-        self:debugPrint(string.format(L["%s is offline. Getting info from guild cache."],name))
-      end
-      if level >= bepgp.VARS.minlevel then
-        local main = guildcache[name] and guildcache[name][5] or false
-        if main and self:inRaid(main) then
-          self:debugPrint(string.format(L["Skipping %s. Main %q is also in the raid."],name,main))
-        else
-          self:givename_ep(name,ep)
+      if name and name ~= _G.UNKNOWNOBJECT then
+        if level == 0 or (not online) then
+          level = (guildcache[name] and guildcache[name][1]) or 0
+          self:debugPrint(string.format(L["%s is offline. Getting info from guild cache."],name))
+        end
+        if level >= bepgp.VARS.minlevel then
+          local main = guildcache[name] and guildcache[name][5] or false
+          if main and self:inRaid(main) then
+            self:debugPrint(string.format(L["Skipping %s. Main %q is also in the raid."],name,main))
+          else
+            self:givename_ep(name,ep)
+          end
         end
       end
     end
