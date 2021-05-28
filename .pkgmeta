@@ -6,5 +6,5 @@ move-folders:
   BastionLootRoot/BastionLoot_Gearpoints-1.2: BastionLoot_Gearpoints-1.2
 
 ignore:
-  - pkgmeta.yaml
+  - .pkgmeta
   - README.md
