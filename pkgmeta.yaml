@@ -1,0 +1,10 @@
+package-as: BastionLoot
+enable-nolib-creation: no
+
+move-folders:
+  BastionLootRoot/BastionLoot: BastionLoot
+  BastionLootRoot/BastionLoot_Gearpoints-1.2: BastionLoot_Gearpoints-1.2
+
+ignore:
+  - pkgmeta.yaml
+  - README.md
