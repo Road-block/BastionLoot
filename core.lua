@@ -197,6 +197,7 @@ local defaults = {
     wincountmanual = true,
     wincounttoken = true,
     wincountstack = true,
+    plusrollepgp = false,
     rollfilter = false,
     favalert = false,
     groupcache = {},
@@ -795,6 +796,17 @@ function bepgp:options()
         bepgp.db.char.wincountstack = not bepgp.db.char.wincountstack
       end,
       hidden = function() return bepgp.db.char.mode ~= "plusroll" end,
+    }
+    self._options.args.general.args.main.args["plusrollepgp"] = {
+      type = "toggle",
+      name = L["Award GP"],
+      desc = L["Guild members that win items also get awarded GP."],
+      order = 158,
+      get = function() return not not bepgp.db.char.plusrollepgp end,
+      set = function(info,val)
+        bepgp.db.char.plusrollepgp = not bepgp.db.char.plusrollepgp
+      end,
+      hidden = function() return not (bepgp.db.char.mode == "plusroll" and bepgp:admin()) end,
     }
   end
   return self._options
@@ -1397,6 +1409,12 @@ function bepgp:templateCache(id)
                   end
                 end
               else -- new entry
+                if bepgp.db.char.plusrollepgp then
+                  local price = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+                  if price and price > 0 then
+                    bepgp:givename_gp(player, price)
+                  end
+                end
                 if reserves then
                   if reserves:IsReservedExact(player,item_id) then
                     reserves:RemoveReserve(player,item_id)
@@ -1434,6 +1452,12 @@ function bepgp:templateCache(id)
                   end
                 end
               else -- new entry
+                if bepgp.db.char.plusrollepgp then
+                  local price = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+                  if price and price > 0 then
+                    bepgp:givename_gp(player, price)
+                  end
+                end
                 if plusroll_loot then
                   plusroll_loot:addWincount(player,item_id)
                 end
@@ -1471,6 +1495,15 @@ function bepgp:templateCache(id)
                   end
                 end
               else -- new entry
+                if bepgp.db.char.plusrollepgp then
+                  local price = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+                  if price and price > 0 then
+                    local off_price = math.floor(price*bepgp.db.profile.discount)
+                    if off_price > 0 then
+                      bepgp:givename_gp(player, off_price)
+                    end
+                  end
+                end
                 if plusroll_logs then
                   plusroll_logs:addToLog(player,player_c,item,item_id,"os")
                 end
