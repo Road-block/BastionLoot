@@ -10,7 +10,7 @@ Current version also offers a plusroll mode (toggle-able from minimap right-clic
  4. Paste it into `World of Warcraft\_classic_\Interface\AddOns\` answering yes to any overwrite prompts.
 
 * from releases (stable)
- 1. Download latest [BastionLoot-bcc.zip](https://github.com/Road-block/BastionLootRoot/releases/latest/download/BastionLoot.zip) and extract in AddOns.
+ 1. Download latest [BastionLoot-bcc.zip](https://github.com/Road-block/BastionLootRoot/releases/latest/download/BastionLoot-bcc.zip) and extract in AddOns.
 
 * from addon hosting sites (stable)
  1. [BastionLoot](https://www.curseforge.com/wow/addons/bastionloot) on Curseforge
