@@ -21,7 +21,7 @@ bepgp.VARS = {
   decay = 0.8,
   max = 1000,
   timeout = 60,
-  minlevel = 60,
+  minlevel = 68,
   maxloglines = 500,
   prefix = "BASTIONLOOT_PFX",
   pricesystem = "BastionEPGPFixed_bc-1.0",
@@ -32,7 +32,17 @@ bepgp.VARS = {
   osgp = L["Offspec GP"],
   bankde = L["Bank-D/E"],
   unassigned = C:Red(L["Unassigned"]),
-  autoloot = {},
+  autoloot = {
+    [29434] = "Badge",
+    [28558] = "SpiritShard",
+    [29425] = "MarkKJ",
+    [30809] = "MarkSG",
+    [29426] = "SignetFW",
+    [30810] = "SignetSF",
+    [24368] = "Coilfang",
+    [25433] = "Warbead",
+    [29209] = "Zaxxis",
+  },
 }
 bepgp._playerName = GetUnitName("player")
 
@@ -1259,13 +1269,18 @@ function bepgp:templateCache(id)
           self.text:SetText(string.format(L["%s looted %s. What do you want to do?"],data[loot_indices.player_c],data[loot_indices.item]))
           if not bepgp:IsHooked(self.close_button, "OnClick") then
             bepgp:HookScript(self.close_button,"OnClick",function(f,button,down)
-              local data = f:GetParent().data
-              local loot_indices = data.loot_indices
-              data[loot_indices.action] = bepgp.VARS.unassigned
-              local update = data[loot_indices.update] ~= nil
-              local loot = bepgp:GetModule(addonName.."_loot")
-              if loot then
-                loot:addOrUpdateLoot(data, update)
+              local dialog = f:GetParent()
+              if dialog then
+                local data = dialog.data
+                local loot_indices = data.loot_indices
+                if loot_indices and loot_indices.action then
+                  data[loot_indices.action] = bepgp.VARS.unassigned
+                  local update = data[loot_indices.update] ~= nil
+                  local loot = bepgp:GetModule(addonName.."_loot")
+                  if loot then
+                    loot:addOrUpdateLoot(data, update)
+                  end
+                end
               end
             end)
           end
@@ -1673,7 +1688,7 @@ function bepgp:templateCache(id)
         end,
         on_cancel = function(self)
           local data = self.data
-          bepgp:Print(L["Loot info can be cleared at any time from the loot window button or '/bepgp clearloot' command"])
+          bepgp:Print(L["Loot info can be cleared at any time from the loot window button or '/bastionloot clearloot' command"])
         end,
         buttons = {
           {
@@ -1694,7 +1709,7 @@ function bepgp:templateCache(id)
                 loot:Toggle()
               end
               LD:Dismiss(addonName.."DialogClearLoot")
-              bepgp:Print(L["Loot info can be cleared at any time from the loot window or '/bepgp clearloot' command"])
+              bepgp:Print(L["Loot info can be cleared at any time from the loot window or '/bastionloot clearloot' command"])
             end,
           },
         },
@@ -1913,6 +1928,16 @@ function bepgp:deferredInit(guildname)
     self._initdone = true
     self:SendMessage(addonName.."_INIT_DONE")
   end
+  -- 2.5.1.39170 masterlooterframe bug workaround
+  local oMasterLooterFrame_Show = _G.MasterLooterFrame_Show
+  _G.MasterLooterFrame_Show = function(...)
+    MasterLooterFrame:ClearAllPoints()
+    oMasterLooterFrame_Show(...)
+  end
+  hooksecurefunc("MasterLooterFrame_OnHide", function(...)
+    MasterLooterFrame:ClearAllPoints()
+  end)
+  -- workaround end
 end
 
 function bepgp:tooltipHook()
@@ -2034,6 +2059,7 @@ function bepgp:autoLoot(event,auto)
         local _,_,_,itemID = self:getItemData(itemLink)
         if bepgp.VARS.autoloot[itemID] then
           LootSlot(slot)
+          ConfirmLootSlot(slot)
         end
         if bepgp.db.char.favalert then
           if bepgp.db.char.favorites[itemID] then

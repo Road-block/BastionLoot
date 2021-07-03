@@ -185,7 +185,7 @@ Results will print here when done.]]
   L["Show me"] = true
   L["Logs cleared"] = true
   L["Loot info cleared"] = true
-  L["Loot info can be cleared at any time from the loot window or '/bepgp clearloot' command"] = true
+  L["Loot info can be cleared at any time from the loot window or '/bastionloot clearloot' command"] = true
   L["Set your main to be able to participate in Standby List EPGP Checks."] = true
   L["Standby AFKCheck. Are you available? |cff00ff00%0d|rsec."] = true
   L["|cffff0000Are you sure you want to Reset ALL EPGP?|r"] = true

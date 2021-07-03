@@ -104,6 +104,7 @@ end
 
 function bepgp_rolls:positionMasterLootAdditions()
   local parent = MasterLooterFrame
+  self._randomFrame:ClearAllPoints()
   self._randomFrame:SetPoint("TOPLEFT",parent,"TOPRIGHT",5,-5)
   if self._randomFrame.id then
     self._randomFrame:Show()
@@ -115,6 +116,7 @@ function bepgp_rolls:positionMasterLootAdditions()
   if not self._randomFrame:IsShown() then
     anchor, point, x, y = parent, "TOPRIGHT", 5,-5
   end
+  self._playerFrame:ClearAllPoints()
   self._playerFrame:SetPoint("TOPLEFT", anchor, point, x, y)
   if self._playerFrame.id then
     self._playerFrame:Show()
@@ -129,6 +131,7 @@ function bepgp_rolls:positionMasterLootAdditions()
   if not self._randomFrame:IsShown() then
     anchor, point, x, y = parent, "TOPRIGHT", 5,-5
   end
+  self._bankerFrame:ClearAllPoints()
   self._bankerFrame:SetPoint("TOPLEFT",anchor,point,x,y)
   if self._bankerFrame.id then
     self._bankerFrame:Show()
@@ -146,6 +149,7 @@ function bepgp_rolls:positionMasterLootAdditions()
   if not self._randomFrame:IsShown() then
     anchor, point, x, y = parent, "TOPRIGHT", 5,-5
   end
+  self._disenchanterFrame:ClearAllPoints()
   self._disenchanterFrame:SetPoint("TOPLEFT",anchor,point,x,y)
   if self._disenchanterFrame.id then
     self._disenchanterFrame:Show()

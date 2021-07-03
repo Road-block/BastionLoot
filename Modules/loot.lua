@@ -199,13 +199,10 @@ function bepgp_loot:GiveMasterLoot(slot, index)
   end
 end
 
--- /run BastionLoot:GetModule("BastionEPGP_loot"):captureLoot("You receive loot: \124cffa335ee\124Hitem:16864:0:0:0:0:0:0:0:0\124h[Belt of Might]\124h\124r.")
--- /run BastionLoot:GetModule("BastionEPGP_loot"):captureLoot("Jerv receives loot: \124cffa335ee\124Hitem:16846::::::::60:::::\124h[Giantstalker's Helmet]\124h\124r.")
--- /run BastionLoot:GetModule("BastionEPGP_loot"):captureLoot("You receive loot: \124cffa335ee\124Hitem:16960::::::::60:::::\124h[Waistband of Wrath]\124h\124r.")
--- /run BastionLoot:GetModule("BastionEPGP_loot"):captureLoot("You receive loot: \124cffa335ee\124Hitem:16857::::::::60:::::\124h[Lawbringer Bracers]\124h\124r.")
+-- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("You receive loot: \124cffa335ee\124Hitem:28509::::::::70:::::\124h[Worgen Claw Necklace]\124h\124r.")
 function bepgp_loot:captureLoot(message)
   if bepgp.db.char.mode ~= "epgp" then return end
-  if not self:raidLootAdmin() then return end
+  if not self:raidLootAdmin() then return end -- DEBUG
   local who,what,amount,player,itemLink
   who,what,amount = DF.Deformat(message,LOOT_ITEM_MULTIPLE)
   if (amount) then -- skip multiples / stacks
@@ -313,7 +310,7 @@ function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,
     data[loot_indices.time] = timestamp
     data[loot_indices.player] = tradeTarget
     data[loot_indices.player_c] = target_color
-    data["loot_indices"] = loot_indices
+    data.loot_indices = loot_indices
     data[loot_indices.update] = 1
     LD:Spawn(addonName.."DialogItemPoints", data)
   end

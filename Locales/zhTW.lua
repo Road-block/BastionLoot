@@ -173,7 +173,7 @@ if not L then return end
   L["There are %d loot drops stored. It is recommended to clear loot info before a new raid. Do you want to clear it now?"] = "這個 %d 掉落是個戰利品. 建議在新的RAID之前清除拾取物資訊. 你現在想清除它嗎？"
   L["Show me"] = "秀出來"
   L["Loot info cleared"] = "戰利品資訊清除"
-  L["Loot info can be cleared at any time from the loot window or '/bepgp clearloot' command"] = "拾取資訊可以隨時從小地圖上下文菜單中清除，或者用 '/shooty clearloot' 命令" -- needs update
+  L["Loot info can be cleared at any time from the loot window or '/bastionloot clearloot' command"] = "拾取資訊可以隨時從小地圖上下文菜單中清除，或者用 '/shooty clearloot' 命令" -- needs update
   L["Set your main to be able to participate in Standby List EPGP Checks."] = "設定你的主要人物到參與待命成員EPGP檢查清單." -- needs update
   L["Standby AFKCheck. Are you available? |cff00ff00%0d|rsec."] = "待命成員AFK檢查. 你在嗎? |cff00ff00%0d|r秒." -- needs update
   L["|cffff0000Are you sure you want to Reset ALL EPGP?|r"] = "|cffff0000您確定要重置全部 EPGP?|r"
