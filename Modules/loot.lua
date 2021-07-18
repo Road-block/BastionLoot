@@ -46,6 +46,28 @@ local assign_options = {
   desc = L["BastionLoot options"],
   handler = bepgp_loot,
   args = {
+    ["msgp"] = {
+      type = "execute",
+      name = L["Mainspec GP"],
+      desc = L["Mainspec GP"],
+      order = 1,
+      func = function(info)
+        bepgp_loot._selected[loot_indices.action] = L["Mainspec GP"]
+        bepgp_loot:Refresh()
+        C_Timer.After(0.2, menu_close)
+      end,
+      },
+      ["osgp"] = {
+        type = "execute",
+        name = L["Offspec GP"],
+        desc = L["Offspec GP"],
+        order = 1,
+        func = function(info)
+          bepgp_loot._selected[loot_indices.action] = L["Offspec GP"]
+          bepgp_loot:Refresh()
+          C_Timer.After(0.2, menu_close)
+        end,
+      },
     ["bankde"] = {
       type = "execute",
       name = L["Bank or D/E"],
@@ -53,6 +75,17 @@ local assign_options = {
       order = 1,
       func = function(info)
         bepgp_loot._selected[loot_indices.action] = L["Bank-D/E"]
+        bepgp_loot:Refresh()
+        C_Timer.After(0.2, menu_close)
+      end,
+    },
+    ["unassigned"] = {
+      type = "execute",
+      name = C:Red(L["Unassigned"]),
+      desc = C:Red(L["Unassigned"]),
+      order = 1,
+      func = function(info)
+        bepgp_loot._selected[loot_indices.action] = C:Red(L["Unassigned"])
         bepgp_loot:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
@@ -80,7 +113,7 @@ local manual_assign = function(rowFrame, cellFrame, data, cols, row, realrow, co
   end
   if bepgp_loot._selected then
     local loot_action = data[realrow].cols[5].value
-    if loot_action and loot_action == bepgp.VARS.unassigned then
+    if loot_action then
       bepgp_loot._ddmenu = LDD:OpenAce3Menu(assign_options)
       bepgp_loot._ddmenu:SetPoint("CENTER", cellFrame, "CENTER", 0,0)
     else
