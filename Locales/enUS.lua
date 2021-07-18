@@ -33,6 +33,7 @@ if not L then return end
   L["Clear Loot"] = true
   L["Export Loot"] = true
   L["Item"] = true
+  L["ItemID"] = "Item ID"
   L["Binds"] = true
   L["Looter"] = true
   L["GP Action"] = true

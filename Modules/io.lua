@@ -61,10 +61,10 @@ end
 function bepgp_io:Loot(loot_indices)
   local keys
   self._ioloot:Clear()
-  self._ioloot:AddLine(string.format("%s;%s;%s;%s",L["Time"],L["Item"],L["Looter"],L["GP Action"]))
+  self._ioloot:AddLine(string.format("%s;%s;%s;%s",L["Time"],L["Item"],L["Looter"],L["GP Action"],L["ItemID"]))
   if self._fileexport then
     table.wipe(temp_data)
-    keys = {L["Time"],L["Item"],L["Looter"],L["GP Action"]}
+    keys = {L["Time"],L["Item"],L["Looter"],L["GP Action"],L["ItemID"]}
   end
   for i,data in ipairs(bepgp.db.char.loot) do
     local time = data[loot_indices.time]
@@ -73,13 +73,14 @@ function bepgp_io:Loot(loot_indices)
     local looter = data[loot_indices.player]
     local action = data[loot_indices.action]
     if action == bepgp.VARS.msgp or action == bepgp.VARS.osgp or action == bepgp.VARS.bankde then
-      self._ioloot:AddLine(string.format("%s;%s;%s;%s",time,itemName,looter,action))
+      self._ioloot:AddLine(string.format("%s;%s;%s;%s;%s",time,itemName,looter,action,itemID))
       if self._fileexport then
         local entry = {}
         entry[L["Time"]] = time
         entry[L["Item"]] = itemName
         entry[L["Looter"]] = looter
         entry[L["GP Action"]] = action
+        entry[L["ItemID"]] = itemID
         table.insert(temp_data, entry)
       end
     end

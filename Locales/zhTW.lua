@@ -22,6 +22,7 @@ if not L then return end
   L["BastionLoot loot info"] = "BastionLoot 拾取資訊"
   L["Clear Loot"] = "清除拾取"
   L["Item"] = "物品"
+  L["ItemID"] = "Item ID" --needs translation
   L["Binds"] = "競拍"
   L["Looter"] = "拾取人"
   L["GP Action"] = "GP 行為"
