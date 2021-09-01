@@ -164,7 +164,7 @@ local item_bind_patterns = {
   BOE = "("..ITEM_BIND_ON_USE..")",
   BOUND = "("..ITEM_SOULBOUND..")"
 }
-
+local GetGuildTabardFileNames = _G.GetGuildTabardFileNames or _G.GetGuildTabardFiles
 local defaults = {
   profile = {
     announce = "GUILD",
