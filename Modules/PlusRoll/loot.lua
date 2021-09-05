@@ -359,7 +359,7 @@ function bepgp_plusroll_loot:processLootCallback(player,itemLink,source,itemColo
   self._lastPlayerItem, self._lastPlayerItemTime, self._lastPlayerItemSource = player_item, now, source
   local player_color = C:Colorize(hex,player)
   local epoch, timestamp = bepgp:getServerTime()
-  local data = {[loot_indices.time]=timestamp,[loot_indices.player]=player,[loot_indices.player_c]=player_color,[loot_indices.item]=itemLink,[loot_indices.item_id]=itemID,loot_indices=loot_indices}
+  local data = {[loot_indices.time]=epoch,[loot_indices.player]=player,[loot_indices.player_c]=player_color,[loot_indices.item]=itemLink,[loot_indices.item_id]=itemID,loot_indices=loot_indices}
   LD:Spawn(addonName.."DialogItemPlusPoints", data)
 end
 

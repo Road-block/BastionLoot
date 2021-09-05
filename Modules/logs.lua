@@ -29,8 +29,8 @@ function bepgp_logs:OnEnable()
   container:Hide()
   self._container = container
   local headers = {
-    {["name"]=C:Orange(L["Time"]),["width"]=100,["comparesort"]=st_sorter_numeric}, -- server time
-    {["name"]=C:Orange(L["Action"]),["width"]=350,["comparesort"]=st_sorter_numeric}, --action
+    {["name"]=C:Orange(L["Time"]),["width"]=130,["comparesort"]=st_sorter_numeric}, -- server time
+    {["name"]=C:Orange(L["Action"]),["width"]=320,["comparesort"]=st_sorter_numeric}, --action
     {["name"]="",["width"]=1,["comparesort"]=st_sorter_numeric,["sort"]=ST.SORT_DSC} -- order
   }
   self._logs_table = ST:CreateST(headers,15,nil,colorHighlight,container.frame) -- cols, numRows, rowHeight, highlight, parent
@@ -66,11 +66,11 @@ function bepgp_logs:addToLog(line,skipTime)
       table.remove(bepgp.db.char.logs,1)
     end
   end
-  local timestamp,_
+  local timestamp,epoch
   if (skipTime) then
     timestamp = ""
   else
-    _, timestamp = bepgp:getServerTime()
+    epoch, timestamp = bepgp:getServerTime("%Y-%m-%d")
   end
   table.insert(bepgp.db.char.logs,{timestamp,line})
   self:Refresh()

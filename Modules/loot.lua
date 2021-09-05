@@ -164,8 +164,13 @@ end
 function bepgp_loot:Refresh()
   table.wipe(data)
   for i,v in ipairs(bepgp.db.char.loot) do
+    -- account for old data
+    local timestamp, _ = v[loot_indices.time]
+    if not string.find(timestamp, " ") then
+      _, timestamp = bepgp:getServerTime(nil,nil,timestamp)
+    end
     table.insert(data,{["cols"]={
-      {["value"]=v[loot_indices.time],["color"]=colorSilver},
+      {["value"]=timestamp,["color"]=colorSilver},
       {["value"]=v[loot_indices.item]},
       {["value"]=v[loot_indices.player_c]},
       {["value"]=v[loot_indices.bind]},
@@ -257,7 +262,7 @@ function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemStr
   local player_color = C:Colorize(hexclass,player)
   local off_price = math.floor(price*bepgp.db.profile.discount)
   local epoch, timestamp = bepgp:getServerTime()
-  local data = {[loot_indices.time]=timestamp,[loot_indices.player]=player,[loot_indices.player_c]=player_color,[loot_indices.item]=itemLink,[loot_indices.item_id]=itemID,[loot_indices.bind]=bind,[loot_indices.price]=price,[loot_indices.off_price]=off_price,loot_indices=loot_indices}
+  local data = {[loot_indices.time]=epoch,[loot_indices.player]=player,[loot_indices.player_c]=player_color,[loot_indices.item]=itemLink,[loot_indices.item_id]=itemID,[loot_indices.bind]=bind,[loot_indices.price]=price,[loot_indices.off_price]=off_price,loot_indices=loot_indices}
   LD:Spawn(addonName.."DialogItemPoints", data)
 end
 
@@ -307,7 +312,7 @@ function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,
   local epoch, timestamp = bepgp:getServerTime()
   local data = self:findLootUnassigned(itemID)
   if (data) then
-    data[loot_indices.time] = timestamp
+    data[loot_indices.time] = epoch
     data[loot_indices.player] = tradeTarget
     data[loot_indices.player_c] = target_color
     data.loot_indices = loot_indices

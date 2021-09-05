@@ -42,6 +42,11 @@ bepgp.VARS = {
     [24368] = "Coilfang",
     [25433] = "Warbead",
     [29209] = "Zaxxis",
+    [25463] = "IvoryTusk",
+    [26042] = "OshuPowder",
+    [32569] = "ApexisShard",
+    [32572] = "ApexisCrystal",
+    [32620] = "TimeLostScroll",
   },
 }
 bepgp._playerName = GetUnitName("player")
@@ -2918,12 +2923,14 @@ function bepgp:ClassSpecString(class,spec,text) -- pass it CLASS
   end
 end
 
-function bepgp:getServerTime()
-  local epoch = GetServerTime()
-  local d = date("%b-%d",epoch)
-  local t = date("%H:%M:%S",epoch)
+function bepgp:getServerTime(date_fmt, time_fmt, epoch)
+  local epoch = epoch or GetServerTime()
+  local date_fmt = date_fmt or "%b-%d" -- Mon-dd, alt example: "%Y-%m-%d" > YYYY-MM-DD
+  local time_fmt = time_fmt or "%H:%M:%S" -- HH:mm:SS
+  local d = date(date_fmt,epoch)
+  local t = date(time_fmt,epoch)
   local timestamp = string.format("%s %s",d,t)
-  return epoch, timestamp
+  return tostring(epoch), timestamp
 end
 
 function bepgp:sanitizeNote(epgp,postfix)

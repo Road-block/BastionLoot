@@ -107,9 +107,9 @@ function bepgp_plusroll_logs:OnEnable()
   container:Hide()
   self._container = container
   local headers = {
-    {["name"]=C:Orange(L["Time"]),["width"]=100,["comparesort"]=st_sorter_numeric}, -- server time
+    {["name"]=C:Orange(L["Time"]),["width"]=130,["comparesort"]=st_sorter_numeric}, -- server time
     {["name"]=C:Orange(L["Name"]),["width"]=80,["comparesort"]=st_sorter_numeric}, -- player name
-    {["name"]=C:Orange(L["Item"]),["width"]=200,["comparesort"]=st_sorter_numeric}, -- itemlink
+    {["name"]=C:Orange(L["Item"]),["width"]=170,["comparesort"]=st_sorter_numeric}, -- itemlink
     {["name"]=C:Orange(L["Action"]),["width"]=70,["comparesort"]=st_sorter_numeric}, --tag
     {["name"]="",["width"]=1,["comparesort"]=st_sorter_numeric,["sort"]=ST.SORT_DSC} -- order
   }
@@ -148,11 +148,11 @@ function bepgp_plusroll_logs:addToLog(player,player_c,item,item_id,tag,skipTime)
       table.remove(bepgp.db.char.plusroll_logs,1)
     end
   end
-  local timestamp,_
+  local timestamp,epoch
   if (skipTime) then
     timestamp = ""
   else
-    _, timestamp = bepgp:getServerTime()
+    epoch, timestamp = bepgp:getServerTime("%Y-%m-%d")
   end
   table.insert(bepgp.db.char.plusroll_logs,{timestamp,player,player_c,item,item_id,tag})
   self:Refresh()

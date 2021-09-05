@@ -8,11 +8,11 @@ local Parse = LibStub("LibParse")
 local temp_data = {}
 
 function bepgp_io:OnEnable()
-  self._iostandings = Dump:New(L["Export Standings"],250,290)
-  self._ioloot = Dump:New(L["Export Loot"],500,320)
+  self._iostandings = Dump:New(L["Export Standings"],250,320)
+  self._ioloot = Dump:New(L["Export Loot"],520,320)
   self._iologs = Dump:New(L["Export Logs"],450,320)
-  self._iobrowser = Dump:New(L["Export Favorites"],520,290)
-  self._ioreserves = Dump:New(L["Export Reserves"],450,300)
+  self._iobrowser = Dump:New(L["Export Favorites"],520,320)
+  self._ioreserves = Dump:New(L["Export Reserves"],450,320)
   self._ioroster = Dump:New(L["Export Raid Roster"],250,320)
   local bastionexport,_,_,_,reason = GetAddOnInfo("BastionEPGP_Export")
   if not (reason == "ADDON_MISSING" or reason == "ADDON_DISABLED") then
@@ -61,22 +61,27 @@ end
 function bepgp_io:Loot(loot_indices)
   local keys
   self._ioloot:Clear()
-  self._ioloot:AddLine(string.format("%s;%s;%s;%s",L["Time"],L["Item"],L["Looter"],L["GP Action"]))
+  self._ioloot:AddLine(string.format("%s;%s;%s;%s;%s",L["Time"],L["ItemID"],L["Item"],L["Looter"],L["GP Action"]))
   if self._fileexport then
     table.wipe(temp_data)
-    keys = {L["Time"],L["Item"],L["Looter"],L["GP Action"]}
+    keys = {L["Time"],L["ItemID"],L["Item"],L["Looter"],L["GP Action"]}
   end
   for i,data in ipairs(bepgp.db.char.loot) do
-    local time = data[loot_indices.time]
+    local timestamp, _ = data[loot_indices.time]
+    -- account for old data
+    if not string.find(timestamp, " ") then
+      _, timestamp = bepgp:getServerTime("%Y-%m-%d",nil,timestamp)
+    end
     local item = data[loot_indices.item]
     local itemColor, itemString, itemName, itemID = bepgp:getItemData(item)
     local looter = data[loot_indices.player]
     local action = data[loot_indices.action]
     if action == bepgp.VARS.msgp or action == bepgp.VARS.osgp or action == bepgp.VARS.bankde then
-      self._ioloot:AddLine(string.format("%s;%s;%s;%s",time,itemName,looter,action))
+      self._ioloot:AddLine(string.format("%s;%s;%s;%s;%s",timestamp,itemID,itemName,looter,action))
       if self._fileexport then
         local entry = {}
-        entry[L["Time"]] = time
+        entry[L["Time"]] = timestamp
+        entry[L["ItemID"]] = itemID
         entry[L["Item"]] = itemName
         entry[L["Looter"]] = looter
         entry[L["GP Action"]] = action
@@ -125,7 +130,7 @@ function bepgp_io:Browser(favorites)
     self._iobrowser:AddLine(string.format("%s?%s?%s?%s",url,subtype,tier,price))
     if self._fileexport then
       local entry = {}
-      entry[L["Item"]] = string.format("https://classic.wowhead.com/item=%d",id)
+      entry[L["Item"]] = string.format("https://tbc.wowhead.com/item=%d",id)
       entry[L["Item Type"]] = subtype
       entry[L["Item Pool"]] = tier
       entry[L["Mainspec GP"]] = price

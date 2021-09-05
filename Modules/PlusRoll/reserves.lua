@@ -218,7 +218,7 @@ function bepgp_plusroll_reserves:ToggleLock(value)
     if type(value)=="string" then
       bepgp.db.char.reserves.locked = value
     else
-      local _, timestamp = bepgp:getServerTime()
+      local epoch, timestamp = bepgp:getServerTime("%a,%b-%d")
       bepgp.db.char.reserves.locked = timestamp
     end
     self._container._togglelock:SetDescription(bepgp.db.char.reserves.locked)
