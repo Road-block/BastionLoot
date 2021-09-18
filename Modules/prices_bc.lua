@@ -543,6 +543,8 @@ prices[30238]={0,'T5',{}} -- Chestguard of the Vanquished Hero
 prices[30139]={196,'T5',{{'HUNTER','Marksmanship','HUNTER','Survival','HUNTER','BeastMastery'}}} -- Rift Stalker Hauberk
 prices[30196]={145,'T5',{{'MAGE','Arcane','MAGE','Fire','MAGE','Frost'}}} -- Robes of Tirisfal
 prices[30214]={163,'T5',{{'WARLOCK','Destruction','WARLOCK','Affliction','WARLOCK','Demonology'}}} -- Robe of the Corruptor
+prices[33054]={61,'T5',{{'DRUID','FeralTank'},{'PALADIN','Protection'},{'SHAMAN','Elemental','SHAMAN','Restoration','PRIEST','Holy','WARLOCK','Demonology','MAGE','Arcane','PRIEST','Discipline','DRUID','Balance','PALADIN','Holy','MAGE','Frost','PRIEST','Shadow','DRUID','Restoration','WARLOCK','Affliction','WARLOCK','Destruction','MAGE','Fire','WARRIOR','Protection'}}} -- The Seal of Danzalar
+prices[33058]={77,'T5',{{'SHAMAN','Restoration','PALADIN','Holy','DRUID','Restoration','PRIEST','Discipline','PRIEST','Holy'},{'SHAMAN','Elemental','PALADIN','Protection','WARLOCK','Destruction'}}} -- Band of the Vigilant
 -- BT (IL141-156)
 --- Trash
 prices[34011]={220,'T6',{{'WARRIOR','Protection','PALADIN','Protection'}}} -- Illidari Runeshield
@@ -1056,7 +1058,36 @@ prices[34329]={344,'T6.5',{{'WARRIOR','Arms','WARRIOR','Fury','ROGUE','Combat','
 prices[34337]={707,'T6.5',{{'PRIEST','Holy','DRUID','Restoration','SHAMAN','Restoration','PRIEST','Discipline'}}} -- Golden Staff of the Sin'dorei
 prices[34331]={433,'T6.5',{{'WARRIOR','Arms','WARRIOR','Fury'},{'ROGUE','Subtlety','ROGUE','Combat','WARRIOR','Protection','SHAMAN','Enhancement'}}} -- Hand of the Deceiver
 prices[34336]={360,'T6.5',{{'WARLOCK','Destruction','SHAMAN','Elemental','MAGE','Fire','PRIEST','Shadow','DRUID','Balance','WARLOCK','Demonology','SHAMAN','Restoration','MAGE','Arcane','MAGE','Frost','WARLOCK','Affliction','PRIEST','Discipline','PRIEST','Holy','DRUID','Restoration'}}} -- Sunflare
-
+prices[34212]={260,'T6.5',{{'PALADIN','Holy','SHAMAN','Restoration','DRUID','Restoration'}}} -- Sunglow Vest
+prices[34335]={614,'T6.5',{{'PALADIN','Holy','SHAMAN','Restoration','PRIEST','Holy','PRIEST','Discipline','DRUID','Restoration'}}} -- Hammer of Sanctification
+prices[34381]={243,'T6.5',{{'WARRIOR','Protection','PALADIN','Protection'}}} -- Felstrength Legplates
+prices[34382]={237,'T6.5',{{'PALADIN','Protection','WARRIOR','Protection'}}} -- Judicator's Legguards
+prices[34383]={262,'T6.5',{{'PALADIN','Holy','SHAMAN','Restoration'}}} -- Kilt of Spiritual Reconstruction
+prices[34384]={249,'T6.5',{{'DRUID','Restoration','SHAMAN','Restoration','PALADIN','Holy'}}} -- Breeches of Natural Splendor
+prices[34385]={237,'T6.5',{{'DRUID','FeralCombat','WARRIOR','Fury','WARRIOR','Arms','DRUID','FeralTank'},{'HUNTER','Marksmanship','HUNTER','Survival','WARRIOR','Protection'},{'SHAMAN','Enhancement','ROGUE','Subtlety','ROGUE','Combat','PALADIN','Protection','HUNTER','BeastMastery','PALADIN','Retribution'}}} -- Leggings of the Immortal Beast
+prices[34386]={188,'T6.5',{{'WARLOCK','Destruction','SHAMAN','Restoration','PRIEST','Holy','PRIEST','Discipline','DRUID','Restoration','DRUID','Balance','PALADIN','Holy','WARLOCK','Demonology','MAGE','Arcane','MAGE','Fire','SHAMAN','Elemental','PRIEST','Shadow','WARLOCK','Affliction'},{'MAGE','Frost'}}} -- Pantaloons of Growing Strife
+prices[34388]={136,'T6.5',{{'WARRIOR','Arms','WARRIOR','Fury','PALADIN','Retribution','WARRIOR','Protection','PALADIN','Protection'}}} -- Pauldrons of Berserking
+prices[34389]={169,'T6.5',{{'PALADIN','Protection','WARRIOR','Protection'},{'PALADIN','Holy'}}} -- Spaulders of the Thalassian Defender
+prices[34390]={159,'T6.5',{{'SHAMAN','Elemental','PALADIN','Holy','SHAMAN','Restoration'},{'PALADIN','Protection'}}} -- Erupting Epaulets
+prices[34391]={147,'T6.5',{{'SHAMAN','Restoration','DRUID','Restoration','PALADIN','Holy','DRUID','Balance'},{'SHAMAN','Elemental'}}} -- Spaulders of Devastation
+prices[34392]={172,'T6.5',{{'WARRIOR','Fury','WARRIOR','Arms','DRUID','FeralCombat'},{'SHAMAN','Enhancement','HUNTER','Marksmanship','DRUID','FeralTank','ROGUE','Subtlety','ROGUE','Combat','HUNTER','Survival'},{'PALADIN','Retribution','HUNTER','BeastMastery','WARRIOR','Protection','PALADIN','Protection'}}} -- Demontooth Shoulderpads
+prices[34393]={143,'T6.5',{{'PALADIN','Holy','SHAMAN','Restoration','MAGE','Arcane','PRIEST','Holy','DRUID','Restoration','PRIEST','Discipline','WARLOCK','Demonology','PRIEST','Shadow','SHAMAN','Elemental','WARLOCK','Destruction','DRUID','Balance','MAGE','Fire'},{'MAGE','Frost','WARLOCK','Affliction','PALADIN','Protection'}}} -- Shoulderpads of Knowledge's Pursuit
+prices[34394]={235,'T6.5',{{'PALADIN','Protection','WARRIOR','Protection'}}} -- Breastplate of Agony's Aversion
+prices[34395]={256,'T6.5',{{'PALADIN','Holy'},{'PALADIN','Protection'}}} -- Noble Judicator's Chestguard
+prices[34396]={211,'T6.5',{{'SHAMAN','Elemental','PALADIN','Holy','SHAMAN','Restoration'},{'PALADIN','Protection'}}} -- Garments of Crashing Shores
+prices[34397]={280,'T6.5',{{'WARRIOR','Fury','WARRIOR','Arms','HUNTER','Marksmanship'},{'HUNTER','Survival','DRUID','FeralCombat','ROGUE','Combat','ROGUE','Subtlety','DRUID','FeralTank'},{'HUNTER','BeastMastery','SHAMAN','Enhancement'}}} -- Bladed Chaos Tunic
+prices[34398]={197,'T6.5',{{'SHAMAN','Restoration','DRUID','Restoration','PALADIN','Holy','DRUID','Balance'},{'SHAMAN','Elemental'},{'PALADIN','Protection'}}} -- Utopian Tunic of Elune
+prices[34399]={202,'T6.5',{{'WARLOCK','Destruction','SHAMAN','Restoration','PRIEST','Holy','MAGE','Arcane','PALADIN','Holy','WARLOCK','Demonology','SHAMAN','Elemental','PRIEST','Discipline','DRUID','Restoration','DRUID','Balance','PRIEST','Shadow','MAGE','Fire'},{'WARLOCK','Affliction','MAGE','Frost'},{'PALADIN','Protection'}}} -- Robes of Ghostly Hatred
+prices[34400]={237,'T6.5',{{'WARRIOR','Protection','PALADIN','Protection'}}} -- Crown of Dath'Remar
+prices[34401]={239,'T6.5',{{'PALADIN','Protection','WARRIOR','Protection'}}} -- Helm of Uther's Resolve
+prices[34402]={258,'T6.5',{{'PALADIN','Holy','SHAMAN','Restoration'}}} -- Shroud of Chieftain Ner'zhul
+prices[34403]={190,'T6.5',{{'PALADIN','Holy','SHAMAN','Restoration','DRUID','Restoration','SHAMAN','Elemental','DRUID','Balance'},{'PALADIN','Protection'}}} -- Cover of Ursoc the Mighty
+prices[34404]={191,'T6.5',{{'SHAMAN','Enhancement','DRUID','FeralTank'},{'DRUID','FeralCombat','PALADIN','Retribution','WARRIOR','Fury','WARRIOR','Arms','ROGUE','Subtlety','ROGUE','Combat','PALADIN','Protection','WARRIOR','Protection','HUNTER','BeastMastery'},{'HUNTER','Marksmanship','HUNTER','Survival'}}} -- Mask of the Fury Hunter
+prices[34405]={196,'T6.5',{{'PALADIN','Holy','PRIEST','Holy','DRUID','Restoration','SHAMAN','Restoration','MAGE','Arcane','PRIEST','Discipline','WARLOCK','Demonology','PRIEST','Shadow','WARLOCK','Destruction','DRUID','Balance','SHAMAN','Elemental','MAGE','Fire'},{'MAGE','Frost','WARLOCK','Affliction','PALADIN','Protection'}}} -- Helm of Arcane Purity
+prices[34406]={150,'T6.5',{{'PRIEST','Holy','SHAMAN','Restoration','WARLOCK','Destruction','PRIEST','Discipline','DRUID','Restoration','MAGE','Arcane','WARLOCK','Demonology','DRUID','Balance','PALADIN','Holy'},{'MAGE','Fire','PRIEST','Shadow','SHAMAN','Elemental','WARLOCK','Affliction','MAGE','Frost'}}} -- Gloves of Tyri's Power
+prices[34407]={136,'T6.5',{{'PALADIN','Holy','SHAMAN','Restoration','SHAMAN','Elemental','DRUID','Restoration','DRUID','Balance'},{'PALADIN','Protection'}}} -- Tranquil Moonlight Wraps
+prices[34408]={172,'T6.5',{{'DRUID','FeralCombat','WARRIOR','Fury','WARRIOR','Arms','DRUID','FeralTank'},{'HUNTER','Marksmanship','HUNTER','Survival'},{'WARRIOR','Protection','SHAMAN','Enhancement','ROGUE','Subtlety','ROGUE','Combat','PALADIN','Protection','HUNTER','BeastMastery','PALADIN','Retribution'}}} -- Gloves of the Forest Drifter
+prices[34409]={173,'T6.5',{{'PALADIN','Holy','SHAMAN','Restoration'}}} -- Gauntlets of the Ancient Frostwolf
 --[[ OVERRIDES
 These are not autogenerated.
 Tier tokens, trinkets, items with on use/proc

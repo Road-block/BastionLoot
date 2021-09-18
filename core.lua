@@ -46,6 +46,7 @@ bepgp.VARS = {
     [26042] = "OshuPowder",
     [32569] = "ApexisShard",
     [32572] = "ApexisCrystal",
+    [32388] = "ShadowDust",
     [32620] = "TimeLostScroll",
   },
 }
