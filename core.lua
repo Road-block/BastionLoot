@@ -1118,7 +1118,7 @@ function bepgp:templateCache(id)
     if id == "DialogMemberPoints" then
       self._dialogTemplates[key] = {
         hide_on_escape = true,
-        show_whlle_dead = true,
+        show_while_dead = true,
         text = L["You are assigning %s %s to %s."],
         on_show = function(self)
           local what = self.data[1]
@@ -1199,7 +1199,7 @@ function bepgp:templateCache(id)
     elseif id == "DialogGroupPoints" then
       self._dialogTemplates[key] = {
         hide_on_escape = true,
-        show_whlle_dead = true,
+        show_while_dead = true,
         text = L["You are assigning %s %s to %s."],
         on_show = function(self)
           local amount = bepgp:suggestEPAward()
@@ -1267,7 +1267,7 @@ function bepgp:templateCache(id)
     elseif id == "DialogItemPoints" then
       self._dialogTemplates[key] = {
         hide_on_escape = true,
-        show_whlle_dead = true,
+        show_while_dead = true,
         text = L["%s looted %s. What do you want to do?"],
         on_show = function(self)
           local data = self.data
@@ -1363,7 +1363,7 @@ function bepgp:templateCache(id)
     elseif id == "DialogItemPlusPoints" then
       self._dialogTemplates[key] = {
         hide_on_escape = true,
-        show_whlle_dead = true,
+        show_while_dead = true,
         text = L["%s looted to %s. Mark it as.."],
         on_show = function(self)
           local data = self.data
@@ -1537,7 +1537,7 @@ function bepgp:templateCache(id)
     elseif id == "DialogMemberBid" then
       self._dialogTemplates[key] = {
         hide_on_escape = true,
-        show_whlle_dead = true,
+        show_while_dead = true,
         is_exclusive = true,
         duration = 30,
         text = L["Bid Call for %s [%ds]"],
@@ -1592,7 +1592,7 @@ function bepgp:templateCache(id)
     elseif id == "DialogMemberRoll" then
       self._dialogTemplates[key] = {
         hide_on_escape = true,
-        show_whlle_dead = true,
+        show_while_dead = true,
         is_exclusive = true,
         duration = 30,
         text = L["Bid Call for %s [%ds]"],
@@ -1643,7 +1643,7 @@ function bepgp:templateCache(id)
     elseif id == "DialogSetMain" then
       self._dialogTemplates[key] = {
         hide_on_escape = true,
-        show_whlle_dead = true,
+        show_while_dead = true,
         text = L["Set your main to be able to participate in Standby List EPGP Checks."],
         on_show = function(self)
           self.text:SetText(L["Set your main to be able to participate in Standby List EPGP Checks."])
@@ -1687,7 +1687,7 @@ function bepgp:templateCache(id)
     elseif id == "DialogClearLoot" then
       self._dialogTemplates[key] = {
         hide_on_escape = true,
-        show_whlle_dead = true,
+        show_while_dead = true,
         text = L["There are %d loot drops stored. It is recommended to clear loot info before a new raid. Do you want to clear it now?"],
         on_show = function(self)
           self.text:SetText(L["There are %d loot drops stored. It is recommended to clear loot info before a new raid. Do you want to clear it now?"]:format(self.data))
@@ -1723,7 +1723,7 @@ function bepgp:templateCache(id)
     elseif id == "DialogStandbyCheck" then
       self._dialogTemplates[key] = {
         hide_on_escape = true,
-        show_whlle_dead = true,
+        show_while_dead = true,
         text = L["Standby AFKCheck. Are you available? |cff00ff00%0d|rsec."],
         on_show = function(self)
           self.text:SetText(L["Standby AFKCheck. Are you available? |cff00ff00%0d|rsec."]:format(self.data))
@@ -1759,7 +1759,7 @@ function bepgp:templateCache(id)
     elseif id == "DialogResetPoints" then
       self._dialogTemplates[key] = {
         hide_on_escape = true,
-        show_whlle_dead = true,
+        show_while_dead = true,
         text = L["|cffff0000Are you sure you want to wipe all EPGP data?|r"],
         buttons = {
           {
