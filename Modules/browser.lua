@@ -21,6 +21,18 @@ local progressmap = {
     ["T5"] = {"T5", "T4"},
     ["T4"] = {"T4"}
   }
+local tierlist,tiersort = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"}, {"T6.5","T6","T5","T4"}
+local modlist = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"}
+if bepgp._classic then
+  progressmap = {
+    ["T3"] = {"T3","T2.5","T2","T1.5","T1"},
+    ["T2.5"] = {"T2.5","T2","T1.5","T1"},
+    ["T2"] = {"T2","T1.5","T1"},
+    ["T1"] = {"T1.5","T1"}
+  }
+  tierlist,tiersort = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1.5"]="T1.5",["T1"]="T1"}, {"T3","T2.5","T2","T1.5","T1"}
+  modlist = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1"]="T1"}
+end
 local questionblue = CreateAtlasMarkup("QuestRepeatableTurnin")
 
 local function st_sorter_numeric(st,rowa,rowb,col)
@@ -197,7 +209,6 @@ function bepgp_browser:OnEnable()
   container:AddChild(filterslots)
 
   local filtertier = GUI:Create("Dropdown")
-  local tierlist,tiersort = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"}, {"T6.5","T6","T5","T4"}
   filtertier:SetList(tierlist,tiersort)
   filtertier:SetCallback("OnValueChanged", function(obj, event, choice, checked)
     bepgp_browser:Refresh()
@@ -209,7 +220,6 @@ function bepgp_browser:OnEnable()
   container:AddChild(filtertier)
 
   local modpreview = GUI:Create("Dropdown")
-  local modlist = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"}
   modpreview:SetList(modlist)
   modpreview:SetValue("FAV")
   modpreview:SetCallback("OnValueChanged", function(obj, event, choice)
@@ -334,9 +344,15 @@ function bepgp_browser:CoreInit()
   if not self._initDone then
     progress = bepgp.db.profile.progress
     favorites = bepgp.db.char.favorites
-    local bepgp_prices_bc = bepgp:GetModule(addonName.."_prices_bc")
-    if bepgp_prices_bc and bepgp_prices_bc._prices then
-      pricelist = bepgp_prices_bc._prices
+    local bepgp_prices
+    if bepgp._classic then
+      bepgp_prices = bepgp:GetModule(addonName.. "_prices")
+    end
+    if bepgp._bcc then
+      bepgp_prices = bepgp:GetModule(addonName.."_prices_bc")
+    end
+    if bepgp_prices and bepgp_prices._prices then
+      pricelist = bepgp_prices._prices
     end
     for id,info in pairs(pricelist) do
       local itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = GetItemInfoInstant(id)

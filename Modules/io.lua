@@ -115,6 +115,11 @@ function bepgp_io:Logs()
 end
 
 local url_link = "=HYPERLINK(\"https://tbc.wowhead.com/item=%d\";%q)"
+local wowhead_url = "https://tbc.wowhead.com/item=%d"
+if bepgp._classic then
+  url_link = "=HYPERLINK(\"https://classic.wowhead.com/item=%d\";%q)"
+  wowhead_url = "https://classic.wowhead.com/item=%d"
+end
 function bepgp_io:Browser(favorites)
   local keys
   self._iobrowser:Clear() -- item,itemtype,itempool,gp
@@ -130,7 +135,7 @@ function bepgp_io:Browser(favorites)
     self._iobrowser:AddLine(string.format("%s?%s?%s?%s",url,subtype,tier,price))
     if self._fileexport then
       local entry = {}
-      entry[L["Item"]] = string.format("https://tbc.wowhead.com/item=%d",id)
+      entry[L["Item"]] = string.format(wowhead_url,id)
       entry[L["Item Type"]] = subtype
       entry[L["Item Pool"]] = tier
       entry[L["Mainspec GP"]] = price

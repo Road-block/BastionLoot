@@ -297,7 +297,7 @@ function bepgp_plusroll_bids:captureLootCall(event, text, sender)
     rollkw_found = string.find(lowtext,f)
     if (rollkw_found) then break end
   end
-  sender = Ambiguate(sender,"short") --:gsub("(\-.+)","")
+  sender = Ambiguate(sender,"short")
   local _, itemLink, itemColor, itemString, itemName, itemID
   if (rollkw_found) then
     _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%d]+|h%[.-%]|h|r)")

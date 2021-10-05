@@ -308,7 +308,7 @@ function bepgp_bids:captureLootCall(event, text, sender)
     blacklist_found = string.find(lowtext,f)
     if (blacklist_found) then return end
   end
-  sender = Ambiguate(sender,"short") --:gsub("(\-.+)","")
+  sender = Ambiguate(sender,"short")
   local _, itemLink, itemColor, itemString, itemName, itemID
   for _,f in ipairs(lootCall.whisper) do
     whisperkw_found = string.find(lowtext,f)
@@ -362,7 +362,7 @@ function bepgp_bids:captureBid(event, text, sender)
   if not (running_bid) then return end
   if not (bepgp:raidLeader() or bepgp:lootMaster()) then return end
   if not bepgp_bids.bid_item.itemstring then return end
-  sender = Ambiguate(sender,"short") --:gsub("(\-.+)","")
+  sender = Ambiguate(sender,"short")
   local mskw_found,oskw_found
   local lowtext = string.lower(text)
   for _,f in ipairs(lootBid.ms) do
@@ -378,7 +378,7 @@ function bepgp_bids:captureBid(event, text, sender)
       if bids_blacklist[sender] == nil then
         for i = 1, GetNumGuildMembers(true) do
           local name, rank, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-          name = Ambiguate(name,"short") --:gsub("(\-.+)","")
+          name = Ambiguate(name,"short")
           if name == sender then
             local ep = (bepgp:get_ep(name,officernote) or 0)
             local gp = (bepgp:get_gp(name,officernote) or bepgp.VARS.basegp)

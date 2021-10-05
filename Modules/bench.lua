@@ -251,31 +251,60 @@ function bepgp_bench:BenchBreakDown()
   return out
 end
 
-function bepgp_bench:injectOptions()
-  bepgp.db.char.benchcalc = bepgp.db.char.benchcalc or {
-    raidLimits = {
-      ["T4"] = {
-        total = 25,
-        [_G.TANK] = 3,
-        [_G.HEALER] = 6,
-      },
-      ["T5"] = {
-        total = 25,
-        [_G.TANK] = 3,
-        [_G.HEALER] = 7,
-      },
-      ["T6"] = {
-        total = 25,
-        [_G.TANK] = 4,
-        [_G.HEALER] = 8,
-      },
-      ["T6.5"] = {
-        total = 25,
-        [_G.TANK] = 3,
-        [_G.HEALER] = 9,
-      }
+local limits = {
+  raidLimits = {
+    ["T4"] = {
+      total = 25,
+      [_G.TANK] = 3,
+      [_G.HEALER] = 6,
     },
+    ["T5"] = {
+      total = 25,
+      [_G.TANK] = 3,
+      [_G.HEALER] = 7,
+    },
+    ["T6"] = {
+      total = 25,
+      [_G.TANK] = 4,
+      [_G.HEALER] = 8,
+    },
+    ["T6.5"] = {
+      total = 25,
+      [_G.TANK] = 3,
+      [_G.HEALER] = 9,
+    }
+  },
+}
+
+if bepgp._classic then
+  options.args.raid.values = { ["T3"]=L["4.Naxxramas"], ["T2.5"]=L["3.Temple of Ahn\'Qiraj"], ["T2"]=L["2.Blackwing Lair"], ["T1"]=L["1.Molten Core"]}
+  options.args.raid.sorting = {"T1", "T2", "T2.5", "T3"}
+  limits.raidLimits = {
+    ["T1"] = {
+      total = 40,
+      [_G.TANK] = 3,
+      [_G.HEALER] = 10,
+    },
+    ["T2"] = {
+      total = 40,
+      [_G.TANK] = 4,
+      [_G.HEALER] = 12,
+    },
+    ["T2.5"] = {
+      total = 40,
+      [_G.TANK] = 5,
+      [_G.HEALER] = 14,
+    },
+    ["T3"] = {
+      total = 40,
+      [_G.TANK] = 6,
+      [_G.HEALER] = 15,
+    }
   }
+end
+
+function bepgp_bench:injectOptions()
+  bepgp.db.char.benchcalc = bepgp.db.char.benchcalc or limits
   bepgp._options.args.general.args.benchcalc = options
   --bepgp._options.args.general.args.benchcalc.guiHidden = true
   bepgp._options.args.general.args.benchcalc.cmdHidden = true

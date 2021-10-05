@@ -14,6 +14,13 @@ local G = LibStub("LibGratuity-3.0")
 local T = LibStub("LibQTip-1.0")
 
 bepgp._DEBUG = false
+bepgp._classic = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC) or false
+bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) or false
+--[[
+TODO: Transition to using fully qualified names to support connected realms
+  Ambiguate("name", "mail")
+]]
+
 bepgp.VARS = {
   basegp = 100,
   minep = 0,
@@ -25,6 +32,7 @@ bepgp.VARS = {
   maxloglines = 500,
   prefix = "BASTIONLOOT_PFX",
   pricesystem = "BastionEPGPFixed_bc-1.0",
+  progress = "T4",
   bop = C:Red(L["BoP"]),
   boe = C:Yellow(L["BoE"]),
   nobind = C:White(L["NoBind"]),
@@ -50,7 +58,20 @@ bepgp.VARS = {
     [32620] = "TimeLostScroll",
   },
 }
+if bepgp._classic then
+  bepgp.VARS.minlevel = 55
+  bepgp.VARS.prefix = "BEPGP_PREFIX"
+  bepgp.VARS.pricesystem = "BastionEPGPFixed-1.1"
+  bepgp.VARS.progress = "T1"
+  bepgp.VARS.autoloot = {
+    [21229] = "Insignia",
+    [21230] = "Artifact",
+    [23055] = "Thawing",
+    [22708] = "Ramaladni"
+  }
+end
 bepgp._playerName = GetUnitName("player")
+bepgp._playerFullName = bepgp._playerName
 
 local raidStatus,lastRaidStatus
 local lastUpdate = 0
@@ -177,7 +198,7 @@ local defaults = {
     decay = bepgp.VARS.decay,
     minep = bepgp.VARS.minep,
     system = bepgp.VARS.pricesystem,
-    progress = "T4",
+    progress = bepgp.VARS.progress,
     discount = 0.1,
     altspool = false,
     altpercent = 1.0,
@@ -402,6 +423,21 @@ bepgp.cmdtable = function()
   end
 end
 
+local progress_values = {
+  ["T6.5"]=L["4.Sunwell Plateau"],
+  ["T6"]=L["3.Black Temple, Hyjal"],
+  ["T5"]=L["2.Serpentshrine Cavern, The Eye"],
+  ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]}
+local progress_sorting = {"T6.5", "T6", "T5", "T4"}
+if bepgp._classic then
+  progress_values = {
+    ["T3"]=L["4.Naxxramas"],
+    ["T2.5"]=L["3.Temple of Ahn\'Qiraj"],
+    ["T2"]=L["2.Blackwing Lair"],
+    ["T1"]=L["1.Molten Core"]
+  }
+  progress_sorting = {"T3", "T2.5", "T2", "T1"}
+end
 function bepgp:options()
   if not (self._options) then
     self._options = 
@@ -586,12 +622,8 @@ function bepgp:options()
           bepgp:shareSettings(true)
         end
       end,
-      values = {
-        ["T6.5"]=L["4.Sunwell Plateau"],
-        ["T6"]=L["3.Black Temple, Hyjal"],
-        ["T5"]=L["2.Serpentshrine Cavern, The Eye"],
-        ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]},
-      sorting = {"T6.5", "T6", "T5", "T4"},
+      values = progress_values,
+      sorting = progress_sorting,
     }
     self._options.args.general.args.main.args["report_channel"] = {
       type = "select",
@@ -1787,7 +1819,11 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
   self._versionString = GetAddOnMetadata(addonName,"Version")
   self._websiteString = GetAddOnMetadata(addonName,"X-Website")
   self._labelfull = string.format("%s %s",label,self._versionString)
-  self.db = LibStub("AceDB-3.0"):New("BastionLootDB", defaults)
+  if self._bcc then
+    self.db = LibStub("AceDB-3.0"):New("BastionLootDB", defaults)
+  elseif self._classic then
+    self.db = LibStub("AceDB-3.0"):New("BastionEPGPDB", defaults)
+  end
   self:options()
   self._options.args.profile = ADBO:GetOptionsTable(self.db)
   self._options.args.profile.guiHidden = true
@@ -1813,6 +1849,7 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
 end
 
 function bepgp:OnEnable() -- 2. PLAYER_LOGIN
+  self._playerFullName = string.format("%s-%s", UnitFullName("player"))
   if IsInGuild() then
     local guildname = GetGuildInfo("player")
     if not guildname then
@@ -2774,27 +2811,53 @@ function bepgp:GroupStatus()
   end
 end
 
-local raidZones = {
-  [(GetRealZoneText(532))] = "T4",   -- Karazhan
-  [(GetRealZoneText(565))] = "T4",   -- Gruul's Lair
-  [(GetRealZoneText(544))] = "T4",   -- Magtheridon's Lair
-  [(GetRealZoneText(550))] = "T5",   -- Tempest Keep (The Eye)
-  [(GetRealZoneText(548))] = "T5",   -- Coilfang: Serpentshrine Cavern
-  [(GetRealZoneText(564))] = "T6",   -- Black Temple
-  [(GetRealZoneText(534))] = "T6",   -- The Battle for Mount Hyjal
-  [(GetRealZoneText(568))] = "T5",   -- Zul'Aman
-  [(GetRealZoneText(580))] = "T6.5"  -- The Sunwell
-}
-local mapZones = {
-  [(C_Map.GetAreaInfo(3483))] = {"T4",(C_Map.GetAreaInfo(3547))}, -- Hellfire Peninsula - Throne of Kil'jaeden, Doom Lord Kazzak
-  [(C_Map.GetAreaInfo(3520))] = {"T4",""}, -- Shadowmoon Valley, Doomwalker
-}
-local tier_multipliers = {
-  ["T6.5"] =   {["T6.5"]=1,["T6"]=0.75,["T5"]=0.5,["T4"]=0.25},
-  ["T6"]   =   {["T6.5"]=1,["T6"]=1,   ["T5"]=0.7,["T4"]=0.4},
-  ["T5"]   =   {["T6.5"]=1,["T6"]=1,   ["T5"]=1,  ["T4"]=0.5},
-  ["T4"]   =   {["T6.5"]=1,["T6"]=1,   ["T5"]=1,  ["T4"]=1}
-}
+local raidZones, mapZones, tier_multipliers
+if bepgp._bcc then
+  raidZones = {
+    [(GetRealZoneText(532))] = "T4",   -- Karazhan
+    [(GetRealZoneText(565))] = "T4",   -- Gruul's Lair
+    [(GetRealZoneText(544))] = "T4",   -- Magtheridon's Lair
+    [(GetRealZoneText(550))] = "T5",   -- Tempest Keep (The Eye)
+    [(GetRealZoneText(548))] = "T5",   -- Coilfang: Serpentshrine Cavern
+    [(GetRealZoneText(564))] = "T6",   -- Black Temple
+    [(GetRealZoneText(534))] = "T6",   -- The Battle for Mount Hyjal
+    [(GetRealZoneText(568))] = "T5",   -- Zul'Aman
+    [(GetRealZoneText(580))] = "T6.5"  -- The Sunwell
+  }
+  mapZones = {
+    [(C_Map.GetAreaInfo(3483))] = {"T4",(C_Map.GetAreaInfo(3547))}, -- Hellfire Peninsula - Throne of Kil'jaeden, Doom Lord Kazzak
+    [(C_Map.GetAreaInfo(3520))] = {"T4",""}, -- Shadowmoon Valley, Doomwalker
+  }
+  tier_multipliers = {
+    ["T6.5"] =   {["T6.5"]=1,["T6"]=0.75,["T5"]=0.5,["T4"]=0.25},
+    ["T6"]   =   {["T6.5"]=1,["T6"]=1,   ["T5"]=0.7,["T4"]=0.4},
+    ["T5"]   =   {["T6.5"]=1,["T6"]=1,   ["T5"]=1,  ["T4"]=0.5},
+    ["T4"]   =   {["T6.5"]=1,["T6"]=1,   ["T5"]=1,  ["T4"]=1}
+  }
+end
+if bepgp._classic then
+  raidZones = {
+    [(GetRealZoneText(249))] = "T1.5", -- Onyxia's Lair
+    [(GetRealZoneText(409))] = "T1",   -- Molten Core
+    [(GetRealZoneText(469))] = "T2",   -- Blackwing Lair
+    [(GetRealZoneText(531))] = "T2.5", -- Ahn'Qiraj Temple
+    [(GetRealZoneText(533))] = "T3",   -- Naxxramas
+  }
+  mapZones = {
+    [(C_Map.GetAreaInfo(4))] = {"T1.5",(C_Map.GetAreaInfo(73))}, -- Blasted Lands - Tainted Scar, Kazzak
+    [(C_Map.GetAreaInfo(16))] = {"T1.5",(C_Map.GetAreaInfo(1221))}, -- Azshara - Ruins of Eldarath, Azuregos
+    [(C_Map.GetAreaInfo(10))] = {"T2",(C_Map.GetAreaInfo(856))}, -- Duskwood - Twilight Grove, 4Dragons
+    [(C_Map.GetAreaInfo(47))] = {"T2",(C_Map.GetAreaInfo(356))}, -- The Hinterlands - Seradane, 4Dragons
+    [(C_Map.GetAreaInfo(331))] = {"T2",(C_Map.GetAreaInfo(438))}, -- Ashenvale - Bough Shadow, 4Dragons
+    [(C_Map.GetAreaInfo(357))] = {"T2",(C_Map.GetAreaInfo(1111))}, -- Feralas - Dream Bough, 4Dragons
+  }
+  tier_multipliers = {
+    ["T3"] =   {["T3"]=1,["T2.5"]=0.75,["T2"]=0.5,["T1.5"]=0.25,["T1"]=0.25},
+    ["T2.5"] = {["T3"]=1,["T2.5"]=1,   ["T2"]=0.7,["T1.5"]=0.4, ["T1"]=0.4},
+    ["T2"] =   {["T3"]=1,["T2.5"]=1,   ["T2"]=1,  ["T1.5"]=0.5, ["T1"]=0.5},
+    ["T1"] =   {["T3"]=1,["T2.5"]=1,   ["T2"]=1,  ["T1.5"]=1,   ["T1"]=1}
+  }
+end
 function bepgp:suggestEPAward(debug)
   local currentTier, zoneLoc, checkTier, multiplier
   local inInstance, instanceType = IsInInstance()
@@ -3001,7 +3064,7 @@ end
 function bepgp:verifyGuildMember(name,silent,levelignore)
   for i=1,GetNumGuildMembers(true) do
     local g_name, g_rank, g_rankIndex, g_level, g_class, g_zone, g_note, g_officernote, g_online, g_status, g_eclass, _, _, g_mobile, g_sor, _, g_GUID = GetGuildRosterInfo(i)
-    g_name = Ambiguate(g_name,"short") --:gsub("(\-.+)","")
+    g_name = Ambiguate(g_name,"short")
     local level = tonumber(g_level)
     if (string.lower(name) == string.lower(g_name)) and ((level >= bepgp.VARS.minlevel) or (levelignore and level > 0)) then
       return g_name, g_class, g_rank, g_officernote
@@ -3019,7 +3082,7 @@ function bepgp:getGuildPermissions()
   table.wipe(readPermissions)
   for i=1,GetNumGuildMembers(true) do
     local name, _, rankIndex = GetGuildRosterInfo(i)
-    name = Ambiguate(name,"short") --:gsub("(\-.+)","")
+    name = Ambiguate(name,"short")
     if name == self._playerName then
       speakPermissions.OFFICER = C_GuildInfo.GuildControlGetRankFlags(rankIndex+1)[4]
       readPermissions.OFFICER = C_GuildInfo.GuildControlGetRankFlags(rankIndex+1)[11]
@@ -3072,7 +3135,7 @@ function bepgp:parseAlt(name,officernote)
   else
     for i=1,GetNumGuildMembers(true) do
       local g_name, g_rank, g_rankIndex, g_level, g_class, g_zone, g_note, g_officernote, g_online, g_status, g_eclass, _, _, g_mobile, g_sor, _, g_GUID = GetGuildRosterInfo(i)
-      g_name = Ambiguate(g_name,"short") --:gsub("(\-.+)","")
+      g_name = Ambiguate(g_name,"short")
       if (name == g_name) then
         return self:parseAlt(g_name, g_officernote)
       end
@@ -3086,7 +3149,7 @@ function bepgp:guildCache()
   table.wipe(self.db.profile.alts)
   for i = 1, GetNumGuildMembers(true) do
     local member_name,rank,_,level,class,_,note,officernote,_,_ = GetGuildRosterInfo(i)
-    member_name = Ambiguate((member_name or ""),"short") --:gsub("(\-.+)","")
+    member_name = Ambiguate((member_name or ""),"short")
     if member_name and level and (member_name ~= UNKNOWNOBJECT) and (level > 0) then
       self.db.profile.guildcache[member_name] = {level,rank,class,(officernote or "")}
     end
@@ -3127,7 +3190,7 @@ function bepgp:buildRosterTable()
   for i = 1, numGuildMembers do
     local member_name,rank,_,level,class,_,note,officernote,_,_ = GetGuildRosterInfo(i)
     if member_name and member_name ~= _G.UNKNOWNOBJECT then
-      member_name = Ambiguate(member_name,"short") --:gsub("(\-.+)","")
+      member_name = Ambiguate(member_name,"short")
       local level = tonumber(level)
       local is_raid_level = level and level >= bepgp.VARS.minlevel
       local main, main_class, main_rank = self:parseAlt(member_name,officernote)
@@ -3352,7 +3415,7 @@ function bepgp:get_ep(getname,officernote) -- gets ep by name or note
   end
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    name = Ambiguate(name,"short") --:gsub("(\-.+)","")
+    name = Ambiguate(name,"short")
     local _,_,ep = string.find(officernote,".*{(%d+):%d+}.*")
     if (name==getname) then return tonumber(ep) end
   end
@@ -3365,7 +3428,7 @@ function bepgp:get_gp(getname,officernote) -- gets gp by name or officernote
   end
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    name = Ambiguate(name,"short") --:gsub("(\-.+)","")
+    name = Ambiguate(name,"short")
     local _,_,gp = string.find(officernote,".*{%d+:(%d+)}.*")
     if (name==getname) then return tonumber(gp) end
   end
@@ -3486,7 +3549,7 @@ end
 function bepgp:update_ep(getname,ep)
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    name = Ambiguate(name,"short") --:gsub("(\-.+)","")
+    name = Ambiguate(name,"short")
     if (name==getname) then
       self:update_epgp(ep,nil,i,name,officernote)
     end
@@ -3495,7 +3558,7 @@ end
 function bepgp:update_gp(getname,gp)
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    name = Ambiguate(name,"short") --:gsub("(\-.+)","")
+    name = Ambiguate(name,"short")
     if (name==getname) then
       self:update_epgp(nil,gp,i,name,officernote)
     end
