@@ -395,5 +395,6 @@ You can whisper |cffffd200!PR|r to any higher rank guild member to get back EPGP
   L["Tooltip"] = true
   L["Award GP"] = true
   L["Guild members that win items also get awarded GP."] = true
+  L["ItemID"] = true
 
 bepgp.L = L
