@@ -392,7 +392,7 @@ You can whisper |cffffd200!PR|r to any higher rank guild member to get back EPGP
   L["Show Class and Spec Hints on item tooltips"] = "Show Class and Spec Hints on item tooltips" -- needs translation
   L["Tooltip"] = "Tooltip" -- needs translation
   L["Award GP"] = "Award GP" -- needs translation
-  L["Guild members that win items also get awarded GP."] = "Guild members that win items also get awarded GP." -- needs translation
+  L["|cff00ff00Guild members|r that win items also get awarded GP.\n|cffFFFF33Checked:|r Mainspec AND Reserve wins.\n|cffD3D3D3Grey:|r Reserve wins ONLY."] = "|cff00ff00Guild members|r that win items also get awarded GP.\n|cffFFFF33Checked:|r Mainspec AND Reserve wins.\n|cffD3D3D3Grey:|r Reserve wins ONLY." -- needs translation
   L["ItemID"] = "ItemID" -- needs translation
 
   bepgp.L = L

@@ -848,12 +848,32 @@ function bepgp:options()
     self._options.args.general.args.main.args["plusrollepgp"] = {
       type = "toggle",
       name = L["Award GP"],
-      desc = L["Guild members that win items also get awarded GP."],
+      desc = L["|cff00ff00Guild members|r that win items also get awarded GP.\n|cffFFFF33Checked:|r Mainspec AND Reserve wins.\n|cffD3D3D3Grey:|r Reserve wins ONLY."],
+      descStyle = "inline",
+      width = "full",
       order = 158,
-      get = function() return not not bepgp.db.char.plusrollepgp end,
-      set = function(info,val)
-        bepgp.db.char.plusrollepgp = not bepgp.db.char.plusrollepgp
+      get = function()
+        if bepgp.db.char.plusrollepgp ~= nil then
+          if bepgp.db.char.plusrollepgp == "sr" then
+            return
+          end
+          if bepgp.db.char.plusrollepgp == "msr" then
+            return true
+          end
+        end
+        return bepgp.db.char.plusrollepgp
       end,
+      set = function(info,val)
+        if val == true then
+          bepgp.db.char.plusrollepgp = "msr"
+        elseif val == false then
+          bepgp.db.char.plusrollepgp = false
+        else -- nil / greyed
+          bepgp.db.char.plusrollepgp = "sr"
+        end
+        --bepgp.db.char.plusrollepgp = not bepgp.db.char.plusrollepgp
+      end,
+      tristate = true,
       hidden = function() return not (bepgp.db.char.mode == "plusroll" and bepgp:admin()) end,
     }
   end
@@ -1462,7 +1482,7 @@ function bepgp:templateCache(id)
                   end
                 end
               else -- new entry
-                if bepgp.db.char.plusrollepgp then
+                if (bepgp.db.char.plusrollepgp == nil) or (bepgp.db.char.plusrollepgp == "msr") then
                   local price = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
                   if price and price > 0 then
                     bepgp:givename_gp(player, price)
@@ -1548,7 +1568,7 @@ function bepgp:templateCache(id)
                   end
                 end
               else -- new entry
-                if bepgp.db.char.plusrollepgp then
+                --[[if bepgp.db.char.plusrollepgp then
                   local price = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
                   if price and price > 0 then
                     local off_price = math.floor(price*bepgp.db.profile.discount)
@@ -1556,7 +1576,7 @@ function bepgp:templateCache(id)
                       bepgp:givename_gp(player, off_price)
                     end
                   end
-                end
+                end]]
                 if plusroll_logs then
                   plusroll_logs:addToLog(player,player_c,item,item_id,"os")
                 end
@@ -2864,23 +2884,27 @@ function bepgp:suggestEPAward(debug)
   local inRaid = IsInRaid()
   if inInstance and instanceType == "raid" then
     local locZone, locSubZone = GetRealZoneText(), GetSubZoneText()
-    checkTier = raidZones[locZone]
-    if checkTier then
-      currentTier = checkTier
-    else -- fallback to substring check
-      for zone, tier in pairs(raidZones) do
-        if zone:find(locZone) then
-          currentTier = tier
-          break
+    if locZone then
+      checkTier = raidZones[locZone]
+      if checkTier then
+        currentTier = checkTier
+      else -- fallback to substring check
+        for zone, tier in pairs(raidZones) do
+          if zone:find(locZone) then
+            currentTier = tier
+            break
+          end
         end
       end
     end
   else
     if inRaid then
       local locZone, locSubZone = GetRealZoneText(), GetSubZoneText()
-      checkTier = mapZones[locZone] and mapZones[locZone][1]
-      if checkTier then
-        currentTier = checkTier
+      if locZone then
+        checkTier = mapZones[locZone] and mapZones[locZone][1]
+        if checkTier then
+          currentTier = checkTier
+        end
       end
     end
   end
