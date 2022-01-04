@@ -24,15 +24,18 @@ bepgp_plusroll_bids.paused = 0
 local reserves, plusroll_loot
 
 local roll_sorter_bids = function(a,b)
+  local wincount_sort = not bepgp.db.char.wincountignore
   -- name, color, roll, wincount, pr, rank
-  if a[4] and b[4] and (a[4] ~= b[4]) then
+  if wincount_sort and (a[4] and b[4] and (a[4] ~= b[4])) then
     return a[4] < b[4]
   elseif a[3] and b[3] and (a[3] ~= b[3]) then
     return a[3] > b[3]
   elseif a[5] and b[5] and (a[5] ~= b[5]) then
     return a[5] > b[5]
+  elseif a[4] and b[4] and (a[4] ~= b[4]) then
+    return a[4] < b[4]
   else
-    return a[1]<b[1]
+    return a[1] < b[1]
   end
 end
 

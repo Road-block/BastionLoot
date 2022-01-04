@@ -394,5 +394,7 @@ You can whisper |cffffd200!PR|r to any higher rank guild member to get back EPGP
   L["Award GP"] = "Award GP" -- needs translation
   L["|cff00ff00Guild members|r that win items also get awarded GP.\n|cffFFFF33Checked:|r Mainspec AND Reserve wins.\n|cffD3D3D3Grey:|r Reserve wins ONLY."] = "|cff00ff00Guild members|r that win items also get awarded GP.\n|cffFFFF33Checked:|r Mainspec AND Reserve wins.\n|cffD3D3D3Grey:|r Reserve wins ONLY." -- needs translation
   L["ItemID"] = "ItemID" -- needs translation
+  L["Ignore Wincount"] = "Ignore Wincount" -- needs translation
+  L["Ignore Wincount for bid sorting.\n(plain SR > MS > OS, no +1)"] = "Ignore Wincount for bid sorting.\n(plain SR > MS > OS, no +1)" -- needs translation
 
   bepgp.L = L

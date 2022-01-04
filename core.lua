@@ -232,6 +232,7 @@ local defaults = {
     wincount = {},
     plusroll_logs = {},
     wincountmanual = true,
+    wincountignore = false,
     wincounttoken = true,
     wincountstack = true,
     plusrollepgp = false,
@@ -875,6 +876,17 @@ function bepgp:options()
       end,
       tristate = true,
       hidden = function() return not (bepgp.db.char.mode == "plusroll" and bepgp:admin()) end,
+    }
+    self._options.args.general.args.main.args["wincountignore"] = {
+      type = "toggle",
+      name = L["Ignore Wincount"],
+      desc = L["Ignore Wincount for bid sorting.\n(plain SR > MS > OS, no +1)"],
+      order = 160,
+      get = function() return not not bepgp.db.char.wincountignore end,
+      set = function(info, val)
+        bepgp.db.char.wincountignore = not bepgp.db.char.wincountignore
+      end,
+      hidden = function() return bepgp.db.char.mode ~= "plusroll" end,
     }
   end
   return self._options

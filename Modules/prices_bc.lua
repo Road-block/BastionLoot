@@ -1460,7 +1460,7 @@ prices[34575]={190,'T6.5',{{'ROGUE','Combat','ROGUE','Subtlety'}}} -- Slayer's B
 --- Trinkets
 -- Halfa : using 1.5 mp5 multiplier unless lower is stated
 prices[34430]={169,'T6.5',{{}}} -- Glimmering Naaru Sliver
-prices[32496]={135,'T5',{{}}} -- Memento of Tyrande
+prices[32496]={135,'T6',{{}}} -- Memento of Tyrande
 prices[32483]={128,'T6',{{}}} -- The Skull of Gul'dan
 prices[34428]={94,'T6.5',{{}}} -- Steely Naaru Sliver
 prices[34429]={93,'T6.5',{{}}} -- Shifting Naaru Sliver
