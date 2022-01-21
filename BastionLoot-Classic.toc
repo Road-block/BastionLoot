@@ -1,8 +1,8 @@
-## Interface: 11400
+## Interface: 11401
 ## Author: Roadblock
 ## Title: BastionLoot
 ## Notes: In-game EPGP loot helper, supports standby, main/alt shared pool, minEP, offpecGP. Pluggable price list. Alternative +roll mode.
-## Version: 2.5.6
+## Version: 2.5.7
 ## X-Alpha: 
 ## X-Website: https://github.com/Road-block/BastionLoot
 ## OptionalDeps: Ace3, MizusRaidTracker

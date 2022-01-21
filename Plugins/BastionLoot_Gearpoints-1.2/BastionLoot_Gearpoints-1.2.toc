@@ -1,4 +1,4 @@
-## Interface: 20502
+## Interface: 20503
 ## Title: BastionLoot - GearPoints-1.2 Prices
 ## Notes: GearPoints-1.2 Prices plugin for BastionLoot
 ## Author: Roadblock

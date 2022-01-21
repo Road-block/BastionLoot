@@ -1,16 +1,18 @@
-lightweight tag 9d8d0b3af911f3cf155112d0332438279a07a063 WoW-1.13
-Author:	Yunohu <kernighan@gmail.com>
-Date:	Fri Nov 15 01:30:45 2019 +0000
+tag d90625d2a227db06488f9efff768c7f85aabf15f WoW-2.5.2-release1
+Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:	Tue Oct 19 23:48:21 2021 +0200
 
-commit 9d8d0b3af911f3cf155112d0332438279a07a063
-Author: Yunohu <kernighan@gmail.com>
-Date:   Fri Nov 15 01:30:45 2019 +0000
+Tagged as WoW-2.5.2-release1
 
-    Bump release for GA release
+commit 037fa27f75362f849d0b7cc4a4648ebbbad7f7fe
+Author: Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:   Tue Oct 19 23:46:58 2021 +0200
 
-commit a2d54e38d5699a6dd526b571ec97f5d792a2a96c
-Author: Odica <odica.jaedenar@gmail.com>
-Date:   Fri Nov 8 22:03:37 2019 +0100
+    Updated version in TOC
 
-    Fixed unintended global numNodes in GatherFlightNodeData (issue #6)
+commit 02c02c76c94e928fcf11f4d7aee58646fefa82db
+Author: Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:   Tue Oct 19 23:43:52 2021 +0200
+
+    Added raid Tempest keep (also known as The Eye)
 
