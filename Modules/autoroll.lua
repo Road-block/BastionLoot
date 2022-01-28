@@ -74,6 +74,10 @@ local autoroll = {
     [22376] = true, --Cloth
   },
 }
+if bepgp._bcc then
+  autoroll["dark_heart"] = {[32428] = true} -- Heart of Darkness
+  autoroll["illi_mark"]  = {[32897] = true} -- Mark of the Illidari
+end
 
 function bepgp_autoroll:getAction(itemID)
   local group,item
@@ -244,6 +248,46 @@ local options = {
     },
   }
 }
+if bepgp._bcc then
+  options.args["dark_heart"] = {
+    type = "select",
+    name = "Heart of Darkness", -- we'll delay load updates
+    desc = "Heart of Darkness", -- we'll delay load updates
+    order = 70,
+    get = function() return bepgp.db.char.autoroll.dark_heart end,
+    set = function(info,val) bepgp.db.char.autoroll.dark_heart = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0}
+  }
+  options.args["illi_mark"] = {
+    type = "select",
+    name = "Mark of the Illidari", -- delay loading localized versions
+    desc = "Mark of the Illidari", -- delay load updates
+    order = 80,
+    get = function() return bepgp.db.char.autoroll.illi_mark end,
+    set = function(info,val) bepgp.db.char.autoroll.illi_mark = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0}
+  }
+  local heart = Item:CreateFromItemID(32428)
+  heart:ContinueOnItemLoad(function()
+    local color = heart:GetItemQualityColor().color
+    local itemname = heart:GetItemName()
+    local markup = CreateTextureMarkup(heart:GetItemIcon(), 32, 32, 16, 16, 0, 1, 0, 1)
+    local name = string.format("%s %s",markup,color:WrapTextInColorCode(itemname))
+    options.args["dark_heart"]["name"] = name
+    options.args["dark_heart"]["desc"] = itemname
+  end)
+  local mark = Item:CreateFromItemID(32897)
+  mark:ContinueOnItemLoad(function()
+    local color = mark:GetItemQualityColor().color
+    local itemname = mark:GetItemName()
+    local markup = CreateTextureMarkup(mark:GetItemIcon(), 32, 32, 16, 16, 0, 1, 0, 1)
+    local name = string.format("%s %s",markup,color:WrapTextInColorCode(itemname))
+    options.args["illi_mark"]["name"] = name
+    options.args["illi_mark"]["desc"] = itemname
+  end)
+end
 function bepgp_autoroll:injectOptions() -- .general.args.main.args
   bepgp.db.char.autoroll = bepgp.db.char.autoroll or {
     ["zg_coin"] = 1,
@@ -262,13 +306,16 @@ function bepgp_autoroll:injectOptions() -- .general.args.main.args
     ["class"] = 1,
     ["other"] = 2,
   }
+  if bepgp._bcc then
+    if bepgp.db.char.autoroll.dark_heart == nil then
+      bepgp.db.char.autoroll.dark_heart = -1
+    end
+    if bepgp.db.char.autoroll.illi_mark == nil then
+      bepgp.db.char.autoroll.illi_mark = 1
+    end
+  end
   bepgp._options.args.general.args.autoroll = options
-  -- bepgp._options.args.autoroll = options
-  --bepgp._options.args.general.args.autoroll.guiHidden = true
   bepgp._options.args.general.args.autoroll.cmdHidden = true
-  --bepgp.blizzoptions.autoroll = ACD:AddToBlizOptions(addonName, "Autoroll", addonName, "autoroll")
-  --bepgp.blizzoptions.autoroll:SetParent(InterfaceOptionsFramePanelContainer)
-  --tinsert(InterfaceOptionsFrame.categoryList, bepgp.blizzoptions.autoroll)
 end
 
 function bepgp_autoroll:delayInit()

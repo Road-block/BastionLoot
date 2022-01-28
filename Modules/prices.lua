@@ -819,8 +819,8 @@ function bepgp_prices:OnEnable()
   bepgp:RegisterPriceSystem(name_version,bepgp_prices.GetPrice)
   local mzt,_,_,_,reason = GetAddOnInfo("MizusRaidTracker")
   if not (reason == "ADDON_MISSING" or reason == "ADDON_DISABLED") then
-    local loaded, finished = IsAddOnLoaded("MizusRaidTracker")
-    if loaded then
+    local loading, finished = IsAddOnLoaded("MizusRaidTracker")
+    if loading and finished then
       self:ADDON_LOADED("ADDON_LOADED","MizusRaidTracker")
     else
       self:RegisterEvent("ADDON_LOADED")
