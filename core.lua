@@ -874,7 +874,7 @@ function bepgp:options()
       get = function()
         if bepgp.db.char.plusrollepgp ~= nil then
           if bepgp.db.char.plusrollepgp == "sr" then
-            return
+            return nil
           end
           if bepgp.db.char.plusrollepgp == "msr" then
             return true
@@ -1512,7 +1512,7 @@ function bepgp:templateCache(id)
                   end
                 end
               else -- new entry
-                if (bepgp.db.char.plusrollepgp == nil) or (bepgp.db.char.plusrollepgp == "msr") then
+                if bepgp.db.char.plusrollepgp and (bepgp.db.char.plusrollepgp == "sr" or bepgp.db.char.plusrollepgp == "msr") then
                   local price = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
                   if price and price > 0 then
                     bepgp:givename_gp(player, price)
@@ -1555,7 +1555,7 @@ function bepgp:templateCache(id)
                   end
                 end
               else -- new entry
-                if bepgp.db.char.plusrollepgp then
+                if bepgp.db.char.plusrollepgp and bepgp.db.char.plusrollepgp == "msr" then
                   local price = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
                   if price and price > 0 then
                     bepgp:givename_gp(player, price)

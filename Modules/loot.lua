@@ -346,24 +346,23 @@ function bepgp_loot:tradeLoot()
     self:tradeReset()
   end
 end
-function bepgp_loot:tradeUnit(unit)
+function bepgp_loot:tradeUnit(unit) -- we are trading a unit
   if self:raidLootAdmin() then
     self._tradeTarget = GetUnitName(unit)
   end
 end
-function bepgp_loot:tradeName(event, name)
+function bepgp_loot:tradeName(event, name) -- someone else is trading us
   if self:raidLootAdmin() then
     local name = Ambiguate(name,"short")
     self._tradeTarget = name
   end
 end
-function bepgp_loot:tradeItemAccept()
+function bepgp_loot:tradeItemAccept() -- we accepted trade
   if self:raidLootAdmin() then
-    if not self._tradeTarget then
-      local name = UnitName("npc")
-      if name then
-        self._tradeTarget = Ambiguate(name,"short")
-      end
+    local name = UnitName("NPC")
+    if name and name ~= _G.UNKNOWNOBJECT then
+      name = Ambiguate(name, "short")
+      self._tradeTarget = name
     end
     if self._tradeTarget then
       local itemLink
@@ -373,10 +372,12 @@ function bepgp_loot:tradeItemAccept()
           self._itemLink = itemLink
           self._tmpTrade = self:bopTradeable(id)
           self:RegisterEvent("TRADE_REQUEST_CANCEL","tradeReset")
+          self:RegisterEvent("UI_ERROR_MESSAGE","tradeError")
           self:RegisterEvent("TRADE_CLOSED","awaitTradeLoot")
           return
         end
       end
+      self._tradeTarget = nil
       self._itemLink = nil
       self._tmpTrade = nil
     end
@@ -385,7 +386,24 @@ end
 function bepgp_loot:awaitTradeLoot() -- TRADE_CLOSED
   self._awaitTradeTimer = self:ScheduleTimer("tradeLoot",2)
 end
-function bepgp_loot:tradeReset() -- TRADE_REQUEST_CANCEL
+local tradeErrors = {
+  [LE_GAME_ERR_TRADE_BOUND_ITEM] = true,
+  [LE_GAME_ERR_TRADE_TARGET_BAG_FULL] = true,
+  [LE_GAME_ERR_TRADE_QUEST_ITEM] = true,
+  [LE_GAME_ERR_TRADE_MAX_COUNT_EXCEEDED] = true,
+  [LE_GAME_ERR_TRADE_TARGET_MAX_COUNT_EXCEEDED] = true,
+  [LE_GAME_ERR_TRADE_BAG_FULL] = true,
+  [LE_GAME_ERR_TRADE_TARGET_MAX_LIMIT_CATEGORY_COUNT_EXCEEDED_IS] = true,
+  [LE_GAME_ERR_TRADE_NOT_ON_TAPLIST] = true,
+  [LE_GAME_ERR_TRADE_TEMP_ENCHANT_BOUND] = true,
+}
+function bepgp_loot:tradeError(event,...)
+  local err_type = ...
+  if tradeErrors[err_type] then
+    self:tradeReset()
+  end
+end
+function bepgp_loot:tradeReset() -- TRADE_REQUEST_CANCEL, adhoc
   self._tradeTarget = nil
   self._itemLink = nil
   self._tmpTrade = nil
@@ -395,6 +413,7 @@ function bepgp_loot:tradeReset() -- TRADE_REQUEST_CANCEL
   end
   self:UnregisterEvent("TRADE_REQUEST_CANCEL")
   self:UnregisterEvent("TRADE_CLOSED")
+  self:UnregisterEvent("UI_ERROR_MESSAGE")
 end
 
 function bepgp_loot:bopTradeable(id)
