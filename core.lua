@@ -354,6 +354,13 @@ local admincmd, membercmd =
       sorting = {"epgp", "plusroll"},
       order = 8,
     },
+    options = {
+      type = "execute",
+      name = _G.OPTIONS,
+      desc = L["Admin Options"],
+      func = "toggleOptions",
+      order = 9
+    },
     restart = {
       type = "execute",
       name = L["Restart"],
@@ -362,7 +369,7 @@ local admincmd, membercmd =
         bepgp:OnEnable()
         bepgp:Print(L["Restarted"])
       end,
-      order = 9,
+      order = 10,
     },
   }},
 {type = "group", handler = bepgp, args = {
@@ -423,6 +430,13 @@ local admincmd, membercmd =
       sorting = {"epgp", "plusroll"},
       order = 5,
     },
+    options = {
+      type = "execute",
+      name = _G.OPTIONS,
+      desc = L["Member Options"],
+      func = "toggleOptions",
+      order = 6
+    },
     restart = {
       type = "execute",
       name = L["Restart"],
@@ -431,7 +445,7 @@ local admincmd, membercmd =
         bepgp:OnEnable()
         bepgp:Print(L["Restarted"])
       end,
-      order = 6,
+      order = 7,
     },
   }}
 bepgp.cmdtable = function()
@@ -1099,8 +1113,7 @@ function bepgp.OnLDBClick(obj,button)
     elseif button == "RightButton" then
       bepgp:OpenAdminActions(obj)
     elseif button == "MiddleButton" then
-      InterfaceOptionsFrame_OpenToCategory(bepgp.blizzoptions)
-      InterfaceOptionsFrame_OpenToCategory(bepgp.blizzoptions)
+      bepgp:toggleOptions()
     end
   else
     if button == "LeftButton" then
@@ -1128,9 +1141,35 @@ function bepgp.OnLDBClick(obj,button)
     elseif button == "RightButton" then
       bepgp:OpenAdminActions(obj)
     elseif button == "MiddleButton" then
-      InterfaceOptionsFrame_OpenToCategory(bepgp.blizzoptions)
-      InterfaceOptionsFrame_OpenToCategory(bepgp.blizzoptions)
+      bepgp:toggleOptions()
     end
+  end
+end
+
+function bepgp:optionSize()
+  local mode = self.db.char.mode
+  local is_admin = bepgp:admin()
+  local default_w, default_h = 800, 600
+  local w, h = default_w, default_h
+  if not is_admin then
+    h = h - 90
+    if mode == "plusroll" then
+      h = h - 50
+    end
+  end
+  if mode == "epgp" then
+    h = h - 90
+  end
+  return w, h
+end
+
+function bepgp:toggleOptions()
+  if ACD.OpenFrames[addonName] then
+    ACD:Close(addonName)
+  else
+    local w, h = self:optionSize()
+    ACD:SetDefaultSize(addonName,w,h)
+    ACD:Open(addonName)
   end
 end
 
@@ -1881,11 +1920,7 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
   AC:RegisterOptionsTable(addonName.."_cmd", self.cmdtable, {"bastionloot"})
   AC:RegisterOptionsTable(addonName, self._options)
   self.blizzoptions = ACD:AddToBlizOptions(addonName,nil,nil,"general")
-  --self.blizzoptions:SetParent(InterfaceOptionsFramePanelContainer)
-  --InterfaceOptionsFrame.categoryList = InterfaceOptionsFrame.categoryList or {}
   self.blizzoptions.profile = ACD:AddToBlizOptions(addonName, "Profiles", addonName, "profile")
-  --self.blizzoptions.profile:SetParent(InterfaceOptionsFramePanelContainer)
-  --tinsert(InterfaceOptionsFrame.categoryList, self.blizzoptions.profile)
   self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
   self.db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
   self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
@@ -1934,6 +1969,13 @@ function bepgp:SetMode(mode)
   self:Print(string.format(L["Mode set to %s."],modes[mode]))
   LDBO.icon = icons[mode]
   LDBO.text = string.format("%s [%s]",label,modes[mode])
+  local w, h = bepgp:optionSize()
+  if ACD.OpenFrames[addonName] then
+    local status = ACD:GetStatusTable(addonName)
+    status.height = h
+    ACD:Open(addonName)
+  end
+  ACD:SetDefaultSize(addonName,w,h)
 end
 
 function bepgp:guildInfoSettings()
