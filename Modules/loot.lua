@@ -495,21 +495,24 @@ local bag_addons = {
   ["Tukui"] = false,
 }
 function bepgp_loot:hookBagAddons()
+  local hook_install = false
   for k,v in pairs(bag_addons) do
-    if IsAddOnLoaded(k) and v == false then
+    local loading, finished = IsAddOnLoaded(k)
+    if finished and loading and v == false then
       self:clickHandlerBags(k)
+      hook_install = true
       break
     end
   end
-  if bepgp:admin() then
-    bepgp:debugPrint(L["Bag hooks initialized"])
+  if hook_install then
+    bepgp:debugPrint(format("%s %s",L["EPGP"],L["Bag hooks initialized"]))
   end
 end
 
 function bepgp_loot:hookContainerButton(itemButton)
   if itemButton and not itemButton._bepgpclicks then
     if type(itemButton:GetScript("OnClick")) == "function" then
-      itemButton:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp")
+      itemButton:RegisterForClicks("AnyUp")
       itemButton.RegisterForClicks = nop
       if not self:IsHooked(itemButton,"OnClick") then
         self:SecureHookScript(itemButton,"OnClick", function(frame, button) bepgp_loot:bidCall(frame, button, "container") end)
@@ -639,7 +642,7 @@ function bepgp_loot:clickHandlerLootElvUI()
   if ElvLootFrame and ElvLootFrame.slots then
     for id,button in pairs(ElvLootFrame.slots) do
       if button and not button._bepgpclicks then
-        button:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp")
+        button:RegisterForClicks("AnyUp")
         button.RegisterForClicks = nop
         if not self:IsHooked(button,"OnClick") then
           button.slot = button:GetID()
@@ -670,7 +673,7 @@ function bepgp_loot:clickHandlerLoot()
   for i=1,GetNumLootItems() do
     local button = _G["LootButton"..i]
     if button and not button._bepgpclicks then
-      button:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp")
+      button:RegisterForClicks("AnyUp")
       button.RegisterForClicks = nop
       if not self:IsHooked(button,"OnClick") then
         self:HookScript(button,"OnClick", function(frame, button) bepgp_loot:bidCall(frame, button, "lootframe") end)

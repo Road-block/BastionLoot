@@ -1169,7 +1169,7 @@ function bepgp:toggleOptions()
   else
     local w, h = self:optionSize()
     ACD:SetDefaultSize(addonName,w,h)
-    ACD:Open(addonName)
+    ACD:Open(addonName,"general")
   end
 end
 
