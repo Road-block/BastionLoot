@@ -77,6 +77,7 @@ local autoroll = {
 if bepgp._bcc then
   autoroll["dark_heart"] = {[32428] = true} -- Heart of Darkness
   autoroll["illi_mark"]  = {[32897] = true} -- Mark of the Illidari
+  autoroll["sunmote"] = {[34664] = true} -- Sunmote
 end
 
 function bepgp_autoroll:getAction(itemID)
@@ -269,6 +270,16 @@ if bepgp._bcc then
     values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
     sorting = {-1, 1, 2, 0}
   }
+  options.args["sunmote"] = {
+    type = "select",
+    name = "Sunmote", -- delay loading localized versions
+    desc = "Sunmote", -- delay load updates
+    order = 90,
+    get = function() return bepgp.db.char.autoroll.sunmote end,
+    set = function(info,val) bepgp.db.char.autoroll.sunmote = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0}
+  }
   local heart = Item:CreateFromItemID(32428)
   heart:ContinueOnItemLoad(function()
     local color = heart:GetItemQualityColor().color
@@ -286,6 +297,15 @@ if bepgp._bcc then
     local name = string.format("%s %s",markup,color:WrapTextInColorCode(itemname))
     options.args["illi_mark"]["name"] = name
     options.args["illi_mark"]["desc"] = itemname
+  end)
+  local sunmote = Item:CreateFromItemID(34664)
+  sunmote:ContinueOnItemLoad(function()
+    local color = sunmote:GetItemQualityColor().color
+    local itemname = sunmote:GetItemName()
+    local markup = CreateTextureMarkup(sunmote:GetItemIcon(), 32, 32, 16, 16, 0, 1, 0, 1)
+    local name = string.format("%s %s",markup,color:WrapTextInColorCode(itemname))
+    options.args["sunmote"]["name"] = name
+    options.args["sunmote"]["desc"] = itemname
   end)
 end
 function bepgp_autoroll:injectOptions() -- .general.args.main.args
@@ -312,6 +332,9 @@ function bepgp_autoroll:injectOptions() -- .general.args.main.args
     end
     if bepgp.db.char.autoroll.illi_mark == nil then
       bepgp.db.char.autoroll.illi_mark = 1
+    end
+    if bepgp.db.char.autoroll.sunmote == nil then
+      bepgp.db.char.autoroll.sunmote = 1
     end
   end
   bepgp._options.args.general.args.autoroll = options

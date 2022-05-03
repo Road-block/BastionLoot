@@ -11,7 +11,7 @@ local Item = Item
 local data, subdata = { }, { }
 local colorHighlight = {r=0, g=0, b=0, a=.9}
 local progress, pricelist
-local favorites
+local favorites, tokens
 local tiervalues = { }
 local filter = {["_FAV"]=C:Yellow(L["Favorites"])}
 local locsorted = {"_FAV", "INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CHEST", "INVTYPE_ROBE", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_WRIST", "INVTYPE_HAND", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_CLOAK", "INVTYPE_WEAPON", "INVTYPE_SHIELD", "INVTYPE_2HWEAPON", "INVTYPE_WEAPONMAINHAND", "INVTYPE_WEAPONOFFHAND", "INVTYPE_HOLDABLE", "INVTYPE_RANGED", "INVTYPE_THROWN", "INVTYPE_RANGEDRIGHT", "INVTYPE_RELIC", "INVTYPE_NON_EQUIP"}
@@ -54,10 +54,10 @@ local favorite_options = {
     ["5"] = {
       type = "execute",
       name = fav5,
-      desc = fav5,
+      desc = L["Add Favorite"],
       order = 1,
       func = function(info)
-        favorites[bepgp_browser._selected]=5
+        bepgp_browser:favoriteAdd(5)
         bepgp_browser:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
@@ -65,10 +65,10 @@ local favorite_options = {
     ["4"] = {
       type = "execute",
       name = fav4,
-      desc = fav4,
+      desc = L["Add Favorite"],
       order = 2,
       func = function(info)
-        favorites[bepgp_browser._selected]=4
+        bepgp_browser:favoriteAdd(4)
         bepgp_browser:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
@@ -76,10 +76,10 @@ local favorite_options = {
     ["3"] = {
       type = "execute",
       name = fav3,
-      desc = fav3,
+      desc = L["Add Favorite"],
       order = 3,
       func = function(info)
-        favorites[bepgp_browser._selected]=3
+        bepgp_browser:favoriteAdd(3)
         bepgp_browser:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
@@ -87,10 +87,10 @@ local favorite_options = {
     ["2"] = {
       type = "execute",
       name = fav2,
-      desc = fav2,
+      desc = L["Add Favorite"],
       order = 4,
       func = function(info)
-        favorites[bepgp_browser._selected]=2
+        bepgp_browser:favoriteAdd(2)
         bepgp_browser:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
@@ -98,10 +98,10 @@ local favorite_options = {
     ["1"] = {
       type = "execute",
       name = fav1,
-      desc = fav1,
+      desc = L["Add Favorite"],
       order = 5,
       func = function(info)
-        favorites[bepgp_browser._selected]=1
+        bepgp_browser:favoriteAdd(1)
         bepgp_browser:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
@@ -109,10 +109,9 @@ local favorite_options = {
     ["0"] = {
       type = "execute",
       name = L["Remove Favorite"],
-      desc = L["Remove Favorite"],
       order = 6,
       func = function(info)
-        favorites[bepgp_browser._selected]=nil
+        bepgp_browser:favoriteClear()
         bepgp_browser:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
@@ -265,6 +264,38 @@ function bepgp_browser:Toggle()
   self:Refresh()
 end
 
+function bepgp_browser:favoriteAdd(level)
+  local itemID = bepgp_browser._selected
+  if not itemID then return end
+  favorites[itemID] = level
+  if tokens and tokens.GetToken then
+    local token = tokens:GetToken(itemID)
+    if token then
+      favorites[token] = level
+    end
+  end
+  if tokens and tokens.GetReward then
+    local reward = tokens:GetReward(itemID)
+    if reward and favorites[reward] then
+      favorites[reward] = level
+    end
+  end
+end
+
+function bepgp_browser:favoriteClear()
+  local itemID = bepgp_browser._selected
+  if not itemID then return end
+  favorites[itemID] = nil
+  if tokens and tokens.GetReward then
+    local reward = tokens:GetReward(itemID)
+    if reward then
+      if favorites[reward] then
+        favorites[reward] = nil
+      end
+    end
+  end
+end
+
 local function populate(data,link,subtype,price,tier,favrank,id,slotvalue)
   table.insert(data,{["cols"]={
     {["value"]=link},
@@ -347,9 +378,11 @@ function bepgp_browser:CoreInit()
     local bepgp_prices
     if bepgp._classic then
       bepgp_prices = bepgp:GetModule(addonName.. "_prices")
+      tokens = bepgp:GetModule(addonName.."_tokens")
     end
     if bepgp._bcc then
       bepgp_prices = bepgp:GetModule(addonName.."_prices_bc")
+      tokens = bepgp:GetModule(addonName.."_tokens_bc")
     end
     if bepgp_prices and bepgp_prices._prices then
       pricelist = bepgp_prices._prices

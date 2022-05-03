@@ -266,6 +266,7 @@ Results will print here when done.]]
   L["Favorites"] = true
   L["Filter by Slot"] = true
   L["Filter by Tier"] = true
+  L["Add Favorite"] = true
   L["Remove Favorite"] = true
   L["Modifier Preview"] = true
   L["Right-click a row to add or remove a Favorite."] = true
@@ -398,5 +399,8 @@ You can whisper |cffffd200!PR|r to any higher rank guild member to get back EPGP
   L["ItemID"] = true
   L["Ignore Wincount"] = true
   L["Ignore Wincount for bid sorting.\n(plain SR > MS > OS, no +1)"] = true
+  L["Token Info"] = true
+  L["Show required trade-in Item on item tooltips"] = true
+  L["Token for:"] = true
 
 bepgp.L = L

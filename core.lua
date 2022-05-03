@@ -109,6 +109,7 @@ local modes = {
   epgp = L["EPGP"],
   plusroll = L["PlusRoll"]
 }
+local item_swaps = {}
 local switch_icon = "|TInterface\\Buttons\\UI-OptionsButton:16|t"..L["Switch Mode"]
 do
   for i=1,40 do
@@ -234,6 +235,7 @@ local defaults = {
       mlinfo = true,
       favinfo = true,
       useinfo = false,
+      tkninfo = true,
     },
     classgroup = false,
     standby = false,
@@ -541,6 +543,17 @@ function bepgp:options()
       get = function() return not not bepgp.db.char.tooltip.useinfo end,
       set = function(info, val)
         bepgp.db.char.tooltip.useinfo = not bepgp.db.char.tooltip.useinfo
+        bepgp:tooltipHook()
+      end,
+    }
+    self._options.args.general.args.ttip.args["tkninfo"] = {
+      type = "toggle",
+      name = L["Token Info"],
+      desc = L["Show required trade-in Item on item tooltips"],
+      order = 14,
+      get = function() return not not bepgp.db.char.tooltip.tkninfo end,
+      set = function(info, val)
+        bepgp.db.char.tooltip.tkninfo = not bepgp.db.char.tooltip.tkninfo
         bepgp:tooltipHook()
       end,
     }
@@ -2077,7 +2090,7 @@ end
 
 function bepgp:tooltipHook()
   local tipOptionGroup = bepgp.db.char.tooltip
-  local status = tipOptionGroup.prinfo or tipOptionGroup.mlinfo or tipOptionGroup.favinfo or tipOptionGroup.useinfo
+  local status = tipOptionGroup.prinfo or tipOptionGroup.mlinfo or tipOptionGroup.favinfo or tipOptionGroup.useinfo or tipOptionGroup.tkninfo
   if status then
     -- tooltip
     if not self:IsHooked(GameTooltip, "OnTooltipSetItem") then
@@ -2093,6 +2106,36 @@ function bepgp:tooltipHook()
     end
     if self:IsHooked(ItemRefTooltip, "OnTooltipSetItem") then
       self:Unhook(ItemRefTooltip, "OnTooltipSetItem")
+    end
+  end
+  if tipOptionGroup.tkninfo then
+    self:RegisterEvent("MODIFIER_STATE_CHANGED", "TipItemSwap")
+  else
+    self:UnregisterEvent("MODIFIER_STATE_CHANGED")
+  end
+end
+
+function bepgp:TipItemSwap(event,button,state)
+  if not state then return end
+  local preview_pressed = IsModifiedClick("DRESSUP")
+  if preview_pressed then
+    local name, link = GameTooltip:GetItem()
+    if name and link then
+      local item = Item:CreateFromItemLink(link)
+      local itemid = item:GetItemID()
+      if item_swaps[itemid] then
+        GameTooltip:ClearLines()
+        GameTooltip:SetHyperlink(item_swaps[itemid])
+      end
+    end
+    name, link = ItemRefTooltip:GetItem()
+    if name and link then
+      local item = Item:CreateFromItemLink(link)
+      local itemid = item:GetItemID()
+      if item_swaps[itemid] then
+        ItemRefTooltip:ClearLines()
+        ItemRefTooltip:SetHyperlink(item_swaps[itemid])
+      end
     end
   end
 end
@@ -2138,6 +2181,18 @@ function bepgp:AddTipInfo(tooltip,...)
     local favorite = self.db.char.favorites[itemid]
     if tipOptionGroup.favinfo and favorite  then
       tooltip:AddLine(self._favmap[favorite])
+    end
+    if tipOptionGroup.tkninfo and self.TokensItemString and self.RewardItemString then
+      wipe(item_swaps)
+      local required_line = self:TokensItemString(itemid)
+      local reward_line = self:RewardItemString(itemid)
+      if required_line then
+        tooltip:AddDoubleLine(_G.CTRL_KEY,_G.SOURCE..required_line)
+        item_swaps[itemid] = required_line
+      elseif reward_line then
+        tooltip:AddDoubleLine(_G.CTRL_KEY,L["Token for:"]..reward_line)
+        item_swaps[itemid] = reward_line
+      end
     end
     if tipOptionGroup.useinfo and (type(useful)=="table" and #(useful)>0) then
       local line1,line2,line3 = "","",""

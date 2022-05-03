@@ -268,6 +268,7 @@ if not L then return end
   L["Favorites"] = "Favorites" -- needs translation
   L["Filter by Slot"] = "Filter by Slot" -- needs translation
   L["Filter by Tier"] = "Filter by Tier" -- needs translation
+  L["Add Favorite"] = "Add Favorite" -- needs translation
   L["Remove Favorite"] = "Remove Favorite" -- needs translation
   L["Modifier Preview"] = "Modifier Preview" -- needs translation
   L["Right-click a row to add or remove a Favorite."] = "Right-click a row to add or remove a Favorite." -- needs translation
@@ -396,5 +397,8 @@ You can whisper |cffffd200!PR|r to any higher rank guild member to get back EPGP
   L["ItemID"] = "ItemID" -- needs translation
   L["Ignore Wincount"] = "Ignore Wincount" -- needs translation
   L["Ignore Wincount for bid sorting.\n(plain SR > MS > OS, no +1)"] = "Ignore Wincount for bid sorting.\n(plain SR > MS > OS, no +1)" -- needs translation
+  L["Token Info"] = "Token Info" -- needs translation
+  L["Show required trade-in Item on item tooltips"] = "Show required trade-in Item on item tooltips" -- needs translation
+  L["Token for:"] = "Token for:" -- needs translation
 
   bepgp.L = L
