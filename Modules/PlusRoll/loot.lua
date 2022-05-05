@@ -145,6 +145,7 @@ function bepgp_plusroll_loot:OnEnable()
   -- bid call handlers
   self:SecureHook("LootFrame_Update","clickHandlerLoot")
   self:clickHandlerMasterLoot()
+  self:SecureHook("ToggleBag","clickHandlerBags") -- default bags
   self._bagsTimer = self:ScheduleTimer("hookBagAddons",30)
   self._lootTimer = self:ScheduleTimer("hookLootAddons",20)
 
@@ -451,7 +452,7 @@ function bepgp_plusroll_loot:hookBagAddons()
     if finished and loading and v == false then
       self:clickHandlerBags(k)
       hook_install = true
-      break
+      -- break -- some players might have multiple bag addons enabled, be greedy and hook all available
     end
   end
   if hook_install then

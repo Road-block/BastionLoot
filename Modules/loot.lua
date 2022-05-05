@@ -501,7 +501,7 @@ function bepgp_loot:hookBagAddons()
     if finished and loading and v == false then
       self:clickHandlerBags(k)
       hook_install = true
-      break
+      -- break -- some players might have multiple bag addons, hook any found
     end
   end
   if hook_install then

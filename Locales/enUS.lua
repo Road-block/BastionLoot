@@ -340,7 +340,7 @@ Results will print here when done.]]
   L.STANDINGS_OVERLAY = [[
 Your current guild rank does not show EPGP standings.
 
-You can whisper |cffffd200!PR|r to any higher rank guild member to get back EPGP standings.]]
+You can whisper |cffffd200!PR Name|r to any higher rank guild member with the addon to get back EPGP standings.]]
   L["{bepgp}%s has: %d EP %d GP %.03f PR."] = true
   L["{bepgp}You have: %d EP %d GP %.03f PR"] = true
   L["|cffff7f00Ctrl+Shift+Click|r to toggle Wincount."] = true

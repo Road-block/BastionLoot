@@ -1,18 +1,18 @@
-tag d90625d2a227db06488f9efff768c7f85aabf15f WoW-2.5.2-release1
+tag f2a6b7c1c7d111a95836449b125a4b9f6d7da35b WoW-2.5.3-release1
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Tue Oct 19 23:48:21 2021 +0200
+Date:	Sat Mar 5 18:41:46 2022 +0100
 
-Tagged as WoW-2.5.2-release1
+Tagged as WoW-2.5.3-release1
 
-commit 037fa27f75362f849d0b7cc4a4648ebbbad7f7fe
+commit ba20f99a6aab7f83b2c9aaef141bc9c2dd77d91b
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Tue Oct 19 23:46:58 2021 +0200
+Date:   Sat Mar 5 18:40:25 2022 +0100
 
-    Updated version in TOC
+    (another commit to get the packager going)
 
-commit 02c02c76c94e928fcf11f4d7aee58646fefa82db
+commit 9b068cbc55eb9f4363437476cf819ec145492768
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Tue Oct 19 23:43:52 2021 +0200
+Date:   Sat Mar 5 18:26:18 2022 +0100
 
-    Added raid Tempest keep (also known as The Eye)
+    (commit for release tag)
 

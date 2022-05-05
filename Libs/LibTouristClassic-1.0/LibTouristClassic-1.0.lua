@@ -1,6 +1,6 @@
 --[[
 Name: LibTouristClassic-1.0
-Revision: $Rev: 245 $
+Revision: $Rev: 248 $
 Author(s): Odica, Mishikal1; based on LibTourist-3.0
 Documentation: https://www.wowace.com/projects/libtourist-1-0/pages/api-reference
 Git: https://repos.wowace.com/wow/libtourist-classic libtourist-classic
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTouristClassic-1.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 245 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 248 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -219,8 +219,41 @@ local flightNodeIgnoreList = {
 --                                            Localization                                            --
 --------------------------------------------------------------------------------------------------------
 
+-- UIMapIDs as used by C_Map.GetMapInfo
 local MapIdLookupTable = {
+    [213] = "Ragefire Chasm",
+    [219] = "Zul'Farrak",
+    [220] = "The Temple of Atal'Hakkar",
+    [221] = "Blackfathom Deeps",
+    [222] = "Blackfathom Deeps",
+    [223] = "Blackfathom Deeps",
+    [225] = "The Stockade",
+    [226] = "Gnomeregan",
+    [227] = "Gnomeregan",
+    [228] = "Gnomeregan",
+    [229] = "Gnomeregan",
+    [230] = "Uldaman",
+    [231] = "Uldaman",
+    [232] = "Molten Core",
+    [233] = "Zul'Gurub",
+    [234] = "Dire Maul",
+    [235] = "Dire Maul",
+    [236] = "Dire Maul",
+    [237] = "Dire Maul",
+    [238] = "Dire Maul",
+    [239] = "Dire Maul",
+    [240] = "Dire Maul",
+    [242] = "Blackrock Depths",
+    [243] = "Blackrock Depths",
     [246] = "The Shattered Halls",
+    [247] = "Ruins of Ahn'Qiraj",
+    [248] = "Onyxia's Lair",
+    [250] = "Blackrock Spire",
+    [251] = "Blackrock Spire",
+    [252] = "Blackrock Spire",
+    [253] = "Blackrock Spire",
+    [254] = "Blackrock Spire",
+    [255] = "Blackrock Spire",
     [256] = "Auchenai Crypts",
     [257] = "Auchenai Crypts",
     [258] = "Sethekk Halls",
@@ -238,15 +271,70 @@ local MapIdLookupTable = {
     [270] = "The Arcatraz",
     [271] = "The Arcatraz",
     [272] = "Mana-Tombs",
+    [273] = "The Black Morass",
+    [274] = "Old Hillsbrad Foothills",
+    [279] = "Wailing Caverns",
+    [280] = "Maraudon",
+    [281] = "Maraudon",
+    [287] = "Blackwing Lair",
+    [288] = "Blackwing Lair",
+    [289] = "Blackwing Lair",
+    [290] = "Blackwing Lair",
+    [291] = "The Deadmines",
+    [292] = "The Deadmines",
+    [300] = "Razorfen Downs",
+    [301] = "Razorfen Kraul",
+    [302] = "Scarlet Monastery",
+    [303] = "Scarlet Monastery",
+    [304] = "Scarlet Monastery",
+    [305] = "Scarlet Monastery",
+    [306] = "ScholomanceOLD",
+    [307] = "ScholomanceOLD",
+    [308] = "ScholomanceOLD",
+    [309] = "ScholomanceOLD",
+    [310] = "Shadowfang Keep",
+    [311] = "Shadowfang Keep",
+    [312] = "Shadowfang Keep",
+    [313] = "Shadowfang Keep",
+    [314] = "Shadowfang Keep",
+    [315] = "Shadowfang Keep",
+    [316] = "Shadowfang Keep",
+    [317] = "Stratholme",
+    [318] = "Stratholme",
+    [319] = "Ahn'Qiraj",
+    [320] = "Ahn'Qiraj",
+    [321] = "Ahn'Qiraj",
+    [329] = "Hyjal Summit",
     [330] = "Gruul's Lair",
     [331] = "Magtheridon's Lair",
     [332] = "Serpentshrine Cavern",
+    [333] = "Zul'Aman",
     [334] = "Tempest Keep",
+    [335] = "Sunwell Plateau",
+    [336] = "Sunwell Plateau",
+    [337] = "Zul'Gurub",
     [339] = "Black Temple",
     [347] = "Hellfire Ramparts",
+    [350] = "Karazhan",
+    [351] = "Karazhan",
+    [352] = "Karazhan",
+    [353] = "Karazhan",
+    [354] = "Karazhan",
+    [355] = "Karazhan",
+    [356] = "Karazhan",
+    [357] = "Karazhan",
+    [358] = "Karazhan",
+    [359] = "Karazhan",
+    [360] = "Karazhan",
+    [361] = "Karazhan",
+    [362] = "Karazhan",
+    [363] = "Karazhan",
+    [364] = "Karazhan",
+    [365] = "Karazhan",
+    [366] = "Karazhan",
     [946] = "Cosmic",
     [947] = "Azeroth",
-	[987] = "Outland",
+    [987] = "Outland",
     [1411] = "Durotar",
     [1412] = "Mulgore",
     [1413] = "The Barrens",
@@ -319,24 +407,36 @@ local MapIdLookupTable = {
     [1955] = "Shattrath City",
     [1956] = "Eye of the Storm",
     [1957] = "Isle of Quel'Danas",
--- NOTE: The following are InstanceIDs, as Instances do not have a uiMapID in Classic
-    [30] = "Alteric Valley",
+}
+
+-- InstanceIDs as used by GetRealZoneText
+local InstanceIdLookupTable = {
+    [1] = "Kalimdor",
+    [13] = "Test Dungeon",
+    [25] = "Scott Test",
+    [29] = "CashTest",
+    [30] = "Alterac Valley",
     [33] = "Shadowfang Keep",
-    [34] = "The Stockade",
-    [36] = "The Deadmines",
+    [34] = "Stormwind Stockade",
+    [35] = "<unused>StormwindPrison",
+    [36] = "Deadmines",
+    [37] = "Azshara Crater",
+    [42] = "Collin's Test",
     [43] = "Wailing Caverns",
+    [44] = "<unused> Monastery",
     [47] = "Razorfen Kraul",
     [48] = "Blackfathom Deeps",
     [70] = "Uldaman",
     [90] = "Gnomeregan",
-    [109] = "The Temple of Atal'Hakkar",
+    [109] = "Sunken Temple",
     [129] = "Razorfen Downs",
+    [169] = "Emerald Dream",
     [189] = "Scarlet Monastery",
     [209] = "Zul'Farrak",
     [229] = "Blackrock Spire",
     [230] = "Blackrock Depths",
     [249] = "Onyxia's Lair",
---	[269] = "Opening of the Dark Portal", -- duplicate with The Arcatraz, above
+    [269] = "Opening of the Dark Portal",
     [289] = "Scholomance",
     [309] = "Zul'Gurub",
     [329] = "Stratholme",
@@ -345,11 +445,14 @@ local MapIdLookupTable = {
     [389] = "Ragefire Chasm",
     [409] = "Molten Core",
     [429] = "Dire Maul",
+    [449] = "Alliance PVP Barracks",
+    [450] = "Horde PVP Barracks",
+    [451] = "Development Land",
     [469] = "Blackwing Lair",
     [489] = "Warsong Gulch",
     [509] = "Ruins of Ahn'Qiraj",
     [529] = "Arathi Basin",
-	[530] = "Outland",
+    [530] = "Outland",
     [531] = "Ahn'Qiraj Temple",
     [532] = "Karazhan",
     [533] = "Naxxramas",
@@ -389,9 +492,9 @@ local MapIdLookupTable = {
     [590] = "Transport: Grom'Gol to Undercity",
     [591] = "Transport: Undercity to Orgrimmar",
     [593] = "Transport: Booty Bay to Ratchet",
-    [1004] = "Scarlet Monastery",
-    [1007] = "Scholomance",
+    [598] = "Sunwell Fix (Unused)",
 }
+
 
 
 -- These zones are known in LibTourist's zones collection but are not returned by C_Map.GetMapInfo.
@@ -406,7 +509,7 @@ local zoneTranslation = {
 		[2367] = "Old Hillsbrad Foothills",
 		[3606] = "Hyjal Summit",
 		[4075] = "Sunwell Plateau",
-		[4131] = "Magisters' Terrace",
+--		[4131] = "Magister's Terrace",
 		
 		-- Complexes
 		[1445] = "Blackrock Mountain",
@@ -425,7 +528,7 @@ local zoneTranslation = {
 		[2367] = "Vorgebirge des Alten Hügellands",
 		[3606] = "Hyjalgipfel",
 		[4075] = "Sonnenbrunnenplateau",
-		[4131] = "Terrasse der Magister",
+--		[4131] = "Terrasse der Magister",
 		-- Complexes
 		[1445] = "Der Schwarzfels",
 		[3545] = "Höllenfeuerzitadelle",
@@ -443,7 +546,7 @@ local zoneTranslation = {
 		[2367] = "Antiguas Laderas de Trabalomas",
 		[3606] = "La Cima Hyjal",
 		[4075] = "Meseta de La Fuente del Sol",
-		[4131] = "Bancal del Magister",
+--		[4131] = "Bancal del Magister",
 		-- Complexes
 		[1445] = "Montaña Roca Negra",
 		[3545] = "Ciudadela del Fuego Infernal",
@@ -461,7 +564,7 @@ local zoneTranslation = {
 		[2367] = "Antiguas Laderas de Trabalomas",
 		[3606] = "La Cima Hyjal",
 		[4075] = "Meseta de La Fuente del Sol",
-		[4131] = "Bancal del Magister",
+--		[4131] = "Bancal del Magister",
 		-- Complexes
 		[1445] = "Montaña Roca Negra",
 		[3545] = "Ciudadela del Fuego Infernal",
@@ -479,7 +582,7 @@ local zoneTranslation = {
 		[2367] = "Contreforts de Hautebrande d'antan",
 		[3606] = "Sommet d'Hyjal",
 		[4075] = "Plateau du Puits de soleil",
-		[4131] = "Terrasse des Magistères",
+--		[4131] = "Terrasse des Magistères",
 		-- Complexes
 		[1445] = "Mont Rochenoire",
 		[3545] = "Citadelle des Flammes infernales",
@@ -497,7 +600,7 @@ local zoneTranslation = {
 		[2367] = "Antiche colline pedemontane di Hillsbrad",
 		[3606] = "Vertice Hyjal",
 		[4075] = "Altopiano del sole",
-		[4131] = "Terrazza dei Magistri",
+--		[4131] = "Terrazza dei Magistri",
 		-- Complexes
 		[1445] = "Massiccio Roccianera",
 		[3545] = "Cittadella del Fuoco Infernale",
@@ -515,7 +618,7 @@ local zoneTranslation = {
 		[2367] = "옛 힐스브래드 구릉지",
 		[3606] = "하이잘 정상",
 		[4075] = "태양샘 고원",
-		[4131] = "마법학자의 정원",
+--		[4131] = "마법학자의 정원",
 		-- Complexes
 		[1445] = "검은바위 산",
 		[3545] = "지옥불 성채",
@@ -533,7 +636,7 @@ local zoneTranslation = {
 		[2367] = "Antigo Contraforte de Eira dos Montes",
 		[3606] = "Pico Hyjal",
 		[4075] = "Platô da Nascente do Sol",
-		[4131] = "Terraço dos Magísteres",		
+--		[4131] = "Terraço dos Magísteres",		
 		-- Complexes
 		[1445] = "Montanha Rocha Negra",
 		[3545] = "Cidadela Fogo do Inferno",
@@ -551,7 +654,7 @@ local zoneTranslation = {
 		[2367] = "Старые предгорья Хилсбрада",
 		[3606] = "Вершина Хиджала",
 		[4075] = "Плато Солнечного Колодца",
-		[4131] = "Терраса Магистров",		
+--		[4131] = "Терраса Магистров",		
 		-- Complexes
 		[1445] = "Черная гора",
 		[3545] = "Цитадель Адского Пламени",
@@ -569,7 +672,7 @@ local zoneTranslation = {
 		[2367] = "旧希尔斯布莱德丘陵",
 		[3606] = "海加尔峰",
 		[4075] = "太阳之井高地",
-		[4131] = "魔导师平台",
+--		[4131] = "魔导师平台",
 		-- Complexes
 		[1445] = "黑石山",
 		[3545] = "地狱火堡垒",
@@ -587,7 +690,7 @@ local zoneTranslation = {
 		[2367] = "希爾斯布萊德丘陵舊址",
 		[3606] = "海加爾山",
 		[4075] = "太陽之井高地",
-		[4131] = "博學者殿堂",
+--		[4131] = "博學者殿堂",
 		-- Complexes
 		[1445] = "黑石山",
 		[3545] = "地獄火堡壘",
@@ -621,19 +724,21 @@ local function CreateLocalizedZoneNameLookups()
 					BZR[localizedZoneName] = englishZoneName
 				end
 			else
-				-- Not in lookup
+				-- Not in UIMap ID lookup
 				trace("|r|cffff4422! -- Tourist:|r English name not found in lookup for uiMapID "..tostring(uiMapID).." ("..tostring(localizedZoneName)..")" )
 			end
 		end
 	end
 
+	-- Some but not all instances are returned by C_Map.GetMapInfo.
+	-- Try to get missing localized names using the Instance ID lookup and GetRealZoneText:
 	for instanceID = 1, 2000, 1 do
 		localizedZoneName = GetRealZoneText(instanceID);
 		if localizedZoneName and localizedZoneName ~= ""  then
-			englishZoneName = MapIdLookupTable[instanceID]
+			englishZoneName = InstanceIdLookupTable[instanceID]
 
 			if englishZoneName then
-				-- Add combination of English and localized name to lookup tables
+				-- Add combination of English and localized name to lookup tables, if missing
 				if not BZ[englishZoneName] then
 					BZ[englishZoneName] = localizedZoneName
 				end
@@ -641,7 +746,7 @@ local function CreateLocalizedZoneNameLookups()
 					BZR[localizedZoneName] = englishZoneName
 				end
 			else
-				-- Not in lookup
+				-- Not in instance ID lookup
 				trace("|r|cffff4422! -- Tourist:|r English name not found in lookup for instanceID "..tostring(instanceID).." ("..tostring(localizedZoneName)..")" )
 			end
 		end
@@ -812,7 +917,10 @@ function Tourist:GetMapIDLookupTable()
 	return MapIdLookupTable
 end
 
-
+-- Returns the lookup table with all instanceIDs as key and the English instance name as value.
+function Tourist:GetInstanceIDLookupTable()
+	return InstanceIdLookupTable
+end
 
 
 -- HELPER AND LOOKUP FUNCTIONS -------------------------------------------------------------
@@ -1498,7 +1606,7 @@ local function initZonesInstances()
 	if not zonesInstances then
 		zonesInstances = {}
 		for zone, v in pairs(lows) do
-			if types[zone] ~= "Transport" and types[zone] ~= "Portal" then
+			if types[zone] ~= "Transport" and types[zone] ~= "Portal" and types[zone] ~= "Continent" then
 				zonesInstances[zone] = true
 			end
 		end
@@ -1907,7 +2015,7 @@ setmetatable(cost, {
 		elseif factions[vertex] == (isHorde and "Alliance" or "Horde") then
 			-- Hostile
 			if types[vertex] == "Portal" then
-				price = price * 1000
+				price = inf
 			else 
 				if types[vertex] == "City" then
 					price = price * 10
@@ -1919,7 +2027,7 @@ setmetatable(cost, {
 
 		if continents[vertex] == Outland and playerLevel < 58 then
 			-- Avoid using Shattrath portals in paths between Azeroth locations when they're not yet available
-			price = price * 1000
+			price = inf
 		end
 
 		if types[vertex] == "Transport" then
@@ -1931,22 +2039,19 @@ setmetatable(cost, {
 	end
 })
 
--- This function tries to calculate the most optimal path between alpha and bravo
--- by foot or ground mount, that is, without using a flying mount or a taxi service.
--- The return value is an iteration that gives a travel advice in the form of a list
--- of zones and transports to follow in order to get from alpha to bravo.
--- The function tries to avoid hostile zones by calculating a "price" for each possible
+-- This function tries to calculate the most optimal path between alpha and bravo 
+-- by foot or ground mount, that is, without using a flying mount or a taxi service (with a few exceptions). 
+-- The return value is an iteration that gives a travel advice in the form of a list 
+-- of zones, transports and portals to follow in order to get from alpha to bravo. 
+-- The function tries to avoid hostile zones by calculating a "price" for each possible 
 -- route. The price calculation takes zone level, faction and type into account.
 -- See metatable above for the 'pricing' mechanism.
 function Tourist:IteratePath(alpha, bravo)
-	alpha = Tourist:GetMapNameByIDAlt(alpha) or alpha
-	bravo = Tourist:GetMapNameByIDAlt(bravo) or bravo
+	alpha = Tourist:GetMapNameByIDAlt(alpha) or alpha  -- departure zone
+	bravo = Tourist:GetMapNameByIDAlt(bravo) or bravo  -- destination zone
 
 	if paths[alpha] == nil or paths[bravo] == nil then
-		return retNil
-	end
-
-	if playerLevel < 58 and (continents[alpha] == Outland or continents[bravo] == Outland) then
+		-- departure zone and destination zone must both have at least one path
 		return retNil
 	end
 
@@ -1959,54 +2064,85 @@ function Tourist:IteratePath(alpha, bravo)
 	local pi = next(stack) or {}
 	stack[pi] = nil
 
-	for vertex, v in pairs(paths) do
-		d[vertex] = inf
-		Q[vertex] = v
+	for vertex, v in pairs(paths) do  -- for each zone with at least one path
+		d[vertex] = inf -- add to price stack: d[<zone>] = price of the route to get to that zone from alpha, initially infinite
+		Q[vertex] = v   -- add to zone stack:  Q[<zone>] = <path collection>, contains all zones that have one or more paths
 	end
-	d[alpha] = 0
+	d[alpha] = 0  -- price for departure zone = 0 (no costs to get there)
 
-	while next(Q) do
-		local u
-		local min = inf
-		for z in pairs(Q) do
-			local value = d[z]
-			if value < min then
-				min = value
-				u = z
+	while next(Q) do   		-- do this for each zone as long as there are zones present in the zone stack
+		local u  			-- this will hold the zone name with the lowest price
+		local min = inf		-- this will hold the lowest price that has been found while searching; initially infinite
+		for z in pairs(Q) do   		-- for each zone currently present in the zone stack
+			local value = d[z]		-- get price for the route to get to that zone (see note below)
+			if value < min then		-- compare to find the zone with the lowest price. If a lower price is found:
+				min = value				-- remember lowest route price so far
+				u = z					-- remember the zone with the lowest route price so far
 			end
 		end
+		
 		if min == inf then
-			return retNil
+			return retNil  -- no zone found for which a price has been determined -> exit and return nil (no path possible between alpha and bravo)
 		end
-		Q[u] = nil
+		Q[u] = nil  -- remove the zone that came up as cheapest from the stack so it won't be used twice
 		if u == bravo then
-			break
+			break 	-- we have reached our destination zone; stop searching by exiting the 'while next(Q)' loop
 		end
 
-		local adj = paths[u]
-		if type(adj) == "table" then
-			local d_u = d[u]
-			for v in pairs(adj) do
-				local c = d_u + cost[v]
-	
-				-- to debug path errors in data
---				if v == nil or d[v] == nil or c == nil then
---					trace("v = "..tostring(v)..", d["..tostring(v).."] = "..tostring(d[v])..", c = "..tostring(c))
---				end
-				
-				if d[v] > c then
-					d[v] = c
-					pi[v] = u
+		-- The very first cycle will result in the departure zone being the cheapest to go to. This zone has price 0, while all other zones are still
+		-- priced 'infinite' at this point. The departure zone will then be picked up for processing of its connections (paths).
+		--
+		-- Each zone that has been processed will be removed from the stack. The departure zone will therefore be the first zone to be removed.
+		-- Because every cycle the a zone with the lowest available price is processed, the remaining zones in the stack will always have an equal or 
+		-- higher price (if not inifinite).
+		--
+		-- In subsequent cycles, prices will be calculated and set for other zones, causing them to be picked up for processing eventually in later cycles.
+		-- The price reflects the costs to reach that zone, originating from the departure zone.
+		--
+		-- Only zones will be priced, that have a connection with the zone that is being processed (starting with the departure zone).
+		-- Prices are only registered when they are lower than the registered price. When this happens the registered price is always 'infinite'.
+		-- Because the price of the route keeps increasing, prices are never updated once set. This ensures that the search always moves away from the 
+		-- departure zone, like an oil stain.
+		-- 
+		-- At some point the destination zone will be priced too, if it comes up during the search.
+		--
+		-- When eventually the destination zone is picked as cheapest one left in the stack, this means that:
+		--   a) there is a route between departure and destination, because the destination zone has been priced
+		--   b) this route is made up out of the cheapest connections available
+		-- As a result, there is no need to continue the search because every other option would be more expensive.
+		
+
+		-- process the path connections of the found zone
+		local adj = paths[u]  			-- get the path connections of the zone being processed (adj = adjecent?)
+		if type(adj) == "table" then	-- multiple paths go from here
+			local d_u = d[u]			-- current route price: the price of the route to get to the zone being processed
+			for v in pairs(adj) do		-- for each path that goes from here
+				local c = d_u + cost[v]		-- add the price of that path to the route price
+				if d[v] > c then	-- if the currently known price of this path (initialized at infinite at the beginning) is greater than the calculated price...
+					d[v] = c		-- - update the price of the path to that zone in the collection of prices
+					pi[v] = u		-- - store or update how to get there: pi[<path zone name>] = <current zone name> 
 				end
 			end
-		elseif adj ~= false then
-			local c = d[u] + cost[adj]
-			if d[adj] > c then
-				d[adj] = c
-				pi[adj] = u
+		elseif adj ~= false then		-- one path goes from here
+			local c = d[u] + cost[adj]	-- add the price of that path to the route price
+			if d[adj] > c then			-- if the the calculated route price for this path is less than the currently known price (initialized at inf at the beginning) is greater than ...
+				d[adj] = c					-- - update the price of the path to that zone in the collection of prices
+				pi[adj] = u					-- - store or update how to get there: pi[<path zone name>] = <current zone name> 		
 			end
 		end
 	end
+
+	-- At this point, pi will contain a collection of all connections that have been priced, stored as: pi[<you should go here>] = <from here>
+	-- Amongst these are the connections that have to be used to create the cheapest route between departure and destination.
+	-- Next, the route will be extracted from the data in pi.
+	--
+	-- The loop below starts at the destination zone and works it way back to the departure zone, asking
+	-- "from which direction should I be coming when I arrive here?"
+	-- until there is no answer to that question, which will be the case for the departure zone. Technically, the departure zone 
+	-- has not been priced and is therefore not present in the collection.
+	--
+	-- The resulting sequence is stored in S[<index>] = <zone name>
+	-- The sequence appears to be reversed, starting at the destination zone (not sure why that is)
 
 	local i = 1
 	local last = bravo
@@ -2016,6 +2152,7 @@ function Tourist:IteratePath(alpha, bravo)
 		last = pi[last]
 	end
 
+	-- reset the helper stacks
 	for k in pairs(pi) do
 		pi[k] = nil
 	end
@@ -2029,9 +2166,9 @@ function Tourist:IteratePath(alpha, bravo)
 	stack[Q] = true
 	stack[d] = true
 
-	S['#'] = i
+	S['#'] = i  -- set the stack size of S
 
-	return iterator, S
+	return iterator, S  -- return result
 end
 
 
@@ -2115,8 +2252,8 @@ do
 	transports["STRANGLETHORN_TIRISFAL_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Stranglethorn Vale"], BZ["Tirisfal Glades"])
 
 	-- Portals
-	transports["DARNASSUS_TELDRASSIL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Darnassus"], BZ["Teldrassil"])
-	transports["TELDRASSIL_DARNASSUS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Teldrassil"], BZ["Darnassus"])
+	transports["DARNASSUS_TELDRASSIL_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Darnassus"], BZ["Teldrassil"])
+	transports["TELDRASSIL_DARNASSUS_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Teldrassil"], BZ["Darnassus"])
 	
 	-- TBC
 	transports["SHATTRATH_IRONFORGE_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shattrath City"], BZ["Ironforge"])
@@ -2147,6 +2284,9 @@ do
 
 	transports["THE_DARK_PORTAL_BLASTED_LANDS"] = string.format(X_Y_PORTAL, BZ["Blasted Lands"], BZ["Hellfire Peninsula"])
 	transports["THE_DARK_PORTAL_HELLFIRE"] = string.format(X_Y_PORTAL, BZ["Hellfire Peninsula"], BZ["Blasted Lands"])	
+
+	transports["SHATTRATH_QUELDANAS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shattrath City"], BZ["Isle of Quel'Danas"])
+
 
 	-- Teleports (TBC)
 	transports["SILVERMOON_UNDERCITY_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Silvermoon City"], BZ["Undercity"])
@@ -2343,19 +2483,17 @@ do
 		type = "Transport",
 	}
 
-	zones[transports["DARNASSUS_TELDRASSIL_PORTAL"]] = {
+	zones[transports["DARNASSUS_TELDRASSIL_TELEPORT"]] = {
 		paths = {
 			[BZ["Teldrassil"]] = true,
 		},
---		faction = "Alliance",  TODO: check
 		type = "Portal",
 	}
 
-	zones[transports["TELDRASSIL_DARNASSUS_PORTAL"]] = {
+	zones[transports["TELDRASSIL_DARNASSUS_TELEPORT"]] = {
 		paths = {
 			[BZ["Darnassus"]] = true,
 		},
---		faction = "Alliance",  TODO: check
 		type = "Portal",
 	}
 
@@ -2409,6 +2547,10 @@ do
 		type = "Portal",
 	}	
 
+	zones[transports["SHATTRATH_QUELDANAS_PORTAL"]] = {
+		paths = BZ["Isle of Quel'Danas"],
+		type = "Portal",
+	}
 
 	zones[transports["SHATTRATH_ORGRIMMAR_PORTAL"]] = {
 		paths = {
@@ -3023,7 +3165,7 @@ do
 	zones[BZ["Darnassus"]] = {
 		continent = Kalimdor,
 		paths = {
-			[transports["DARNASSUS_TELDRASSIL_PORTAL"]] = true,
+			[transports["DARNASSUS_TELDRASSIL_TELEPORT"]] = true,
 			[transports["DARNASSUS_SHATTRATH_PORTAL"]] = true,
 		},
 		faction = "Alliance",
@@ -3069,7 +3211,7 @@ do
 		high = 12,
 		continent = Kalimdor,
 		paths = {
-			[transports["TELDRASSIL_DARNASSUS_PORTAL"]] = true,
+			[transports["TELDRASSIL_DARNASSUS_TELEPORT"]] = true,
 			[transports["TELDRASSIL_DARKSHORE_BOAT"]] = true,
 		},
 		flightnodes = {
@@ -3436,6 +3578,7 @@ do
 			[transports["SHATTRATH_DARNASSUS_PORTAL"]] = true,
 			[transports["SHATTRATH_ORGRIMMAR_PORTAL"]] = true,
 			[transports["SHATTRATH_IRONFORGE_PORTAL"]] = true,
+			[transports["SHATTRATH_QUELDANAS_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[128] = true,    -- Shattrath, Terokkar Forest (N)
@@ -3717,11 +3860,11 @@ do
 		low = 70,
 		high = 70,
 		instances = {
-			[BZ["Magisters' Terrace"]] = true,
+			[BZ["Magister's Terrace"]] = true,
 			[BZ["Sunwell Plateau"]] = true,
 		},
 		paths = {
-			[BZ["Magisters' Terrace"]] = true,
+			[BZ["Magister's Terrace"]] = true,
 			[BZ["Sunwell Plateau"]] = true,
 		},		
 --		flightnodes = {
@@ -4232,7 +4375,7 @@ do
 	}
 
 	-- TBC 2.4 dungeon
-	zones[BZ["Magisters' Terrace"]] = {
+	zones[BZ["Magister's Terrace"]] = {
 		low = 70,
 		high = 70,
 		continent = Eastern_Kingdoms,

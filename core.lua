@@ -2728,9 +2728,12 @@ function bepgp:my_epgp_announce(use_main)
 end
 
 function bepgp:my_epgp(use_main)
-  GuildRoster()
-  if not self._myepgpTimer then
-    self._myepgpTimer = self:ScheduleTimer("my_epgp_announce",3,use_main)
+  local _,perms = self:getGuildPermissions()
+  if perms.OFFICER then
+    GuildRoster()
+    if not self._myepgpTimer then
+      self._myepgpTimer = self:ScheduleTimer("my_epgp_announce",3,use_main)
+    end
   end
 end
 
