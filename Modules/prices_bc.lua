@@ -1561,6 +1561,9 @@ prices[30621]={40,'T5',{{}}} -- Prism of Inner Calm
 prices[32330]={94,'T6',{{}}} -- Totem of Ancestral Guidance
 prices[30023]={10,'T5',{{}}} -- Totem of Maelstrom
 prices[28523]={83,'T4',{{}}} -- Totem of Healing Rains
+--- Sunwell Staves
+prices[34198]={650,'T6.5',{{'DRUID','FeralCombat'},{'DRUID','FeralTank'}}} -- Stanchion of Primal Instinct
+prices[34337]={650,'T6.5',{{'PRIEST','Holy','DRUID','Restoration','SHAMAN','Restoration','PRIEST','Discipline'}}} -- Golden Staff of the Sin'dorei
 --- special loot
 prices[32385]={85,'T4',{}} -- Magtheridon's Head
 prices[32386]={85,'T4',{}} -- Magtheridon's Head
