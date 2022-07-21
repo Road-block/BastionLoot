@@ -400,5 +400,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Token Info"] = "Token Info" -- needs translation
   L["Show required trade-in Item on item tooltips"] = "Show required trade-in Item on item tooltips" -- needs translation
   L["Token for:"] = "Token for:" -- needs translation
+  L["Class/Role Discount"] = "Class or Role Discount" -- needs translation
+  L.DISCOUNT_HINT = "Check Discount for;• One-handed to Melee for Off-hand;• One-handed to Tank or Hunter;• Shield to non-Tank;• Two-handed weapon to Hunter;• Two-handed weapon to TitanGrip for Off-hand;• Ranged weapon to Tank or Melee;• Wand" -- needs translation
 
   bepgp.L = L

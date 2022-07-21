@@ -812,7 +812,7 @@ function bepgp_prices:GetPrice(item,progress)
       return
     end
   end
-  return price
+  return price, tier
 end
 
 function bepgp_prices:OnEnable()

@@ -332,6 +332,8 @@ function bepgp_plusroll_loot:processLootDupe(player,itemName,source)
   return false, player_item, now
 end
 
+--/run BastionLoot:GetModule("BastionLoot_plusroll_loot"):processLootCallback("Bushido","\124cffa335ee\124Hitem:40296::::::::80:::::\124h[Cover of Silence]\124h\124r","chat","|cffa335ee","item:40296","Cover of Silence",40296)
+--/run BastionLoot:GetModule("BastionLoot_plusroll_loot"):processLootCallback("Bushido","\124cffa335ee\124Hitem:40266::::::::80:::::\124h[Hero's Surrender]\124h\124r","chat","|cffa335ee","item:40266","Hero's Surrender",40266)
 function bepgp_plusroll_loot:processLootCallback(player,itemLink,source,itemColor,itemString,itemName,itemID)
   local iName, iLink, iRarity, iLevel, iMinLevel, iType, iSubType, iStackCount, iEquipLoc, iTexture,
     iSellPrice, iClassID, iSubClassID, bindType, expacID, iSetID, isCraft = GetItemInfo(itemID)
