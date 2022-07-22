@@ -15,14 +15,33 @@ local favorites, tokens
 local tiervalues = { }
 local filter = {["_FAV"]=C:Yellow(L["Favorites"])}
 local locsorted = {"_FAV", "INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CHEST", "INVTYPE_ROBE", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_WRIST", "INVTYPE_HAND", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_CLOAK", "INVTYPE_WEAPON", "INVTYPE_SHIELD", "INVTYPE_2HWEAPON", "INVTYPE_WEAPONMAINHAND", "INVTYPE_WEAPONOFFHAND", "INVTYPE_HOLDABLE", "INVTYPE_RANGED", "INVTYPE_THROWN", "INVTYPE_RANGEDRIGHT", "INVTYPE_RELIC", "INVTYPE_NON_EQUIP"}
-local progressmap = {
+local progressmap
+local tierlist,tiersort
+local modlist,modsort
+if bepgp._wrath then
+  progressmap = {
+    ["T10.5"] = {"T10.5", "T10","T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
+    ["T10"]   = {"T10","T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
+    ["T9.5"]  = {"T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
+    ["T9"]    = {"T9", "T8.5", "T8", "T7.5", "T7"},
+    ["T8.5"]  = {"T8.5", "T8", "T7.5", "T7"},
+    ["T8"]    = {"T8", "T7.5", "T7"},
+    ["T7.5"]  = {"T7.5","T7"},
+    ["T7"]    = {"T7"}
+  }
+  tierlist,tiersort = {["T10.5"]="T10.5",["T10"]="T10",["T9.5"]="T9.5",["T9"]="T9",["T8.5"]="T8.5",["T8"]="T8",["T7.5"]="T7.5",["T7"]="T7"}, {"T10.5","T10","T9.5","T9","T8.5","T8","T7.5","T7"}
+  modlist,modsort = {["T10.5"]="T10.5",["T10"]="T10",["T9"]="T9",["T8"]="T8",["T7"]="T7"},{"T10.5","T10","T9","T8","T7"}
+end
+if bepgp._bcc then
+  progressmap = {
     ["T6.5"] = {"T6.5","T6","T5","T4"},
     ["T6"] = {"T6", "T5", "T4"},
     ["T5"] = {"T5", "T4"},
     ["T4"] = {"T4"}
   }
-local tierlist,tiersort = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"}, {"T6.5","T6","T5","T4"}
-local modlist = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"}
+  tierlist,tiersort = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"}, {"T6.5","T6","T5","T4"}
+  modlist,modsort = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"}, {"T6.5","T6","T5","T4"}
+end
 if bepgp._classic then
   progressmap = {
     ["T3"] = {"T3","T2.5","T2","T1.5","T1"},
@@ -31,7 +50,7 @@ if bepgp._classic then
     ["T1"] = {"T1.5","T1"}
   }
   tierlist,tiersort = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1.5"]="T1.5",["T1"]="T1"}, {"T3","T2.5","T2","T1.5","T1"}
-  modlist = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1"]="T1"}
+  modlist,modsort = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1"]="T1"}, {"T3","T2.5","T2","T1.5","T1"}
 end
 local questionblue = CreateAtlasMarkup("QuestRepeatableTurnin")
 
@@ -219,7 +238,7 @@ function bepgp_browser:OnEnable()
   container:AddChild(filtertier)
 
   local modpreview = GUI:Create("Dropdown")
-  modpreview:SetList(modlist)
+  modpreview:SetList(modlist,modsort)
   modpreview:SetValue("FAV")
   modpreview:SetCallback("OnValueChanged", function(obj, event, choice)
     progress = choice
@@ -331,7 +350,8 @@ function bepgp_browser:Refresh()
   table.wipe(subdata)
   if slotvalue == "_FAV" then
     for id, rank in pairs(favorites) do
-      local price, tier = (bepgp:GetPrice(id,progress)),pricelist[id][2]
+      local price, tier = bepgp:GetPrice(id,progress) --,pricelist[id][2]
+      price = price or 0
       local favrank = favmap[rank]
       local name,link,_,_,_,_,subtype = GetItemInfo(id)
       if (link) then
@@ -349,7 +369,8 @@ function bepgp_browser:Refresh()
   else
     for _, info in pairs(data[slotvalue]) do
       local id,price,tier = info[1],info[2],info[3]
-      price = bepgp:GetPrice(id,progress)
+      price, tier = bepgp:GetPrice(id,progress)
+      price = price or 0
       if tiervalues[tier] then
         local rank = favorites[id]
         local favrank = rank and favmap[rank] or ""
@@ -371,6 +392,7 @@ function bepgp_browser:Refresh()
   self:RefreshGUI(slotvalue)
 end
 
+local lastEquipLoc -- DEBUG
 function bepgp_browser:CoreInit()
   if not self._initDone then
     progress = bepgp.db.profile.progress
@@ -384,13 +406,20 @@ function bepgp_browser:CoreInit()
       bepgp_prices = bepgp:GetModule(addonName.."_prices_bc")
       tokens = bepgp:GetModule(addonName.."_tokens_bc")
     end
+    if bepgp._wrath then
+      bepgp_prices = bepgp:GetModule(addonName.."_prices_wrath")
+      tokens = {}
+    end
     if bepgp_prices and bepgp_prices._prices then
       pricelist = bepgp_prices._prices
+    else
+      pricelist = {}
     end
     for id,info in pairs(pricelist) do
       local itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = GetItemInfoInstant(id)
-      local price = bepgp:GetPrice(id,progress)
-      local tier = info[2]
+      local price, tier = bepgp:GetPrice(id,progress)
+      --local tier = info[2]
+      price = price or 0
       local equipLocDesc
       if itemEquipLoc and itemEquipLoc ~= "" then
         if itemEquipLoc == "INVTYPE_ROBE" then itemEquipLoc = "INVTYPE_CHEST" end

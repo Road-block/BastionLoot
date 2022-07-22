@@ -14,8 +14,12 @@ local G = LibStub("LibGratuity-3.0")
 local T = LibStub("LibQTip-1.0")
 
 bepgp._DEBUG = false
+local _,_,_,toc = GetBuildInfo()
+toc = tonumber(toc)
+bepgp._wrath = toc > 30000 and toc < 40000
 bepgp._classic = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC) or false
 bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) or false
+bepgp._bcc = bepgp._bcc and not bepgp._wrath
 --[[
 TODO: Transition to using fully qualified names to support connected realms
   Ambiguate("name", "mail")
@@ -28,11 +32,11 @@ bepgp.VARS = {
   decay = 0.8,
   max = 1000,
   timeout = 60,
-  minlevel = 68,
+  minlevel = 80,
   maxloglines = 500,
   prefix = "BASTIONLOOT_PFX",
-  pricesystem = "BastionEPGPFixed_bc-1.0",
-  progress = "T4",
+  pricesystem = "BastionEPGP_LK-1.0",
+  progress = "T7",
   bop = C:Red(L["BoP"]),
   boe = C:Yellow(L["BoE"]),
   nobind = C:White(L["NoBind"]),
@@ -41,6 +45,18 @@ bepgp.VARS = {
   bankde = L["Bank-D/E"],
   unassigned = C:Red(L["Unassigned"]),
   autoloot = {
+    [40752] = "BadgeHero",
+    [40753] = "BadgeValor",
+    [45624] = "BadgeConquest",
+    [47241] = "BadgeTriumph",
+    [49426] = "BadgeFrost",
+  },
+}
+if bepgp._bcc then
+  bepgp.VARS.minlevel = 68
+  bepgp.VARS.progress = "T4"
+  bepgp.VARS.pricesystem = "BastionEPGPFixed_bc-1.0"
+  bepgp.VARS.autoloot = {
     [29434] = "Badge",
     [28558] = "SpiritShard",
     [29425] = "MarkKJ",
@@ -74,8 +90,8 @@ bepgp.VARS = {
     [29905] = "KaelVial",
     [31307] = "HeartFury",
     [32459] = "Timephylactery",
-  },
-}
+  }
+end
 if bepgp._classic then
   bepgp.VARS.minlevel = 55
   bepgp.VARS.prefix = "BEPGP_PREFIX"
@@ -145,6 +161,13 @@ do
 end
 do
   bepgp._specmap = {
+    DEATHKNIGHT = {
+      --Icon = CreateAtlasMarkup("classicon-deathknight"),
+      Icon = CreateAtlasMarkup("GarrMission_ClassIcon-DeathKnight"),
+      Blood = CreateAtlasMarkup("GarrMission_ClassIcon-DeathKnight-Blood"),
+      Frost = CreateAtlasMarkup("GarrMission_ClassIcon-DeathKnight-Frost"),
+      Unholy = CreateAtlasMarkup("GarrMission_ClassIcon-DeathKnight-Unholy"),
+    },
     DRUID = {
       Icon = CreateAtlasMarkup("classicon-druid"),
       Balance = CreateAtlasMarkup("GarrMission_ClassIcon-Druid-Balance"),
@@ -459,11 +482,22 @@ bepgp.cmdtable = function()
 end
 
 local progress_values = {
-  ["T6.5"]=L["4.Sunwell Plateau"],
-  ["T6"]=L["3.Black Temple, Hyjal"],
-  ["T5"]=L["2.Serpentshrine Cavern, The Eye"],
-  ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]}
-local progress_sorting = {"T6.5", "T6", "T5", "T4"}
+  ["T10.5"]=L["5.RS"],
+  ["T10"]  =L["4.ICC, VoA-T"],
+  ["T9"]   =L["3.ToCR, Ony, VoA-K"],
+  ["T8"]   =L["2.EoE, Uld, VoA-E"],
+  ["T7"]   =L["1.Naxx, OS, VoA-A"]
+}
+local progress_sorting = {"T10.5", "T10", "T9", "T8", "T7"}
+if bepgp._bcc then
+  progress_values = {
+    ["T6.5"]=L["4.Sunwell Plateau"],
+    ["T6"]=L["3.Black Temple, Hyjal"],
+    ["T5"]=L["2.Serpentshrine Cavern, The Eye"],
+    ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]
+  }
+  progress_sorting = {"T6.5", "T6", "T5", "T4"}
+end
 if bepgp._classic then
   progress_values = {
     ["T3"]=L["4.Naxxramas"],
@@ -1406,6 +1440,38 @@ function bepgp:templateCache(id)
         on_show = function(self)
           local data = self.data
           local loot_indices = data.loot_indices
+          local price2 = data[loot_indices.price2]
+          local discountChkBx
+          if self.checkboxes then
+            for i=1,#self.checkboxes do
+              if self.checkboxes[i] and self.checkboxes[i].text and self.checkboxes[i].text:GetText() == L["Class/Role Discount"] then
+                discountChkBx = self.checkboxes[i]
+                break
+              end
+            end
+          end
+          if discountChkBx then
+            discountChkBx:Show()
+            discountChkBx:HookScript("OnEnter",function(self)
+              GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+              local chunks = strsplittable(";",L.DISCOUNT_HINT)
+              if #chunks > 0 then
+                GameTooltip:SetText(chunks[1])
+                for i=2,#chunks do
+                  GameTooltip:AddLine(chunks[i])
+                end
+                GameTooltip:Show()
+              end
+            end)
+            discountChkBx:HookScript("OnLeave",function(self)
+              if GameTooltip:IsOwned(self) then
+                GameTooltip:Hide()
+              end
+            end)
+            if not price2 then
+              discountChkBx:Hide()
+            end
+          end
           self.text:SetText(string.format(L["%s looted %s. What do you want to do?"],data[loot_indices.player_c],data[loot_indices.item]))
           if not bepgp:IsHooked(self.close_button, "OnClick") then
             bepgp:HookScript(self.close_button,"OnClick",function(f,button,down)
@@ -1435,6 +1501,23 @@ function bepgp:templateCache(id)
             loot:addOrUpdateLoot(data, update)
           end
         end,
+        checkboxes = {
+          { -- Discount GP
+            label = L["Class/Role Discount"],
+            get_value = function(self)
+              local dialog = self:GetParent():GetParent()
+              local data = dialog.data
+              local loot_indices = data.loot_indices
+              return data.use_discount or false
+            end,
+            set_value = function(self, button, down)
+              local dialog = self:GetParent():GetParent()
+              local data = dialog.data
+              local loot_indices = data.loot_indices
+              data.use_discount = not data.use_discount
+            end,
+          },
+        },
         buttons = {
           { -- MainSpec GP
             text = L["Add MainSpec GP"],
@@ -1449,7 +1532,12 @@ function bepgp:templateCache(id)
               end
               local name = data[loot_indices.player]
               local gp = tonumber(data[loot_indices.price])
-              bepgp:givename_gp(name, gp)
+              local gp2 = tonumber(data[loot_indices.price2])
+              if data.use_discount and gp2 then
+                bepgp:givename_gp(name, gp2)
+              else
+                bepgp:givename_gp(name, gp)
+              end
               LD:Dismiss(addonName.."DialogItemPoints")
             end,
           },
@@ -1465,8 +1553,13 @@ function bepgp:templateCache(id)
                 loot:addOrUpdateLoot(data, update)
               end
               local name = data[loot_indices.player]
-              local gp = data[loot_indices.off_price]
-              bepgp:givename_gp(name, gp)
+              local gp = tonumber(data[loot_indices.off_price])
+              local gp2 = tonumber(data[loot_indices.off_price2])
+              if data.use_discount and gp2 then
+                bepgp:givename_gp(name, gp2)
+              else
+                bepgp:givename_gp(name, gp)
+              end
               LD:Dismiss(addonName.."DialogItemPoints")
             end,
           },
@@ -1484,15 +1577,7 @@ function bepgp:templateCache(id)
               LD:Dismiss(addonName.."DialogItemPoints")
             end,
           },
-          --[[{ -- Remind Me Later
-            text = L["Remind me Later"],
-            on_click = function(self, button, down)
-              local data = self.data
-              local loot_indices = data.loot_indices
-              LD:Dismiss(addonName.."DialogItemPoints")
-            end,
-          },]]
-        },
+        },        
       }
     elseif id == "DialogItemPlusPoints" then
       self._dialogTemplates[key] = {
@@ -1503,7 +1588,41 @@ function bepgp:templateCache(id)
           local data = self.data
           local loot_indices = data.loot_indices
           local from_log = data[loot_indices.log]
+          local item_id = data[loot_indices.item_id]
+          local price,tier,price2 = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+          price2 = type(price2)=="number" and price2 or nil
           self.text:SetText(string.format(L["%s looted to %s. Mark it as.."],data[loot_indices.item],data[loot_indices.player_c]))
+          local discountChkBx
+          if self.checkboxes then
+            for i=1,#self.checkboxes do
+              if self.checkboxes[i] and self.checkboxes[i].text and self.checkboxes[i].text:GetText() == L["Class/Role Discount"] then
+                discountChkBx = self.checkboxes[i]
+                break
+              end
+            end
+          end
+          if discountChkBx then
+            discountChkBx:Show()
+            discountChkBx:HookScript("OnEnter",function(self)
+              GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+              local chunks = strsplittable(";",L.DISCOUNT_HINT)
+              if #chunks > 0 then
+                GameTooltip:SetText(chunks[1])
+                for i=2,#chunks do
+                  GameTooltip:AddLine(chunks[i])
+                end
+                GameTooltip:Show()
+              end
+            end)
+            discountChkBx:HookScript("OnLeave",function(self)
+              if GameTooltip:IsOwned(self) then
+                GameTooltip:Hide()
+              end
+            end)
+            if not (price2 and bepgp.db.char.plusrollepgp) then
+              discountChkBx:Hide()
+            end
+          end          
         end,
         on_cancel = function(self)
           local data = self.data
@@ -1530,6 +1649,23 @@ function bepgp:templateCache(id)
             end
           end
         end,
+        checkboxes = {
+          { -- Discount GP
+            label = L["Class/Role Discount"],
+            get_value = function(self)
+              local dialog = self:GetParent():GetParent()
+              local data = dialog.data
+              local loot_indices = data.loot_indices
+              return data.use_discount or false
+            end,
+            set_value = function(self, button, down)
+              local dialog = self:GetParent():GetParent()
+              local data = dialog.data
+              local loot_indices = data.loot_indices
+              data.use_discount = not data.use_discount
+            end,
+          },
+        },        
         buttons = {
           { -- Won as reserve
             text = L["Reserve"],
@@ -1565,9 +1701,14 @@ function bepgp:templateCache(id)
                 end
               else -- new entry
                 if bepgp.db.char.plusrollepgp and (bepgp.db.char.plusrollepgp == "sr" or bepgp.db.char.plusrollepgp == "msr") then
-                  local price = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+                  local price,tier,price2 = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+                  price2 = type(price2)=="number" and price2 or nil
                   if price and price > 0 then
-                    bepgp:givename_gp(player, price)
+                    if data.use_discount and price2 then
+                      bepgp:givename_gp(player, price2)
+                    else
+                      bepgp:givename_gp(player, price)
+                    end
                   end
                 end
                 if reserves then
@@ -1608,9 +1749,14 @@ function bepgp:templateCache(id)
                 end
               else -- new entry
                 if bepgp.db.char.plusrollepgp and bepgp.db.char.plusrollepgp == "msr" then
-                  local price = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+                  local price,tier,price2 = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+                  price2 = type(price2)=="number" and price2 or nil
                   if price and price > 0 then
-                    bepgp:givename_gp(player, price)
+                    if data.use_discount and price2 then
+                      bepgp:givename_gp(player, price2)
+                    else
+                      bepgp:givename_gp(player, price)
+                    end
                   end
                 end
                 if plusroll_loot then
@@ -1921,7 +2067,7 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
   self._versionString = GetAddOnMetadata(addonName,"Version")
   self._websiteString = GetAddOnMetadata(addonName,"X-Website")
   self._labelfull = string.format("%s %s",label,self._versionString)
-  if self._bcc then
+  if self._bcc or self._wrath then
     self.db = LibStub("AceDB-3.0"):New("BastionLootDB", defaults)
   elseif self._classic then
     self.db = LibStub("AceDB-3.0"):New("BastionEPGPDB", defaults)
@@ -2146,7 +2292,7 @@ function bepgp:AddTipInfo(tooltip,...)
   if name and link then
     local mode_epgp = bepgp.db.char.mode == "epgp"
     local mode_plusroll = bepgp.db.char.mode == "plusroll"
-    local price, useful = self:GetPrice(link, self.db.profile.progress)
+    local price, tier, useful = self:GetPrice(link, self.db.profile.progress)
     local roll_admin = self:GroupStatus()=="RAID" and self:lootMaster()
     local is_admin = self:admin()
     local owner = tooltip:GetOwner()
@@ -2160,9 +2306,14 @@ function bepgp:AddTipInfo(tooltip,...)
         local pr_delta = new_pr - pr
         local pr_delta_off = new_pr_off - pr
         local textRight2 = string.format(L["pr:|cffff0000%.02f|r(%.02f) pr_os:|cffff0000%.02f|r(%.02f)"],pr_delta,new_pr,pr_delta_off,new_pr_off)
-        local off_price = price*self.db.profile.discount
         local textRight = string.format(L["gp:|cff32cd32%d|r gp_os:|cff20b2aa%d|r"],price,off_price)
         tooltip:AddDoubleLine(label, textRight)
+        local price2 = type(useful)=="number" and useful or nil
+        if price2 then
+          local off_price2 = math.floor(price2*self.db.profile.discount)
+          local textRight3 = string.format(L["gp:|cff32cd32%d|r gp_os:|cff20b2aa%d|r"],price2,off_price2)
+          tooltip:AddDoubleLine(L["Class/Role Discount"],textRight3)
+        end        
         tooltip:AddDoubleLine(" ", textRight2)
       end
       if tipOptionGroup.mlinfo then
@@ -2962,6 +3113,27 @@ function bepgp:GroupStatus()
 end
 
 local raidZones, mapZones, tier_multipliers
+if bepgp._wrath then
+  raidZones = {
+    [(GetRealZoneText(533))] = "T7", -- Naxxramas
+    [(GetRealZoneText(624))] = "T7", -- Vault of Archavon
+    [(GetRealZoneText(615))] = "T7", -- Obsidian Sanctum
+    [(GetRealZoneText(616))] = "T7", -- Eye of Eternity
+    [(GetRealZoneText(603))] = "T8", -- Ulduar
+    [(GetRealZoneText(649))] = "T9", -- Trial of the Crusader
+    [(GetRealZoneText(249))] = "T9", -- Onyxia
+    [(GetRealZoneText(631))] = "T10", -- Icecrown Citadel
+    [(GetRealZoneText(724))] = "T10.5", -- Ruby Sanctum
+  }
+  mapZones = {}
+  tier_multipliers = {
+    ["T10.5"] = {["T10.5"]=1,["T10"]=0.9,["T9"]=0.75,["T8"]=0.5,["T7"]=0.25},
+    ["T10"]   = {["T10.5"]=1,["T10"]=1,["T9"]=0.75,["T8"]=0.6,["T7"]=0.3},
+    ["T9"]    = {["T10.5"]=1,["T10"]=1,["T9"]=1,["T8"]=0.75,["T7"]=0.4},
+    ["T8"]    = {["T10.5"]=1,["T10"]=1,["T9"]=1,["T8"]=1,["T7"]=0.5},
+    ["T7"]    = {["T10.5"]=1,["T10"]=1,["T9"]=1,["T8"]=1,["T7"]=1},
+  }
+end
 if bepgp._bcc then
   raidZones = {
     [(GetRealZoneText(532))] = "T4",   -- Karazhan
@@ -3671,6 +3843,7 @@ function bepgp:givename_ep(getname,ep,single) -- awards ep to a single character
 end
 
 function bepgp:givename_gp(getname,gp) -- assigns gp to a single character
+  print(getname..">"..gp) -- DEBUG
   if not (self:admin()) then return end
   local postfix, alt = ""
   local guildcache = self.db.profile.guildcache

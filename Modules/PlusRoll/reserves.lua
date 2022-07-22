@@ -8,7 +8,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local GUI = LibStub("AceGUI-3.0")
 local DF = LibStub("LibDeformat-3.0")
 local Item = Item
---/run BastionLoot:GetModule("BastionEPGP_plusroll_reserves"):Toggle()
+--/run BastionLoot:GetModule("BastionLoot_plusroll_reserves"):Toggle()
 local data = { }
 local colorHighlight = {r=0, g=0, b=0, a=.9}
 local colorLocked = {r=1, g=0, b=0, a=.9}
@@ -182,6 +182,20 @@ function bepgp_plusroll_reserves:OnEnable()
   self._container._export = export
   container:AddChild(export)
 
+  local call = GUI:Create("Button")
+  call:SetWidth(100)
+  call:SetText(call_icon)
+  call:SetCallback("OnClick",function()
+    bepgp_plusroll_reserves:Call()
+  end)
+  container:AddChild(call)
+
+  local spacer = GUI:Create("Label")
+  spacer:SetWidth(100)
+  spacer:SetHeight(20)
+  spacer:SetText(" ")
+  container:AddChild(spacer)
+
   local clear = GUI:Create("Button")
   clear:SetWidth(100)
   clear:SetText(L["Clear"])
@@ -190,14 +204,6 @@ function bepgp_plusroll_reserves:OnEnable()
   end)
   self._container._clear = clear
   container:AddChild(clear)
-
-  local call = GUI:Create("Button")
-  call:SetWidth(100)
-  call:SetText(call_icon)
-  call:SetCallback("OnClick",function()
-    bepgp_plusroll_reserves:Call()
-  end)
-  container:AddChild(call)
 
   local help = GUI:Create("Label")
   help:SetWidth(150)

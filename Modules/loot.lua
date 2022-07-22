@@ -27,7 +27,9 @@ local loot_indices = {
   price=7,
   off_price=8,
   action=9,
-  update=10
+  update=10,
+  price2=11,
+  off_price2=12,
 }
 local itemCache = {}
 local function st_sorter_numeric(st,rowa,rowb,col)
@@ -237,6 +239,8 @@ function bepgp_loot:processLootDupe(player,itemName,source)
   return false, player_item, now
 end
 
+--/run BastionLoot:GetModule("BastionLoot_loot"):processLootCallback("Bushido","\124cffa335ee\124Hitem:40296::::::::80:::::\124h[Cover of Silence]\124h\124r","chat","|cffa335ee","item:40296","Cover of Silence",40296)
+--/run BastionLoot:GetModule("BastionLoot_loot"):processLootCallback("Bushido","\124cffa335ee\124Hitem:40266::::::::80:::::\124h[Hero's Surrender]\124h\124r","chat","|cffa335ee","item:40266","Hero's Surrender",40266)
 function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemString,itemName,itemID)
   local iName, iLink, iRarity, iLevel, iMinLevel, iType, iSubType, iStackCount, iEquipLoc, iTexture,
     iSellPrice, iClassID, iSubClassID, bindType, expacID, iSetID, isCraft = GetItemInfo(itemID)
@@ -247,7 +251,8 @@ function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemStr
   end
   local bind = bepgp:itemBinding(itemString)
   if not (bind) then return end
-  local price = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
+  local price,tier,price2 = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
+  price2 = type(price2)=="number" and price2 or nil
   if (not (price)) or (price == 0) then
     return
   end
@@ -261,9 +266,12 @@ function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemStr
   local _,_,hexclass = bepgp:getClassData(class)
   self._lastPlayerItem, self._lastPlayerItemTime, self._lastPlayerItemSource = player_item, now, source
   local player_color = C:Colorize(hexclass,player)
-  local off_price = math.floor(price*bepgp.db.profile.discount)
+  local off_price,off_price2 = math.floor(price*bepgp.db.profile.discount)
+  if price2 then
+    off_price2 = math.floor(price2*bepgp.db.profile.discount)
+  end
   local epoch, timestamp = bepgp:getServerTime()
-  local data = {[loot_indices.time]=epoch,[loot_indices.player]=player,[loot_indices.player_c]=player_color,[loot_indices.item]=itemLink,[loot_indices.item_id]=itemID,[loot_indices.bind]=bind,[loot_indices.price]=price,[loot_indices.off_price]=off_price,loot_indices=loot_indices}
+  local data = {[loot_indices.time]=epoch,[loot_indices.player]=player,[loot_indices.player_c]=player_color,[loot_indices.item]=itemLink,[loot_indices.item_id]=itemID,[loot_indices.bind]=bind,[loot_indices.price]=price,[loot_indices.off_price]=off_price,[loot_indices.price2]=price2,[loot_indices.off_price2]=off_price2,loot_indices=loot_indices}
   LD:Spawn(addonName.."DialogItemPoints", data)
 end
 
@@ -299,7 +307,8 @@ end
 
 function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,itemID,itemLink,tmpTrade)
   itemCache[itemID] = true
-  local price = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
+  local price,tier,price2 = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
+  price2 = type(price2)=="number" and price2 or nil
   if not (price) or price == 0 then
     return
   end

@@ -114,8 +114,12 @@ function bepgp_io:Logs()
   self:export("Logs", temp_data, ";")
 end
 
-local url_link = "=HYPERLINK(\"https://tbc.wowhead.com/item=%d\";%q)"
-local wowhead_url = "https://tbc.wowhead.com/item=%d"
+local url_link = "=HYPERLINK(\"https://www.wowhead.com/wotlk/item=%d\";%q)"
+local wowhead_url = "https://www.wowhead.com/wotlk/item=%d"
+if bepgp._bcc then
+  url_link = "=HYPERLINK(\"https://tbc.wowhead.com/item=%d\";%q)"
+  wowhead_url = "https://tbc.wowhead.com/item=%d"
+end
 if bepgp._classic then
   url_link = "=HYPERLINK(\"https://classic.wowhead.com/item=%d\";%q)"
   wowhead_url = "https://classic.wowhead.com/item=%d"

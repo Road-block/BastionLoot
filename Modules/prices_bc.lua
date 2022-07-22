@@ -1606,7 +1606,7 @@ function bepgp_prices_bc:GetPrice(item,progress)
       return
     end
   end
-  return price,useful
+  return price,tier,useful
 end
 
 function bepgp_prices_bc:OnEnable()

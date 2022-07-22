@@ -74,7 +74,7 @@ local autoroll = {
     [22376] = true, --Cloth
   },
 }
-if bepgp._bcc then
+if bepgp._bcc or bepgp._wrath then
   autoroll["dark_heart"] = {[32428] = true} -- Heart of Darkness
   autoroll["illi_mark"]  = {[32897] = true} -- Mark of the Illidari
   autoroll["sunmote"] = {[34664] = true} -- Sunmote
@@ -249,7 +249,7 @@ local options = {
     },
   }
 }
-if bepgp._bcc then
+if bepgp._bcc or bepgp._wrath then
   options.args["dark_heart"] = {
     type = "select",
     name = "Heart of Darkness", -- we'll delay load updates
@@ -326,7 +326,7 @@ function bepgp_autoroll:injectOptions() -- .general.args.main.args
     ["class"] = 1,
     ["other"] = 2,
   }
-  if bepgp._bcc then
+  if bepgp._bcc or bepgp._wrath then
     if bepgp.db.char.autoroll.dark_heart == nil then
       bepgp.db.char.autoroll.dark_heart = -1
     end
