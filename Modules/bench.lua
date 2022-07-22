@@ -107,8 +107,8 @@ local options = {
       set = function(info, val)
         volatile.raid = val
       end,
-      values = { ["T6.5"]=L["4.Sunwell Plateau"], ["T6"]=L["3.Black Temple, Hyjal"], ["T5"]=L["2.Serpentshrine Cavern, The Eye"], ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]},
-      sorting = {"T4", "T5", "T6", "T6.5"},
+      values = {["T10.5"]=L["5.RS"], ["T10"]=L["4.ICC, VoA-T"], ["T9"]=L["3.ToCR, Ony, VoA-K"], ["T8"]=L["2.EoE, Uld, VoA-E"], ["T7"]=L["1.Naxx, OS, VoA-A"]},
+      sorting = {"T7", "T8", "T9", "T10", "T10.5"},
     },
     ["tank_min"] = {
       type = "input",
@@ -253,6 +253,38 @@ end
 
 local limits = {
   raidLimits = {
+    ["T7"] = {
+      total = 25,
+      [_G.TANK] = 2,
+      [_G.HEALER] = 5,
+    },
+    ["T8"] = {
+      total = 25,
+      [_G.TANK] = 2,
+      [_G.HEALER] = 5,
+    },
+    ["T9"] = {
+      total = 25,
+      [_G.TANK] = 3,
+      [_G.HEALER] = 5,
+    },
+    ["T10"] = {
+      total = 25,
+      [_G.TANK] = 3,
+      [_G.HEALER] = 5,
+    },
+    ["T10.5"] = {
+      total = 25,
+      [_G.TANK] = 3,
+      [_G.HEALER] = 6,
+    },
+  },
+}
+
+if bepgp._bcc then
+  options.args.raid.values = { ["T6.5"]=L["4.Sunwell Plateau"], ["T6"]=L["3.Black Temple, Hyjal"], ["T5"]=L["2.Serpentshrine Cavern, The Eye"], ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]}
+  options.args.raid.sorting = {"T4", "T5", "T6", "T6.5"}
+  limits.raidLimits = {
     ["T4"] = {
       total = 25,
       [_G.TANK] = 3,
@@ -265,16 +297,16 @@ local limits = {
     },
     ["T6"] = {
       total = 25,
-      [_G.TANK] = 4,
-      [_G.HEALER] = 8,
+      [_G.TANK] = 3,
+      [_G.HEALER] = 7,
     },
     ["T6.5"] = {
       total = 25,
       [_G.TANK] = 3,
-      [_G.HEALER] = 9,
+      [_G.HEALER] = 8,
     }
-  },
-}
+  }
+end
 
 if bepgp._classic then
   options.args.raid.values = { ["T3"]=L["4.Naxxramas"], ["T2.5"]=L["3.Temple of Ahn\'Qiraj"], ["T2"]=L["2.Blackwing Lair"], ["T1"]=L["1.Molten Core"]}
@@ -306,11 +338,7 @@ end
 function bepgp_bench:injectOptions()
   bepgp.db.char.benchcalc = bepgp.db.char.benchcalc or limits
   bepgp._options.args.general.args.benchcalc = options
-  --bepgp._options.args.general.args.benchcalc.guiHidden = true
   bepgp._options.args.general.args.benchcalc.cmdHidden = true
-  --bepgp.blizzoptions.bench = ACD:AddToBlizOptions(addonName, "Bench", addonName, "benchcalc")
-  --bepgp.blizzoptions.bench:SetParent(InterfaceOptionsFramePanelContainer)
-  --tinsert(InterfaceOptionsFrame.categoryList, bepgp.blizzoptions.bench)
 end
 
 function bepgp_bench:delayInit()

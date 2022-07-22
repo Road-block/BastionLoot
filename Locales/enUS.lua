@@ -404,5 +404,10 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Token for:"] = true
   L["Class/Role Discount"] = true
   L.DISCOUNT_HINT = "Check Discount for;• One-handed to Melee for Off-hand;• One-handed to Tank or Hunter;• Shield to non-Tank;• Two-handed weapon to Hunter;• Two-handed weapon to TitanGrip for Off-hand;• Ranged weapon to Tank or Melee;• Wand"
+  L["5.RS"] = true
+  L["4.ICC, VoA-T"] = true
+  L["3.ToCR, Ony, VoA-K"] = true
+  L["2.EoE, Uld, VoA-E"] = true
+  L["1.Naxx, OS, VoA-A"] = true
 
 bepgp.L = L

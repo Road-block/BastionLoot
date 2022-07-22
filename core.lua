@@ -482,11 +482,22 @@ bepgp.cmdtable = function()
 end
 
 local progress_values = {
-  ["T6.5"]=L["4.Sunwell Plateau"],
-  ["T6"]=L["3.Black Temple, Hyjal"],
-  ["T5"]=L["2.Serpentshrine Cavern, The Eye"],
-  ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]}
-local progress_sorting = {"T6.5", "T6", "T5", "T4"}
+  ["T10.5"]=L["5.RS"],
+  ["T10"]  =L["4.ICC, VoA-T"],
+  ["T9"]   =L["3.ToCR, Ony, VoA-K"],
+  ["T8"]   =L["2.EoE, Uld, VoA-E"],
+  ["T7"]   =L["1.Naxx, OS, VoA-A"]
+}
+local progress_sorting = {"T10.5", "T10", "T9", "T8", "T7"}
+if bepgp._bcc then
+  progress_values = {
+    ["T6.5"]=L["4.Sunwell Plateau"],
+    ["T6"]=L["3.Black Temple, Hyjal"],
+    ["T5"]=L["2.Serpentshrine Cavern, The Eye"],
+    ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]
+  }
+  progress_sorting = {"T6.5", "T6", "T5", "T4"}
+end
 if bepgp._classic then
   progress_values = {
     ["T3"]=L["4.Naxxramas"],
