@@ -307,6 +307,7 @@ if not L then return end
   L["Reserves are locked."] = "Reserves are locked." -- needs translation
   L["Reserve added."] = "Reserve added." -- needs translation
   L["Reserve updated."] = "Reserve updated." -- needs translation
+  L["Reserve removed."] = "Reserve removed." -- needs translation
   L["Remove Reserve"] = "Remove Reserve" -- needs translation
   L["Lock Reserve"] = "Lock Reserve" -- needs translation
   L["Unlock Reserve"] = "Unlock Reserve" -- needs translation

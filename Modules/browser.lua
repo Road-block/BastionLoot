@@ -261,6 +261,18 @@ function bepgp_browser:OnEnable()
   self._container._export = export
   container:AddChild(export)
 
+  local import = GUI:Create("Button")
+  import:SetAutoWidth(true)
+  import:SetText(L["Import"])
+  import:SetCallback("OnClick",function()
+    local iof = bepgp:GetModule(addonName.."_io")
+    if iof then
+      iof._iobrowserimport:Show()
+    end
+  end)
+  self._container._browserimport = import
+  container:AddChild(import)
+
   local help = GUI:Create("Label")
   help:SetWidth(150)
   help:SetText("\n\n"..string.format("%s%s",questionblue,L["Right-click a row to add or remove a Favorite."]))
@@ -283,9 +295,10 @@ function bepgp_browser:Toggle()
   self:Refresh()
 end
 
-function bepgp_browser:favoriteAdd(level)
-  local itemID = bepgp_browser._selected
+function bepgp_browser:favoriteAdd(level,id)
+  local itemID = bepgp_browser._selected or id
   if not itemID then return end
+  if not (GetItemInfoInstant(itemID)) then return end
   favorites[itemID] = level
   if tokens and tokens.GetToken then
     local token = tokens:GetToken(itemID)
@@ -301,8 +314,8 @@ function bepgp_browser:favoriteAdd(level)
   end
 end
 
-function bepgp_browser:favoriteClear()
-  local itemID = bepgp_browser._selected
+function bepgp_browser:favoriteClear(id)
+  local itemID = bepgp_browser._selected or id
   if not itemID then return end
   favorites[itemID] = nil
   if tokens and tokens.GetReward then
@@ -350,19 +363,23 @@ function bepgp_browser:Refresh()
   table.wipe(subdata)
   if slotvalue == "_FAV" then
     for id, rank in pairs(favorites) do
-      local price, tier = bepgp:GetPrice(id,progress) --,pricelist[id][2]
-      price = price or 0
-      local favrank = favmap[rank]
-      local name,link,_,_,_,_,subtype = GetItemInfo(id)
-      if (link) then
-        populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+      if not (GetItemInfoInstant(id)) or type(id)~="number" then -- cleanup bad items
+        self:favoriteClear(id)
       else
-        local item = Item:CreateFromItemID(id)
-        item:ContinueOnItemLoad(function()
-          local id = item:GetItemID()
-          local name,link,_,_,_,_,subtype = GetItemInfo(id)
+        local price, tier = bepgp:GetPrice(id,progress) --,pricelist[id][2]
+        price = price or 0
+        local favrank = favmap[rank]
+        local name,link,_,_,_,_,subtype = GetItemInfo(id)
+        if (link) then
           populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
-        end)
+        else
+          local item = Item:CreateFromItemID(id)
+          item:ContinueOnItemLoad(function()
+            local id = item:GetItemID()
+            local name,link,_,_,_,_,subtype = GetItemInfo(id)
+            populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+          end)
+        end        
       end
     end
     self._container._export.frame:Show()

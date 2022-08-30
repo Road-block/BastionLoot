@@ -75,7 +75,7 @@ local reserve_options = {
       order = 3,
       func = function(info)
         local p, i = bepgp_plusroll_reserves._selected.player,bepgp_plusroll_reserves._selected.item
-        bepgp_plusroll_reserves:RemoveReserve(p, i)
+        bepgp_plusroll_reserves:RemoveReserve(p, i, true)
         C_Timer.After(0.2, menu_close)
       end,
     },
@@ -257,19 +257,29 @@ end
 
 local lootRes = {
   ["res"] = {L["(res)"],L["(reserve)"]},
-  ["resq"] = {L["res"],L["reserve"]},
+  ["resq"] = {L["res"],L["reserve"],L["reserves"]},
 }
-function bepgp_plusroll_reserves:captureRes(event, text, sender)
-  if bepgp.db.char.mode ~= "plusroll" then return end
-  if not (bepgp:lootMaster()) then return end -- DEBUG
-  sender = Ambiguate(sender,"short")
-  if not bepgp:inRaid(sender) then return end -- DEBUG
-  if sender ~= bepgp._playerName then
-    self:resReply(text,sender)
+function bepgp_plusroll_reserves:captureRes(fromfilter, event, text, sender)
+  if type(fromfilter)~="boolean" then
+    sender = text
+    text = event
+    event = fromfilter
+    fromfilter = nil
   end
-  if not (string.find(text, "|Hitem:", 1, true)) then return end
+  if bepgp.db.char.mode ~= "plusroll" then return false end
+  if not (bepgp:lootMaster()) then return false end -- DEBUG
+  sender = Ambiguate(sender,"short")
+  if not bepgp:inRaid(sender) then return false end -- DEBUG
+  if sender ~= bepgp._playerName then
+    if not fromfilter then
+      if self:resReply(text,sender) then
+        return true
+      end
+    end
+  end
+  if not (string.find(text, "|Hitem:", 1, true)) then return false end
   local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%d]+|h%[.-%]|h|r"," ; ")
-  if count > 1 then return end
+  if count > 1 then return false end
   local reskw_found
   local lowtext = string.lower(linkstriptext)
   for _,f in ipairs(lootRes.res) do
@@ -283,9 +293,42 @@ function bepgp_plusroll_reserves:captureRes(event, text, sender)
       itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
     end
     if (itemName) then
-      self:AddReserve(sender,itemID)
+      if not fromfilter then
+        self:AddReserve(sender,itemID)
+      end
+      return true
     end
+    return false
   end
+  return false
+end
+
+local function filterCapture(frame, event, text, sender, ...)
+  local filter = bepgp_plusroll_reserves:captureRes(true, event, text, sender)
+  if filter then
+    return true
+  else
+    return false, text, sender, ...
+  end
+end
+
+local function filterResponse(frame, event, text, sender, ...)
+  if bepgp.db.char.mode ~= "plusroll" then 
+    return false, text, sender, ...
+  end
+  if not (bepgp:lootMaster()) then 
+    return false, text, sender, ...
+  end
+  local bastion_colon = string.format("^(%s:).*",addonName)
+  local bastion_locked = string.format(".*(%s).*",L["Reserves are locked."])
+  local bastion_remove = string.format(".*(%s).*",L["Reserve removed."])
+  if text:match(bastion_colon) then
+    if text:match(bastion_locked) or text:match(bastion_remove) then
+      return false, text, sender, ...
+    end
+    return true
+  end
+  return false, text, sender, ...
 end
 
 function bepgp_plusroll_reserves:resReply(text,sender)
@@ -319,6 +362,7 @@ function bepgp_plusroll_reserves:resReply(text,sender)
         end
       end
     end
+    return true
   end
 end
 
@@ -326,6 +370,7 @@ end
 function bepgp_plusroll_reserves:AddReserve(player,item)
   local found = players[player]
   local locked = bepgp.db.char.reserves.locked
+  local inform = player ~= bepgp._playerName
   if found then -- already has a reserve, if permitted update
     if found[2] == false then
       if locked then -- overall list is locked
@@ -341,18 +386,26 @@ function bepgp_plusroll_reserves:AddReserve(player,item)
       found[1]=item -- update the item
       items[item] = items[item] or {}
       items[item][player] = true
-      SendChatMessage(string.format("%s:%s",addonName,L["Reserve updated."]),"WHISPER",nil,player)
+      if inform then
+        SendChatMessage(string.format("%s:%s",addonName,L["Reserve updated."]),"WHISPER",nil,player)
+      end
     else -- item is locked
-      SendChatMessage(string.format("%s:%s",addonName,L["Reserves are locked."]),"WHISPER",nil,player)
+      if inform then
+        SendChatMessage(string.format("%s:%s",addonName,L["Reserves are locked."]),"WHISPER",nil,player)
+      end
     end
   else
     if locked then -- overall list is locked
-      SendChatMessage(string.format("%s:%s",addonName,L["Reserves are locked."]),"WHISPER",nil,player)
+      if inform then
+        SendChatMessage(string.format("%s:%s",addonName,L["Reserves are locked."]),"WHISPER",nil,player)
+      end
     else
       players[player] = {item, false}
       items[item] = items[item] or {}
       items[item][player] = true
-      SendChatMessage(string.format("%s:%s",addonName,L["Reserve added."]),"WHISPER",nil,player)
+      if inform then
+        SendChatMessage(string.format("%s:%s",addonName,L["Reserve added."]),"WHISPER",nil,player)
+      end
     end
   end
   self:Toggle(true)
@@ -371,12 +424,15 @@ function bepgp_plusroll_reserves:IsReserved(item)
   end
 end
 
-function bepgp_plusroll_reserves:RemoveReserve(player,item)
+function bepgp_plusroll_reserves:RemoveReserve(player,item, force)
   if players[player] then
     players[player]=nil
   end
   if items[item] and items[item][player] then
     items[item][player] = nil
+    if force and (player ~= bepgp._playerName) and bepgp:inRaid(player) then
+      SendChatMessage(string.format("%s:%s",addonName,L["Reserve removed."]),"WHISPER",nil,player)
+    end
     if bepgp:table_count(items[item]) == 0 then
       items[item]=nil
     end
@@ -441,6 +497,8 @@ function bepgp_plusroll_reserves:CoreInit()
     items = bepgp.db.char.reserves.items
     self:ToggleLock(bepgp.db.char.reserves.locked)
     self:RegisterEvent("CHAT_MSG_WHISPER", "captureRes")
+    ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER", filterCapture)
+    ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM", filterResponse)
     bepgp_plusroll_bids = bepgp:GetModule(addonName.."_plusroll_bids")
     self._initDone = true
   end

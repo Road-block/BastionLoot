@@ -4,6 +4,7 @@ local bepgp_io = bepgp:NewModule(moduleName)
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local Dump = LibStub("LibTextDump-1.0")
 local Parse = LibStub("LibParse")
+local GUI = LibStub("AceGUI-3.0")
 
 local temp_data = {}
 
@@ -12,6 +13,27 @@ function bepgp_io:OnEnable()
   self._ioloot = Dump:New(L["Export Loot"],520,320)
   self._iologs = Dump:New(L["Export Logs"],450,320)
   self._iobrowser = Dump:New(L["Export Favorites"],520,320)
+  
+  self._iobrowserimport = GUI:Create("Window")
+  self._iobrowserimport:SetTitle(L["Import"])
+  self._iobrowserimport:SetWidth(520)
+  self._iobrowserimport:SetHeight(320)
+  self._iobrowserimport:EnableResize(false)
+  self._iobrowserimport:SetLayout("Fill")
+  local browserImportEB = GUI:Create("MultiLineEditBox")
+  browserImportEB:SetLabel(nil)
+  browserImportEB:SetFullWidth(true)
+  self._iobrowserimport.editBox = browserImportEB
+  self._iobrowserimport:Hide()
+  self._iobrowserimport.editBox:SetCallback("OnEnterPressed", function(editBox)
+    local text = editBox:GetText():trim()
+    if text ~= "" then
+      bepgp_io:BrowserImport(text)
+      bepgp_io._iobrowserimport:Hide()
+    end
+  end)
+  self._iobrowserimport:AddChild(browserImportEB)
+
   self._ioreserves = Dump:New(L["Export Reserves"],450,320)
   self._ioroster = Dump:New(L["Export Raid Roster"],250,320)
   local bastionexport,_,_,_,reason = GetAddOnInfo("BastionEPGP_Export")
@@ -206,6 +228,36 @@ function bepgp_io:Roster(roster)
       self._ioroster:AddLine(string.format("%s,%s,%s",member[1],member[2],member[3]))
     end
     self._ioroster:Display()
+  end
+end
+
+function bepgp_io:BrowserImport(text)
+  local browser = bepgp:GetModule(addonName.."_browser")
+  local retOK, data = pcall(Parse.JSONDecode,Parse,text)
+  local change = false
+  if retOK then -- sixty/seventy/eightyupgrades
+    for k,v in pairs(data) do
+      if k=="items" then
+        for _,itemData in pairs(v) do
+          local id = itemData.id and tonumber(itemData.id)
+          if id then
+            browser:favoriteAdd(-1,id)
+            change = true
+          end
+        end
+      end
+    end
+  else -- try atlasloot export format
+    for strid in text:gmatch(":(%d+)") do
+      local id = tonumber(strid)
+      if id then
+        browser:favoriteAdd(-2,id)
+        change = true
+      end
+    end
+  end
+  if change then
+    browser:Refresh()
   end
 end
 

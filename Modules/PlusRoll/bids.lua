@@ -6,11 +6,11 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local DF = LibStub("LibDeformat-3.0")
 local T = LibStub("LibQTip-1.0")
 local LD = LibStub("LibDialog-1.0")
---/run BastionLoot:GetModule("BastionEPGP_plusroll_bids"):Toggle()
---/run BastionLoot:GetModule("BastionEPGP_plusroll_bids").bid_item.itemid = 19915
---/run BastionLoot:GetModule("BastionEPGP_plusroll_bids").bid_item.itemlink = "\124cff0070dd\124Hitem:19915:0:0:0:0:0:0:0:0\124h[Zulian Defender]\124h\124r"
---/run BastionLoot:GetModule("BastionEPGP_plusroll_bids"):clearRolls()
---/run BastionLoot:GetModule("BastionEPGP_plusroll_bids"):bidPrint("\124cff0070dd\124Hitem:19915:0:0:0:0:0:0:0:0\124h[Zulian Defender]\124h\124r","Tankßoy",true)
+--/run BastionLoot:GetModule("BastionLoot_plusroll_bids"):Toggle()
+--/run BastionLoot:GetModule("BastionLoot_plusroll_bids").bid_item.itemid = 19915
+--/run BastionLoot:GetModule("BastionLoot_plusroll_bids").bid_item.itemlink = "\124cff0070dd\124Hitem:19915:0:0:0:0:0:0:0:0\124h[Zulian Defender]\124h\124r"
+--/run BastionLoot:GetModule("BastionLoot_plusroll_bids"):clearRolls()
+--/run BastionLoot:GetModule("BastionLoot_plusroll_bids"):bidPrint("\124cff0070dd\124Hitem:19915:0:0:0:0:0:0:0:0\124h[Zulian Defender]\124h\124r","Tankßoy",true)
 local colorUnknown = {r=.75, g=.75, b=.75, a=.9}
 bepgp_plusroll_bids.bids_res,bepgp_plusroll_bids.bids_main,bepgp_plusroll_bids.bids_off,bepgp_plusroll_bids.bid_item = {},{},{},{}
 local bids_blacklist = {}

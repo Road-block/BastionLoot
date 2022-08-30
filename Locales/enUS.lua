@@ -305,6 +305,7 @@ Results will print here when done.]]
   L["Reserves are locked."] = true
   L["Reserve added."] = true
   L["Reserve updated."] = true
+  L["Reserve removed."] = true
   L["Remove Reserve"] = true
   L["Lock Reserve"] = true
   L["Unlock Reserve"] = true

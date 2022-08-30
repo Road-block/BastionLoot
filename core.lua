@@ -152,6 +152,8 @@ end
 do
   local star,star_off = CreateAtlasMarkup("tradeskills-star"),CreateAtlasMarkup("tradeskills-star-off")
   bepgp._favmap = {
+    [-1]=string.format("%s",CreateAtlasMarkup("bags-newitem")),
+    [-2]=string.format("%s",CreateAtlasMarkup("bags-icon-equipment")),
     [1]=string.format("%s%s%s%s%s",star,star_off,star_off,star_off,star_off),
     [2]=string.format("%s%s%s%s%s",star,star,star_off,star_off,star_off),
     [3]=string.format("%s%s%s%s%s",star,star,star,star_off,star_off),
