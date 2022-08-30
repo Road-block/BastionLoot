@@ -371,6 +371,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Skip Stackable Items from Wincount Prompts."] = true
   L["res"] = true
   L["reserve"] = true
+  L["reserves"] = true
   L["%s Reserves:"] = true
   L["Scraps"] = true
   L["Clear reserves"] = true
