@@ -18,6 +18,7 @@ local volatile = {
   [_G.RANGED] = 0,
   [_G.MELEE] = 0,
 }
+local limits = {}
 local roleorder = {_G.TANK,_G.HEALER,_G.RANGED,_G.MELEE}
 function bepgp_bench:calcRoleBench(roleid,rolenum,raidid,totalsigned)
   local raidLimits = bepgp.db.char.benchcalc.raidLimits
@@ -107,8 +108,32 @@ local options = {
       set = function(info, val)
         volatile.raid = val
       end,
-      values = {["T10.5"]=L["5.RS"], ["T10"]=L["4.ICC, VoA-T"], ["T9"]=L["3.ToCR, Ony, VoA-K"], ["T8"]=L["2.EoE, Uld, VoA-E"], ["T7"]=L["1.Naxx, OS, VoA-A"]},
-      sorting = {"T7", "T8", "T9", "T10", "T10.5"},
+      values = function()
+        local system = bepgp:GetPriceSystem(bepgp.db.profile.system)
+        if system and system.flavor then
+          return bepgp._progsets[system.flavor].bench_values
+        end
+        if bepgp._wrath then 
+          return bepgp._progsets._wrath.bench_values
+        elseif bepgp._bcc then
+          return bepgp._progsets._bcc.bench_values
+        elseif bepgp._classic then
+          return bepgp._progsets._classic.bench_values
+        end
+      end,
+      sorting = function()
+        local system = bepgp:GetPriceSystem(bepgp.db.profile.system)
+        if system and system.flavor then
+          return bepgp._progsets[system.flavor].bench_sorting
+        end
+        if bepgp._wrath then 
+          return bepgp._progsets._wrath.bench_sorting
+        elseif bepgp._bcc then
+          return bepgp._progsets._bcc.bench_sorting
+        elseif bepgp._classic then
+          return bepgp._progsets._classic.bench_sorting
+        end        
+      end,
     },
     ["tank_min"] = {
       type = "input",
@@ -219,22 +244,22 @@ local options = {
 }
 
 function bepgp_bench:SignupTotals()
-    local signed = 0
-    local raid = volatile.raid ~= "" and volatile.raid or bepgp.db.profile.progress
-    local cap = bepgp.db.char.benchcalc.raidLimits[raid].total
-    if volatile[_G.TANK] then
-      signed = signed + tonumber(volatile[_G.TANK])
-    end
-    if volatile[_G.HEALER] then
-      signed = signed + tonumber(volatile[_G.HEALER])
-    end
-    if volatile[_G.RANGED] then
-      signed = signed + tonumber(volatile[_G.RANGED])
-    end
-    if volatile[_G.MELEE] then
-      signed = signed + tonumber(volatile[_G.MELEE])
-    end
-    return string.format("%s: %d/%d",L["Signups"], signed, cap), signed, cap
+  local signed = 0
+  local raidid = volatile.raid ~= "" and volatile.raid or bepgp.db.profile.progress
+  local cap = bepgp.db.char.benchcalc.raidLimits[raidid].total
+  if volatile[_G.TANK] then
+    signed = signed + tonumber(volatile[_G.TANK])
+  end
+  if volatile[_G.HEALER] then
+    signed = signed + tonumber(volatile[_G.HEALER])
+  end
+  if volatile[_G.RANGED] then
+    signed = signed + tonumber(volatile[_G.RANGED])
+  end
+  if volatile[_G.MELEE] then
+    signed = signed + tonumber(volatile[_G.MELEE])
+  end
+  return string.format("%s: %d/%d",L["Signups"], signed, cap), signed, cap
 end
 
 function bepgp_bench:BenchTotals()
@@ -251,92 +276,30 @@ function bepgp_bench:BenchBreakDown()
   return out
 end
 
-local limits = {
-  raidLimits = {
-    ["T7"] = {
-      total = 25,
-      [_G.TANK] = 2,
-      [_G.HEALER] = 5,
-    },
-    ["T8"] = {
-      total = 25,
-      [_G.TANK] = 2,
-      [_G.HEALER] = 5,
-    },
-    ["T9"] = {
-      total = 25,
-      [_G.TANK] = 3,
-      [_G.HEALER] = 5,
-    },
-    ["T10"] = {
-      total = 25,
-      [_G.TANK] = 3,
-      [_G.HEALER] = 5,
-    },
-    ["T10.5"] = {
-      total = 25,
-      [_G.TANK] = 3,
-      [_G.HEALER] = 6,
-    },
-  },
-}
-
-if bepgp._bcc then
-  options.args.raid.values = { ["T6.5"]=L["4.Sunwell Plateau"], ["T6"]=L["3.Black Temple, Hyjal"], ["T5"]=L["2.Serpentshrine Cavern, The Eye"], ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]}
-  options.args.raid.sorting = {"T4", "T5", "T6", "T6.5"}
-  limits.raidLimits = {
-    ["T4"] = {
-      total = 25,
-      [_G.TANK] = 3,
-      [_G.HEALER] = 6,
-    },
-    ["T5"] = {
-      total = 25,
-      [_G.TANK] = 3,
-      [_G.HEALER] = 7,
-    },
-    ["T6"] = {
-      total = 25,
-      [_G.TANK] = 3,
-      [_G.HEALER] = 7,
-    },
-    ["T6.5"] = {
-      total = 25,
-      [_G.TANK] = 3,
-      [_G.HEALER] = 8,
-    }
-  }
-end
-
-if bepgp._classic then
-  options.args.raid.values = { ["T3"]=L["4.Naxxramas"], ["T2.5"]=L["3.Temple of Ahn\'Qiraj"], ["T2"]=L["2.Blackwing Lair"], ["T1"]=L["1.Molten Core"]}
-  options.args.raid.sorting = {"T1", "T2", "T2.5", "T3"}
-  limits.raidLimits = {
-    ["T1"] = {
-      total = 40,
-      [_G.TANK] = 3,
-      [_G.HEALER] = 10,
-    },
-    ["T2"] = {
-      total = 40,
-      [_G.TANK] = 4,
-      [_G.HEALER] = 12,
-    },
-    ["T2.5"] = {
-      total = 40,
-      [_G.TANK] = 5,
-      [_G.HEALER] = 14,
-    },
-    ["T3"] = {
-      total = 40,
-      [_G.TANK] = 6,
-      [_G.HEALER] = 15,
-    }
-  }
+function bepgp_bench:Limits()
+  local system = bepgp:GetPriceSystem(bepgp.db.profile.system)
+  local flavor = system and system.flavor
+  local progress = bepgp.db.profile.progress
+  if flavor then
+    limits.raidLimits = bepgp._progsets[flavor].raidLimits
+    return limits
+  end
+  if bepgp._wrath then
+    limits.raidLimits = bepgp._progsets._wrath.raidLimits
+    return limits
+  end
+  if bepgp._bcc then
+    limits.raidLimits = bepgp._progsets._bcc.raidLimits
+    return limits
+  end
+  if bepgp._classic then
+    limits.raidLimits = bepgp._progsets._classic.raidLimits
+    return limits
+  end
 end
 
 function bepgp_bench:injectOptions()
-  bepgp.db.char.benchcalc = bepgp.db.char.benchcalc or limits
+  bepgp.db.char.benchcalc = self:Limits()
   bepgp._options.args.general.args.benchcalc = options
   bepgp._options.args.general.args.benchcalc.cmdHidden = true
 end
@@ -354,7 +317,16 @@ function bepgp_bench:CoreInit()
   end
 end
 
+function bepgp_bench:PriceSystemUpdate()
+  bepgp.db.char.benchcalc = self:Limits()
+  local raidid = volatile.raid ~= "" and volatile.raid or bepgp.db.profile.progress
+  if not bepgp.db.char.benchcalc[raidid] then
+    volatile.raid = tostring(bepgp.db.profile.progress)
+  end
+end
+
 function bepgp_bench:OnEnable()
   self:RegisterMessage(addonName.."_INIT_DONE","CoreInit")
+  self:RegisterMessage(addonName.."_PRICESYSTEM", "PriceSystemUpdate")
   self:delayInit()
 end

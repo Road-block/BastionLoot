@@ -18,40 +18,7 @@ local locsorted = {"_FAV", "INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "
 local progressmap
 local tierlist,tiersort
 local modlist,modsort
-if bepgp._wrath then
-  progressmap = {
-    ["T10.5"] = {"T10.5", "T10","T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
-    ["T10"]   = {"T10","T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
-    ["T9.5"]  = {"T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
-    ["T9"]    = {"T9", "T8.5", "T8", "T7.5", "T7"},
-    ["T8.5"]  = {"T8.5", "T8", "T7.5", "T7"},
-    ["T8"]    = {"T8", "T7.5", "T7"},
-    ["T7.5"]  = {"T7.5","T7"},
-    ["T7"]    = {"T7"}
-  }
-  tierlist,tiersort = {["T10.5"]="T10.5",["T10"]="T10",["T9.5"]="T9.5",["T9"]="T9",["T8.5"]="T8.5",["T8"]="T8",["T7.5"]="T7.5",["T7"]="T7"}, {"T10.5","T10","T9.5","T9","T8.5","T8","T7.5","T7"}
-  modlist,modsort = {["T10.5"]="T10.5",["T10"]="T10",["T9"]="T9",["T8"]="T8",["T7"]="T7"},{"T10.5","T10","T9","T8","T7"}
-end
-if bepgp._bcc then
-  progressmap = {
-    ["T6.5"] = {"T6.5","T6","T5","T4"},
-    ["T6"] = {"T6", "T5", "T4"},
-    ["T5"] = {"T5", "T4"},
-    ["T4"] = {"T4"}
-  }
-  tierlist,tiersort = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"}, {"T6.5","T6","T5","T4"}
-  modlist,modsort = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"}, {"T6.5","T6","T5","T4"}
-end
-if bepgp._classic then
-  progressmap = {
-    ["T3"] = {"T3","T2.5","T2","T1.5","T1"},
-    ["T2.5"] = {"T2.5","T2","T1.5","T1"},
-    ["T2"] = {"T2","T1.5","T1"},
-    ["T1"] = {"T1.5","T1"}
-  }
-  tierlist,tiersort = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1.5"]="T1.5",["T1"]="T1"}, {"T3","T2.5","T2","T1.5","T1"}
-  modlist,modsort = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1"]="T1"}, {"T3","T2.5","T2","T1.5","T1"}
-end
+
 local questionblue = CreateAtlasMarkup("QuestRepeatableTurnin")
 
 local function st_sorter_numeric(st,rowa,rowb,col)
@@ -284,6 +251,8 @@ function bepgp_browser:OnEnable()
 
   bepgp:make_escable(container,"add")
   self:RegisterMessage(addonName.."_INIT_DONE","CoreInit")
+  self:RegisterMessage(addonName.."_PRICESYSTEM", "PriceSystemUpdate")
+  self:PriceSystemUpdate()
 end
 
 function bepgp_browser:Toggle()
@@ -383,6 +352,7 @@ function bepgp_browser:Refresh()
       end
     end
     self._container._export.frame:Show()
+    self._container._browserimport.frame:Show()
   else
     for _, info in pairs(data[slotvalue]) do
       local id,price,tier = info[1],info[2],info[3]
@@ -405,6 +375,7 @@ function bepgp_browser:Refresh()
       end
     end
     self._container._export.frame:Hide()
+    self._container._browserimport.frame:Hide()
   end
   self:RefreshGUI(slotvalue)
 end
@@ -414,23 +385,23 @@ function bepgp_browser:CoreInit()
   if not self._initDone then
     progress = bepgp.db.profile.progress
     favorites = bepgp.db.char.favorites
-    local bepgp_prices
-    if bepgp._classic then
-      bepgp_prices = bepgp:GetModule(addonName.. "_prices")
-      tokens = bepgp:GetModule(addonName.."_tokens")
-    end
-    if bepgp._bcc then
-      bepgp_prices = bepgp:GetModule(addonName.."_prices_bc")
-      tokens = bepgp:GetModule(addonName.."_tokens_bc")
-    end
-    if bepgp._wrath then
-      bepgp_prices = bepgp:GetModule(addonName.."_prices_wrath")
-      tokens = {}
-    end
-    if bepgp_prices and bepgp_prices._prices then
-      pricelist = bepgp_prices._prices
-    else
-      pricelist = {}
+    self:PriceListLookups()
+    self:PriceListData()
+    self._container._filterslots:SetList(filter,locsorted)
+    self._container._filterslots:SetValue("_FAV")
+    local tierfilter = progressmap[progress]
+    for _,option in pairs(tierfilter) do
+      self._container._filtertier:SetItemValue(option,true)
+    end    
+    self._container._modpreview:SetValue(progress)
+    self._initDone = true
+  end
+end
+
+function bepgp_browser:PriceListData(redo)
+  if pricelist then
+    if redo then
+      data = table.wipe(data)
     end
     for id,info in pairs(pricelist) do
       local itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = GetItemInfoInstant(id)
@@ -459,14 +430,71 @@ function bepgp_browser:CoreInit()
       if loc ~= "_FAV" and filter[loc]==nil then
         table.remove(locsorted,i)
       end
-    end
-    self._container._filterslots:SetList(filter,locsorted)
-    self._container._filterslots:SetValue("_FAV")
-    local tierfilter = progressmap[progress]
-    for _,option in pairs(tierfilter) do
-      self._container._filtertier:SetItemValue(option,true)
-    end
-    self._container._modpreview:SetValue(progress)
-    self._initDone = true
+    end    
   end
+end
+
+local priceModLookup = {_classic={"_prices","_tokens"},_bcc={"_prices_bc","_tokens_bc"},_wrath={"_prices_wrath","_tokens_wrath"}}
+function bepgp_browser:PriceListLookups()
+  local system = bepgp:GetPriceSystem(bepgp.db.profile.system)
+  local flavor = system and system.flavor
+  local bepgp_prices
+  if bepgp._classic then
+    bepgp_prices = bepgp:GetModule(addonName..priceModLookup._classic[1])
+    tokens = bepgp:GetModule(addonName..priceModLookup._classic[2])
+  end
+  if bepgp._bcc then
+    bepgp_prices = bepgp:GetModule(addonName..priceModLookup._bcc[1])
+    tokens = bepgp:GetModule(addonName..priceModLookup._bcc[2])
+  end
+  if bepgp._wrath then
+    bepgp_prices = bepgp:GetModule(addonName..priceModLookup._wrath[1])
+    tokens = bepgp:GetModule(addonName..priceModLookup._wrath[2],true) or {}
+  end
+  if flavor then
+    bepgp_prices = bepgp:GetModule(addonName..priceModLookup[flavor][1])
+    tokens = bepgp:GetModule(addonName..priceModLookup[flavor][2],true) or {}
+  end
+  if bepgp_prices and bepgp_prices._prices then
+    pricelist = bepgp_prices._prices
+  else
+    pricelist = {}
+  end
+end
+
+function bepgp_browser:PriceSystemUpdate()
+  local system = bepgp:GetPriceSystem(bepgp.db.profile.system)
+  local flavor = system and system.flavor 
+  if flavor then
+    progressmap = bepgp._progsets[flavor].progressmap
+    tierlist = bepgp._progsets[flavor].tierlist
+    tiersort = bepgp._progsets[flavor].tiersort
+    modlist = bepgp._progsets[flavor].modlist
+    modsort = bepgp._progsets[flavor].modsort
+  elseif bepgp._wrath then
+    progressmap = bepgp._progsets._wrath.progressmap
+    tierlist = bepgp._progsets._wrath.tierlist
+    tiersort = bepgp._progsets._wrath.tiersort
+    modlist = bepgp._progsets._wrath.modlist
+    modsort = bepgp._progsets._wrath.modsort
+  elseif bepgp._bcc then
+    progressmap = bepgp._progsets._bcc.progressmap
+    tierlist = bepgp._progsets._bcc.tierlist
+    tiersort = bepgp._progsets._bcc.tiersort
+    modlist = bepgp._progsets._bcc.modlist
+    modsort = bepgp._progsets._bcc.modsort
+  elseif bepgp._classic then
+    progressmap = bepgp._progsets._classic.progressmap
+    tierlist = bepgp._progsets._classic.tierlist
+    tiersort = bepgp._progsets._classic.tiersort
+    modlist = bepgp._progsets._classic.modlist
+    modsort = bepgp._progsets._classic.modsort
+  end
+  if self._initDone then
+    self:PriceListLookups()
+    self:PriceListData(true)
+  end   
+  self._container._filtertier:SetList(tierlist,tiersort)
+  self._container._modpreview:SetList(modlist,modsort)
+  self._container._filterslots:SetList(filter,locsorted)
 end

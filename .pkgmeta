@@ -1,9 +1,6 @@
 package-as: BastionLoot
 enable-nolib-creation: no
 
-move-folders:
-  BastionLoot/Plugins/BastionLoot_Gearpoints-1.2: BastionLoot_Gearpoints-1.2
-
 ignore:
   - .gitignore
   - .pkgmeta

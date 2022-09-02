@@ -227,6 +227,97 @@ do
     }
   }
 end
+do
+  bepgp._progsets = {
+    _wrath = {
+      progress_values = {
+        ["T10.5"]=L["5.RS"],
+        ["T10"]  =L["4.ICC, VoA-T"],
+        ["T9"]   =L["3.ToCR, Ony, VoA-K"],
+        ["T8"]   =L["2.EoE, Uld, VoA-E"],
+        ["T7"]   =L["1.Naxx, OS, VoA-A"]
+      },
+      progress_sorting = {"T10.5", "T10", "T9", "T8", "T7"},
+      progressmap = {
+        ["T10.5"] = {"T10.5", "T10","T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
+        ["T10"]   = {"T10","T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
+        ["T9.5"]  = {"T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
+        ["T9"]    = {"T9", "T8.5", "T8", "T7.5", "T7"},
+        ["T8.5"]  = {"T8.5", "T8", "T7.5", "T7"},
+        ["T8"]    = {"T8", "T7.5", "T7"},
+        ["T7.5"]  = {"T7.5","T7"},
+        ["T7"]    = {"T7"}
+      },
+      tierlist = {["T10.5"]="T10.5",["T10"]="T10",["T9.5"]="T9.5",["T9"]="T9",["T8.5"]="T8.5",["T8"]="T8",["T7.5"]="T7.5",["T7"]="T7"},
+      tiersort = {"T10.5","T10","T9.5","T9","T8.5","T8","T7.5","T7"},
+      modlist = {["T10.5"]="T10.5",["T10"]="T10",["T9"]="T9",["T8"]="T8",["T7"]="T7"},
+      modsort = {"T10.5","T10","T9","T8","T7"},
+      bench_values = {["T10.5"]=L["5.RS"], ["T10"]=L["4.ICC, VoA-T"], ["T9"]=L["3.ToCR, Ony, VoA-K"], ["T8"]=L["2.EoE, Uld, VoA-E"], ["T7"]=L["1.Naxx, OS, VoA-A"]},
+      bench_sorting = {"T7", "T8", "T9", "T10", "T10.5"},
+      raidLimits = {
+        ["T7"] = {total = 25,[_G.TANK] = 2,[_G.HEALER] = 5,},
+        ["T8"] = {total = 25,[_G.TANK] = 2,[_G.HEALER] = 5,},
+        ["T9"] = {total = 25,[_G.TANK] = 3,[_G.HEALER] = 5,},
+        ["T10"] = {total = 25,[_G.TANK] = 3,[_G.HEALER] = 5,},
+        ["T10.5"] = {total = 25,[_G.TANK] = 3,[_G.HEALER] = 6,},
+      },
+    },
+    _bcc = {
+      progress_values = {
+        ["T6.5"]=L["4.Sunwell Plateau"],
+        ["T6"]=L["3.Black Temple, Hyjal"],
+        ["T5"]=L["2.Serpentshrine Cavern, The Eye"],
+        ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]
+      },
+      progress_sorting = {"T6.5", "T6", "T5", "T4"},
+      progressmap = {
+        ["T6.5"] = {"T6.5","T6","T5","T4"},
+        ["T6"] = {"T6", "T5", "T4"},
+        ["T5"] = {"T5", "T4"},
+        ["T4"] = {"T4"}
+      },
+      tierlist = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"},
+      tiersort = {"T6.5","T6","T5","T4"},
+      modlist = {["T6.5"]="T6.5",["T6"]="T6",["T5"]="T5",["T4"]="T4"},
+      modsort = {"T6.5","T6","T5","T4"},
+      bench_values = { ["T6.5"]=L["4.Sunwell Plateau"], ["T6"]=L["3.Black Temple, Hyjal"], ["T5"]=L["2.Serpentshrine Cavern, The Eye"], ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]},
+      bench_sorting = {"T4", "T5", "T6", "T6.5"},
+      raidLimits = {
+        ["T4"] = {total = 25,[_G.TANK] = 3,[_G.HEALER] = 6,},
+        ["T5"] = {total = 25,[_G.TANK] = 3,[_G.HEALER] = 7,},
+        ["T6"] = {total = 25,[_G.TANK] = 3,[_G.HEALER] = 7,},
+        ["T6.5"] = {total = 25,[_G.TANK] = 3,[_G.HEALER] = 8,},
+      },
+    },
+    _classic = {
+      progress_values = {
+        ["T3"]=L["4.Naxxramas"],
+        ["T2.5"]=L["3.Temple of Ahn\'Qiraj"],
+        ["T2"]=L["2.Blackwing Lair"],
+        ["T1"]=L["1.Molten Core"]
+      },
+      progress_sorting = {"T3", "T2.5", "T2", "T1"},
+      progressmap = {
+        ["T3"] = {"T3","T2.5","T2","T1.5","T1"},
+        ["T2.5"] = {"T2.5","T2","T1.5","T1"},
+        ["T2"] = {"T2","T1.5","T1"},
+        ["T1"] = {"T1.5","T1"},
+      },
+      tierlist = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1.5"]="T1.5",["T1"]="T1"}, 
+      tiersort = {"T3","T2.5","T2","T1.5","T1"},
+      modlist = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1"]="T1"}, 
+      modsort = {"T3","T2.5","T2","T1.5","T1"},
+      bench_values = { ["T3"]=L["4.Naxxramas"], ["T2.5"]=L["3.Temple of Ahn\'Qiraj"], ["T2"]=L["2.Blackwing Lair"], ["T1"]=L["1.Molten Core"]},
+      bench_sorting = {"T1", "T2", "T2.5", "T3"},
+      raidLimits = {
+        ["T1"] = {total = 40,[_G.TANK] = 3,[_G.HEALER] = 10,},
+        ["T2"] = {total = 40,[_G.TANK] = 4,[_G.HEALER] = 12,},
+        ["T2.5"] = {total = 40,[_G.TANK] = 5,[_G.HEALER] = 14,},
+        ["T3"] = {total = 40,[_G.TANK] = 6,[_G.HEALER] = 15,},
+      },
+    },
+  }
+end  
 local item_bind_patterns = {
   CRAFT = "("..USE_COLON..")",
   BOP = "("..ITEM_BIND_ON_PICKUP..")",
@@ -483,34 +574,8 @@ bepgp.cmdtable = function()
   end
 end
 
-local progress_values = {
-  ["T10.5"]=L["5.RS"],
-  ["T10"]  =L["4.ICC, VoA-T"],
-  ["T9"]   =L["3.ToCR, Ony, VoA-K"],
-  ["T8"]   =L["2.EoE, Uld, VoA-E"],
-  ["T7"]   =L["1.Naxx, OS, VoA-A"]
-}
-local progress_sorting = {"T10.5", "T10", "T9", "T8", "T7"}
-if bepgp._bcc then
-  progress_values = {
-    ["T6.5"]=L["4.Sunwell Plateau"],
-    ["T6"]=L["3.Black Temple, Hyjal"],
-    ["T5"]=L["2.Serpentshrine Cavern, The Eye"],
-    ["T4"]=L["1.Karazhan, Magtheridon, Gruul, World Bosses"]
-  }
-  progress_sorting = {"T6.5", "T6", "T5", "T4"}
-end
-if bepgp._classic then
-  progress_values = {
-    ["T3"]=L["4.Naxxramas"],
-    ["T2.5"]=L["3.Temple of Ahn\'Qiraj"],
-    ["T2"]=L["2.Blackwing Lair"],
-    ["T1"]=L["1.Molten Core"]
-  }
-  progress_sorting = {"T3", "T2.5", "T2", "T1"}
-end
-function bepgp:options()
-  if not (self._options) then
+function bepgp:options(force)
+  if not (self._options) or force then
     self._options = 
     {
       type = "group",
@@ -698,14 +763,44 @@ function bepgp:options()
       hidden = function() return not (bepgp:admin()) end,
       get = function() return bepgp.db.profile.progress end,
       set = function(info, val)
-        bepgp.db.profile.progress = val
+        bepgp.db.profile.progress = val -- DEBUG print("optionset:"..val)
         bepgp:refreshPRTablets()
         if (IsGuildLeader()) then
           bepgp:shareSettings(true)
         end
       end,
-      values = progress_values,
-      sorting = progress_sorting,
+      values = function()
+        local system = bepgp.db.profile.system
+        if price_systems[system] then
+          local flavor = price_systems[system].flavor
+          if flavor and bepgp._progsets[flavor] then
+            return bepgp._progsets[flavor].progress_values
+          end
+        end
+        if bepgp._wrath then 
+          return bepgp._progsets._wrath.progress_values
+        elseif bepgp._bcc then
+          return bepgp._progsets._bcc.progress_values
+        elseif bepgp._classic then
+          return bepgp._progsets._classic.progress_values
+        end
+      end,
+      sorting = function()
+        local system = bepgp.db.profile.system
+        if price_systems[system] then
+          local flavor = price_systems[system].flavor
+          if flavor and bepgp._progsets[flavor] then
+            return bepgp._progsets[flavor].progress_sorting
+          end
+        end        
+        if bepgp._wrath then 
+          return bepgp._progsets._wrath.progress_sorting
+        elseif bepgp._bcc then
+          return bepgp._progsets._bcc.progress_sorting
+        elseif bepgp._classic then
+          return bepgp._progsets._classic.progress_sorting
+        end
+      end,
     }
     self._options.args.general.args.main.args["report_channel"] = {
       type = "select",
@@ -2096,6 +2191,9 @@ end
 
 function bepgp:OnEnable() -- 2. PLAYER_LOGIN
   self._playerFullName = string.format("%s-%s", UnitFullName("player"))
+  if GetMaxPlayerLevel and bepgp.VARS.minlevel > GetMaxPlayerLevel() then
+    bepgp.VARS.minlevel = GetMaxPlayerLevel()
+  end
   if IsInGuild() then
     local guildname = GetGuildInfo("player")
     if not guildname then
@@ -2747,7 +2845,7 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
         altspct = tonumber(altspct)
         local settings_notice
         if progress and progress ~= bepgp.db.profile.progress then
-          bepgp.db.profile.progress = progress
+          bepgp.db.profile.progress = progress -- DEBUG print("shared:"..progress)
           settings_notice = L["New raid progress"]
         end
         if discount and discount ~= bepgp.db.profile.discount then
@@ -3222,25 +3320,40 @@ end
 function bepgp:SetPriceSystem(context)
   local system = self.db.profile.system
   if not price_systems[system] then
-    self.GetPrice = price_systems[self.VARS.pricesystem]
+    self.GetPrice = price_systems[self.VARS.pricesystem].func
     self.db.profile.system = self.VARS.pricesystem
     context = "DEFAULT"
   else
-    self.GetPrice = price_systems[system]
+    self.GetPrice = price_systems[system].func
   end
   if not (type(self.GetPrice)=="function") then -- fallback to first available
-    for name,func in pairs(price_systems) do
+    for name,system in pairs(price_systems) do
       self.db.profile.system = name
-      self.GetPrice = func
+      self.GetPrice = system.func
       context = "FALLBACK"
       break
     end
   end
+  local progress = self.db.profile.progress
+  local flavor = price_systems[self.db.profile.system].flavor
+  if flavor and progress and not self._progsets[flavor].progress_values[progress] then
+    self.db.profile.progress = self._progsets[flavor].progress_sorting[1]
+    if IsGuildLeader() then
+      self:shareSettings()
+    end
+  end
+  self:SendMessage(addonName.."_PRICESYSTEM")
   self:debugPrint(string.format(L["Price system set to: %q %s"],self.db.profile.system,(context or "")))
 end
 
-function bepgp:RegisterPriceSystem(name, priceFunc)
-  price_systems[name]=priceFunc
+function bepgp:GetPriceSystem(name)
+  if price_systems[name] then
+    return price_systems[name]
+  end
+end
+
+function bepgp:RegisterPriceSystem(name, system)
+  price_systems[name]=system
 end
 
 function bepgp:getRaidID()
@@ -3845,7 +3958,7 @@ function bepgp:givename_ep(getname,ep,single) -- awards ep to a single character
 end
 
 function bepgp:givename_gp(getname,gp) -- assigns gp to a single character
-  print(getname..">"..gp) -- DEBUG
+  --print(getname..">"..gp) -- DEBUG
   if not (self:admin()) then return end
   local postfix, alt = ""
   local guildcache = self.db.profile.guildcache
@@ -3922,6 +4035,10 @@ function bepgp:refreshPRTablets()
   local bids = self:GetModule(addonName.."_bids")
   if bids then
     bids:Refresh()
+  end
+  local plusroll_bids = self:GetModule(addonName.."_plusroll_bids")
+  if plusroll_bids then
+    plusroll_bids:Refresh()
   end
   local browser = self:GetModule(addonName.."_browser")
   if browser then

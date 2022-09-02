@@ -4978,7 +4978,8 @@ function bepgp_prices_wrath:GetPrice(item,progress)
 end
 
 function bepgp_prices_wrath:OnEnable()
-  bepgp:RegisterPriceSystem(name_version,bepgp_prices_wrath.GetPrice)
+  local system = {func=bepgp_prices_wrath.GetPrice,flavor="_wrath"}
+  bepgp:RegisterPriceSystem(name_version,system)
   local mzt,_,_,_,reason = GetAddOnInfo("MizusRaidTracker")
   if not (reason == "ADDON_MISSING" or reason == "ADDON_DISABLED") then
     local loading, finished = IsAddOnLoaded("MizusRaidTracker")
