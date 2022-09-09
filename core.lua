@@ -46,10 +46,56 @@ bepgp.VARS = {
   unassigned = C:Red(L["Unassigned"]),
   autoloot = {
     [40752] = "BadgeHero",
+    [101] = "currency",
     [40753] = "BadgeValor",
+    [102] = "currency",
     [45624] = "BadgeConquest",
+    [221] = "currency",
     [47241] = "BadgeTriumph",
+    [301] = "currency",
     [49426] = "BadgeFrost",
+    [341] = "currency",
+    [241] = "currency",
+    -- bcc
+    [29434] = "Badge",
+    [42] = "currency",
+    [28558] = "SpiritShard",
+    [29425] = "MarkKJ",
+    [30809] = "MarkSG",
+    [29426] = "SignetFW",
+    [30810] = "SignetSF",
+    [24368] = "Coilfang",
+    [25433] = "Warbead",
+    [29209] = "Zaxxis",
+    [25463] = "IvoryTusk",
+    [26042] = "OshuPowder",
+    [32569] = "ApexisShard",
+    [32572] = "ApexisCrystal",
+    [32388] = "ShadowDust",
+    [32620] = "TimeLostScroll",
+    [30436] = "MechBlue",
+    [30437] = "MechRed",
+    [24514] = "Karafrag1",
+    [24487] = "Karafrag2",
+    [24488] = "Karafrag3",
+    [31239] = "Shhkeymold",
+    [31750] = "Gruulsignet",
+    [23933] = "Medivjournal",
+    [25461] = "Sythbook",
+    [25462] = "KurseTome",
+    [31751] = "NightBsignet",
+    [31716] = "ShhAxe",
+    [31721] = "SVtrident",
+    [31722] = "SLessence",
+    [29906] = "VashVial",
+    [29905] = "KaelVial",
+    [31307] = "HeartFury",
+    [32459] = "Timephylactery",
+    -- classic
+    [21229] = "Insignia",
+    [21230] = "Artifact",
+    [23055] = "Thawing",
+    [22708] = "Ramaladni",    
   },
 }
 if bepgp._bcc then
@@ -101,7 +147,7 @@ if bepgp._classic then
     [21229] = "Insignia",
     [21230] = "Artifact",
     [23055] = "Thawing",
-    [22708] = "Ramaladni"
+    [22708] = "Ramaladni",
   }
 end
 bepgp._playerName = GetUnitName("player")
@@ -2496,15 +2542,28 @@ function bepgp:autoLoot(event,auto)
   for slot = numLoot,1,-1 do
     if LootSlotHasItem(slot) then
       local itemLink = GetLootSlotLink(slot)
-      if (itemLink) then
-        local _,_,_,itemID = self:getItemData(itemLink)
-        if bepgp.VARS.autoloot[itemID] then
-          LootSlot(slot)
-          ConfirmLootSlot(slot)
+      local slotType = GetLootSlotType(slot)
+      if slotType == LOOT_SLOT_CURRENCY then
+        if (itemLink) then
+          local _,_,_,currencyID = self:getCurrencyData(itemLink)
+          local autolootCurrency = bepgp.VARS.autoloot[currencyID] and bepgp.VARS.autoloot[currencyID] == "currency"
+          if currencyID and autolootCurrency then
+            LootSlot(slot)
+            ConfirmLootSlot(slot)
+          end
         end
-        if bepgp.db.char.favalert then
-          if bepgp.db.char.favorites[itemID] then
-            bepgp:Alert(string.format(L["BastionLoot Favorite: %s"],itemLink))
+      else
+        if (itemLink) then
+          local _,_,_,itemID = self:getItemData(itemLink)
+          local autolootItem = bepgp.VARS.autoloot[itemID] and bepgp.VARS.autoloot[itemID] ~= "currency"
+          if itemID and autolootItem then
+            LootSlot(slot)
+            ConfirmLootSlot(slot)
+          end
+          if bepgp.db.char.favalert then
+            if itemID and bepgp.db.char.favorites[itemID] then
+              bepgp:Alert(string.format(L["BastionLoot Favorite: %s"],itemLink))
+            end
           end
         end
       end
@@ -3462,6 +3521,24 @@ function bepgp:getItemData(itemLink) -- itemcolor, itemstring, itemname, itemid
   if link_found then
     local itemID = GetItemInfoInstant(itemString)
     return itemColor, itemString, itemName, itemID
+  else
+    return
+  end
+end
+
+function bepgp:getCurrencyData(itemLink) -- itemcolor, icon, currencyname, currenciid
+  local link_found, _, itemColor, currencyID, currencyName = string.find(itemLink, "^(|c%x+)|Hcurrency:(%d+).*|h(%[.+%])")
+  if link_found then
+    currencyID = tonumber(currencyID)
+    local func_currencyInfo = C_CurrencyInfo and C_CurrencyInfo.GetBasicCurrencyInfo
+    if func_currencyInfo then
+      local data = func_currencyInfo(currencyID)
+      if data and data.name then
+        if data.name:trim()~="" then
+          return itemColor, data.icon or -1, data.name, currencyID
+        end
+      end
+    end
   else
     return
   end

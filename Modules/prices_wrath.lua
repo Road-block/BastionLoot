@@ -5013,25 +5013,28 @@ function bepgp_prices_wrath:ADDON_LOADED(event,...)
   end
 end
 
---[[local stats = {}
-for i=29000,60000 do
-  local itemID, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = GetItemInfoInstant(i)
-  if itemID and EQUIPSLOT_MULTIPLIER_1[itemEquipLoc] then
-    CACHED_ITEM_DATA[itemID] = {-1,-1,itemEquipLoc}
-    local itemAsync = Item:CreateFromItemID(itemID)
-    itemAsync:ContinueOnItemLoad(function()
-      CACHED_ITEM_DATA[itemID][1] = itemAsync:GetItemQuality()
-      CACHED_ITEM_DATA[itemID][2] = itemAsync:GetCurrentItemLevel()
-      CACHED_ITEM_DATA[itemID][4] = itemAsync:GetItemName()
-      if CACHED_ITEM_DATA[itemID][2] < 200 and CACHED_ITEM_DATA[itemID][1] == 4 then
-        CACHED_ITEM_DATA[itemID] = nil
-      end
-      stats.ITEM_MOD_RESILIENCE_RATING = nil
-      GetItemStats(itemAsync:GetItemLink(),stats)
-      if stats.ITEM_MOD_RESILIENCE_RATING then
-        CACHED_ITEM_DATA[itemID] = nil
-      end
-    end)
+function bepgp_prices_wrath:Recalculate()
+  local stats = {}
+  for i=29000,60000 do
+    local itemID, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = GetItemInfoInstant(i)
+    if itemID and EQUIPSLOT_MULTIPLIER_1[itemEquipLoc] then
+      CACHED_ITEM_DATA[itemID] = {-1,-1,itemEquipLoc}
+      local itemAsync = Item:CreateFromItemID(itemID)
+      itemAsync:ContinueOnItemLoad(function()
+        CACHED_ITEM_DATA[itemID][1] = itemAsync:GetItemQuality()
+        CACHED_ITEM_DATA[itemID][2] = itemAsync:GetCurrentItemLevel()
+        CACHED_ITEM_DATA[itemID][4] = itemAsync:GetItemName()
+        if CACHED_ITEM_DATA[itemID][2] < 200 and CACHED_ITEM_DATA[itemID][1] == 4 then
+          CACHED_ITEM_DATA[itemID] = nil
+        end
+        stats.ITEM_MOD_RESILIENCE_RATING = nil
+        GetItemStats(itemAsync:GetItemLink(),stats)
+        if stats.ITEM_MOD_RESILIENCE_RATING then
+          CACHED_ITEM_DATA[itemID] = nil
+        end
+      end)
+    end
   end
-end]]
+end
+
 bepgp_prices_wrath._prices = prices
