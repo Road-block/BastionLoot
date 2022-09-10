@@ -605,6 +605,24 @@ function bepgp_plusroll_loot:clickHandlerLootElvUI()
   end
 end
 
+function bepgp_plusroll_loot:clickHandlerLootXLoot(row, button, handled)
+  if not handled then
+    self:bidCall(row, button, "lootframe")
+  end
+end
+
+function bepgp_plusroll_loot:xlootUpdate()
+  if XLootFrame and type(XLootFrame.rows) == "table" then
+    for i,row in pairs(XLootFrame.rows) do
+      if not row._bepgprollclicks then
+        row:RegisterForClicks("AnyUp")
+        row.RegisterForClicks = nop
+        row._bepgprollclicks = true
+      end
+    end
+  end
+end
+
 function bepgp_plusroll_loot:hookLootAddons()
   local loading, finished = IsAddOnLoaded("ElvUI")
   if loading and finished then
@@ -617,6 +635,13 @@ function bepgp_plusroll_loot:hookLootAddons()
           self:SecureHook(M,"LOOT_OPENED","clickHandlerLootElvUI")
         end
       end
+    end
+  end
+  loading, finished = IsAddOnLoaded("XLoot_Frame")
+  if loading and finished and XLootButtonOnClick then
+    self:Hook("XLootButtonOnClick","clickHandlerLootXLoot")
+    if XLootFrame then
+      self:SecureHook(XLootFrame,"Update","xlootUpdate")
     end
   end
 end
