@@ -48,7 +48,49 @@ local out = "|cff9664c8"..addonName..":|r %s"
 local running_bid
 local color_msgp, color_osgp = "32cd32", "20b2aa"
 
+local pr_sorter_bids_rank = function(a,b)
+  -- name(1), class(2), ep(3), gp(4), pr(5), rank(6), rankidx(7), main(8)
+  local minep = bepgp.db.profile.minep
+  local priorank = bepgp.db.char.priorank
+  local a_rank_pass = a[7] <= priorank
+  local b_rank_pass = b[7] <= priorank
+  if minep > 0 then
+    local a_over = a[3]-minep >= 0
+    local b_over = b[3]-minep >= 0
+    if a_over and b_over or (not a_over and not b_over) then
+      if a_rank_pass and b_rank_pass or (not a_rank_pass and not b_rank_pass) then
+        if a[5] ~= b[5] then
+          return tonumber(a[5]) > tonumber(b[5])
+        else
+          return tonumber(a[3]) > tonumber(b[3])
+        end
+      elseif a_rank_pass and (not b_rank_pass) then
+        return true
+      elseif b_rank_pass and (not a_rank_pass) then
+        return false
+      end
+    elseif a_over and (not b_over) then
+      return true
+    elseif b_over and (not a_over) then
+      return false
+    end
+  else
+    if a_rank_pass and b_rank_pass or (not a_rank_pass and not b_rank_pass) then
+      if a[5] ~= b[5] then
+        return tonumber(a[5]) > tonumber(b[5])
+      else
+        return tonumber(a[3]) > tonumber(b[3])
+      end
+    elseif a_rank_pass and (not b_rank_pass) then
+      return true
+    elseif b_rank_pass and (not a_rank_pass) then
+      return false
+    end
+  end
+end
+
 local pr_sorter_bids = function(a,b)
+  -- name(1), class(2), ep(3), gp(4), pr(5), rank(6), rankidx(7), main(8)
   local minep = bepgp.db.profile.minep
   if minep > 0 then
     local a_over = a[3]-minep >= 0
@@ -91,12 +133,27 @@ function bepgp_bids:OnEnable()
 end
 
 function bepgp_bids:announceWinner(data)
+  local minep_applies = bepgp.db.profile.minep > 0
+  local rank_applies = bepgp.db.char.priorank ~= bepgp.VARS.priorank
+  local rankos_applies = rank_applies and not bepgp.db.char.priorank_ms
   local name, pr, msos = data[1], data[2], data[3]
   local out
   if msos == "ms" then
     out = L["Winning Mainspec Bid: %s (%.03f PR)"]
+    if rank_applies then
+      out = out .. L["+RankPrio"]
+    end
+    if minep_applies then
+      out = out .. string.format(L[",MinEP:%d"],bepgp.db.profile.minep)
+    end
   elseif msos == "os" then
     out = L["Winning Offspec Bid: %s (%.03f PR)"]
+    if rankos_applies then
+      out = out .. L["+RankPrio"]
+    end
+    if minep_applies then
+      out = out .. string.format(L[",MinEP:%d"],bepgp.db.profile.minep)
+    end
   end
   if out then
     bepgp:widestAudience(out:format(name,pr))
@@ -109,9 +166,18 @@ function bepgp_bids:announcedisench(data)
 end
 
 function bepgp_bids:updateBids()
-  -- {name,class,ep,gp,ep/gp,rank[,main]}
-  table.sort(self.bids_main, pr_sorter_bids)
-  table.sort(self.bids_off, pr_sorter_bids)
+  -- {name,class,ep,gp,ep/gp,rank,rankid[,main]}
+  if bepgp.db.char.priorank ~= bepgp.VARS.priorank then
+    table.sort(self.bids_main, pr_sorter_bids_rank)
+    if not bepgp.db.char.priorank_ms then
+      table.sort(self.bids_off, pr_sorter_bids_rank)
+    else
+      table.sort(self.bids_off, pr_sorter_bids)
+    end
+  else
+    table.sort(self.bids_main, pr_sorter_bids)
+    table.sort(self.bids_off, pr_sorter_bids)
+  end
 end
 
 function bepgp_bids:Refresh()
@@ -160,7 +226,7 @@ function bepgp_bids:Refresh()
       frame:SetCell(line,6,C:Orange(L["Main"]),nil,"RIGHT")
       line = frame:AddSeparator(1)
       for i,data in ipairs(self.bids_main) do
-        local name, class, ep, gp, pr, rank, main = unpack(data)
+        local name, class, ep, gp, pr, rank, rankidx, main = unpack(data)
         local eclass,_,hexclass = bepgp:getClassData(class)
         local r,g,b = RAID_CLASS_COLORS[eclass].r, RAID_CLASS_COLORS[eclass].g, RAID_CLASS_COLORS[eclass].b
         --local name_c = C:Colorize(hexclass,name)
@@ -197,7 +263,7 @@ function bepgp_bids:Refresh()
       frame:SetCell(line,6,C:Orange(L["Main"]),nil,"RIGHT")
       line = frame:AddSeparator(1)
       for i,data in ipairs(self.bids_off) do
-        local name, class, ep, gp, pr, rank, main = unpack(data)
+        local name, class, ep, gp, pr, rank, rankidx, main = unpack(data)
         local eclass,_,hexclass = bepgp:getClassData(class)
         local r,g,b = RAID_CLASS_COLORS[eclass].r, RAID_CLASS_COLORS[eclass].g, RAID_CLASS_COLORS[eclass].b
         --local name_c = C:Colorize(hexclass,name)
@@ -377,7 +443,7 @@ function bepgp_bids:captureBid(event, text, sender)
     if bepgp:inRaid(sender) then
       if bids_blacklist[sender] == nil then
         for i = 1, GetNumGuildMembers(true) do
-          local name, rank, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
+          local name, rank, rankIdx, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
           name = Ambiguate(name,"short")
           if name == sender then
             local ep = (bepgp:get_ep(name,officernote) or 0)
@@ -394,16 +460,16 @@ function bepgp_bids:captureBid(event, text, sender)
             if (mskw_found) then
               bids_blacklist[sender] = true
               if (bepgp.db.profile.altspool) and (main_name) then
-                table.insert(bepgp_bids.bids_main,{name,class,ep,gp,ep/gp,rank,main_name})
+                table.insert(bepgp_bids.bids_main,{name,class,ep,gp,ep/gp,rank,rankIdx,main_name})
               else
-                table.insert(bepgp_bids.bids_main,{name,class,ep,gp,ep/gp,rank})
+                table.insert(bepgp_bids.bids_main,{name,class,ep,gp,ep/gp,rank,rankIdx})
               end
             elseif (oskw_found) then
               bids_blacklist[sender] = true
               if (bepgp.db.profile.altspool) and (main_name) then
-                table.insert(bepgp_bids.bids_off,{name,class,ep,gp,ep/gp,rank,main_name})
+                table.insert(bepgp_bids.bids_off,{name,class,ep,gp,ep/gp,rank,rankIdx,main_name})
               else
-                table.insert(bepgp_bids.bids_off,{name,class,ep,gp,ep/gp,rank})
+                table.insert(bepgp_bids.bids_off,{name,class,ep,gp,ep/gp,rank,rankIdx})
               end
             end
             self:updateBids()

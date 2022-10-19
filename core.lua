@@ -34,6 +34,7 @@ bepgp.VARS = {
   timeout = 60,
   minlevel = 80,
   maxloglines = 500,
+  priorank = 100,
   prefix = "BASTIONLOOT_PFX",
   pricesystem = "BastionEPGP_LK-1.0",
   progress = "T7",
@@ -56,6 +57,21 @@ bepgp.VARS = {
     [49426] = "BadgeFrost",
     [341] = "currency",
     [241] = "currency",
+    [22484] = "Necrotic",
+    [43494] = "Watcher",
+    [43670] = "Tiki",
+    [43697] = "Nathrezim",
+    [43726] = "Crown",
+    [43693] = "Mojo",
+    [43668] = "Tuner",
+    [43665] = "Heart",
+    [43669] = "Locket",
+    [43823] = "Cyanigosa",
+    [43724] = "CelestialRuby",
+    [43699] = "FleshDisc",
+    [43821] = "Withered",
+    [43662] = "PlundererAxe",
+    [48418] = "SoulFragment",
     -- bcc
     [29434] = "Badge",
     [42] = "currency",
@@ -403,6 +419,8 @@ local defaults = {
     standby = false,
     bidpopup = false,
     mode = "epgp", -- "plusroll"
+    priorank = bepgp.VARS.priorank,
+    priorank_ms = true,
     logs = {},
     loot = {},
     favorites = {},
@@ -994,15 +1012,60 @@ function bepgp:options(force)
       sorting = {"epgp", "plusroll"},
       order = 140,
     }
+    self._options.args.general.args.main.args["priorank"] = {
+      type = "select",
+      name = L["Rank Priority"],
+      desc = L["Select Rank for increased Loot Prio\n(Selected Rank and Higher override PR of lower ranks)"],
+      get = function()
+        return bepgp.db.char.priorank
+      end,
+      set = function(info, val)
+        bepgp.db.char.priorank = val
+        bepgp:refreshPRTablets()
+      end,
+      values = function()
+        bepgp._guildRanks = {[100]=_G.NONE}
+        bepgp._guildRankSorting = {100}
+        if IsInGuild() then
+          for i=1, GuildControlGetNumRanks() do
+            bepgp._guildRanks[i-1]=GuildControlGetRankName(i)
+            tinsert(bepgp._guildRankSorting,i-1)
+          end
+        end
+        return bepgp._guildRanks
+      end,
+      sorting = function()
+        return bepgp._guildRankSorting
+      end,
+      order = 142,
+      hidden = function() return (bepgp.db.char.mode ~= "epgp") or (bepgp.db.char.mode == "epgp" and not bepgp:admin()) end,
+    }
+    self._options.args.general.args.main.args["priorank_ms"] = {
+      type = "toggle",
+      name = L["Rank Priority MS"],
+      desc = L["Rank Priority only applies to MS bids"],
+      order = 143,
+      get = function()
+        return not not bepgp.db.char.priorank_ms
+      end,
+      set = function(info, val)
+        bepgp.db.char.priorank_ms = not bepgp.db.char.priorank_ms
+        bepgp:refreshPRTablets()
+      end,
+      hidden = function()
+        return (bepgp.db.char.mode ~= "epgp") or (bepgp.db.char.mode == "epgp" and not bepgp:admin()) or (bepgp.db.char.priorank == bepgp.VARS.priorank)
+      end,
+    }
     self._options.args.general.args.main.args["lootclear"] = {
       type = "execute",
       name = L["Clear Loot"],
       desc = L["Clear Loot"],
-      order = 142,
+      order = 144,
       func = function()
         local loot = bepgp:GetModule(addonName.."_loot")
         if loot then
           loot:Clear()
+          loot:Toggle()
         end
       end,
       hidden = function() return (bepgp.db.char.mode ~= "epgp") or (bepgp.db.char.mode == "epgp" and not bepgp:admin()) end,
@@ -1016,6 +1079,7 @@ function bepgp:options(force)
         local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot")
         if plusroll_loot then
           plusroll_loot:Clear()
+          plusroll_loot:Toggle()
         end
       end,
       hidden = function()
@@ -1031,6 +1095,7 @@ function bepgp:options(force)
         local plusroll_reserves = bepgp:GetModule(addonName.."_plusroll_reserves")
         if plusroll_reserves then
           plusroll_reserves:Clear()
+          plusroll_reserves:Toggle()
         end
       end,
       hidden = function() return bepgp.db.char.mode ~= "plusroll" end,
@@ -2559,6 +2624,8 @@ function bepgp:autoLoot(event,auto)
           if itemID and autolootItem then
             LootSlot(slot)
             ConfirmLootSlot(slot)
+            local dialog = StaticPopup_FindVisible("LOOT_BIND")
+            if dialog then _G[dialog:GetName().."Button1"]:Click() end
           end
           if bepgp.db.char.favalert then
             if itemID and bepgp.db.char.favorites[itemID] then

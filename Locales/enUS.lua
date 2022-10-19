@@ -411,5 +411,11 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["3.ToCR, Ony, VoA-K"] = true
   L["2.EoE, Uld, VoA-E"] = true
   L["1.Naxx, OS, VoA-A"] = true
+  L["Rank Priority"] = true
+  L["Select Rank for increased Loot Prio\n(Selected Rank and Higher override PR of lower ranks)"] = true
+  L["Rank Priority MS"] = true
+  L["Rank Priority only applies to MS bids"] = true
+  L["+RankPrio"] = true
+  L[",MinEP:%d"] = true
 
 bepgp.L = L
