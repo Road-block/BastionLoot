@@ -165,6 +165,11 @@ function bepgp_bids:announcedisench(data)
   bepgp:widestAudience(out)
 end
 
+function bepgp_bids:shuffleOffbids(off_bids)
+  bepgp:table_shuffle(off_bids)
+  bepgp_bids:Refresh()
+end
+
 function bepgp_bids:updateBids()
   -- {name,class,ep,gp,ep/gp,rank,rankid[,main]}
   if bepgp.db.char.priorank ~= bepgp.VARS.priorank then
@@ -183,6 +188,7 @@ end
 function bepgp_bids:Refresh()
   local frame = self.qtip
   if not frame then return end
+  local discount = bepgp.db.profile.discount
   frame:StopMovingOrSizing() -- free the mouse if we're mid-drag
   frame:Clear()
   frame:SetMovable(true)
@@ -209,7 +215,7 @@ function bepgp_bids:Refresh()
     frame:SetCell(line,1,self.bid_item.itemlink,nil,"LEFT",2)
     frame:SetCell(line,3,C:Colorize(color_msgp,self.bid_item.price),nil,"RIGHT")
     frame:SetCell(line,4,C:Colorize(color_osgp,self.bid_item.off_price),nil,"RIGHT")
-    frame:SetCell(line,5,"|TInterface\\Icons\\spell_holy_removecurse:18|t",nil,"RIGHT")
+    frame:SetCell(line,5,"|TInterface\\Buttons\\UI-GroupLoot-DE-Up:18:18:-1:1:32:32:2:30:2:30|t",nil,"RIGHT")
     frame:SetCellScript(line,5,"OnMouseUp", bepgp_bids.announcedisench, bepgp_bids.bid_item.itemlink)
     frame:SetCell(line,6,"",nil,"RIGHT")
 
@@ -254,6 +260,10 @@ function bepgp_bids:Refresh()
       line = frame:AddLine(" ")
       line = frame:AddHeader()
       frame:SetCell(line,1,C:Silver(L["Offspec Bids"]),nil,"LEFT",5)
+      if discount == 0 then
+        frame:SetCell(line,6,"|TInterface\\Buttons\\UI-GroupLoot-Dice-Up:18:18:-1:1:32:32:2:30:2:30|t",nil,"RIGHT")
+        frame:SetCellScript(line,6,"OnMouseUp", bepgp_bids.shuffleOffbids, bepgp_bids.bids_off)
+      end
       line = frame:AddHeader()
       frame:SetCell(line,1,C:Orange(L["Name"]),nil,"LEFT")
       frame:SetCell(line,2,C:Orange(L["ep"]),nil,"CENTER")

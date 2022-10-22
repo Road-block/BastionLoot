@@ -3519,6 +3519,14 @@ function bepgp:table_count(t)
   return count
 end
 
+-- in-place shuffle, the original array is "destroyed"
+function bepgp:table_shuffle(t)
+  for i = #t, 2, -1 do
+    local j = math.random(i)
+    t[i], t[j] = t[j], t[i]
+  end
+end
+
 function bepgp:Capitalize(word)
   return (string.gsub(word,"^[%c%s]*([^%c%s%p%d])([^%c%s%p%d]*)",function(head,tail)
     return string.format("%s%s",string.upper(head),string.lower(tail))
