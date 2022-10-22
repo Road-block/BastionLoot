@@ -415,5 +415,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Rank Priority only applies to MS bids"] = "Rank Priority only applies to MS bids" -- needs translation
   L["+RankPrio"] = "+RankPrio" -- needs translation
   L[",MinEP:%d"] = ",MinEP:%d" -- needs translation
+  L["Filter by Item Type"] = "Filter by Item Type" -- needs translation
+  L["AtlasLootClassic and eightyupgrades.com exports are supported"] = "AtlasLootClassic and eightyupgrades.com exports are supported" -- needs translation
 
   bepgp.L = L

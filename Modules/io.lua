@@ -21,7 +21,7 @@ function bepgp_io:OnEnable()
   self._iobrowserimport:EnableResize(false)
   self._iobrowserimport:SetLayout("Fill")
   local browserImportEB = GUI:Create("MultiLineEditBox")
-  browserImportEB:SetLabel(nil)
+  browserImportEB:SetLabel(L["AtlasLootClassic and eightyupgrades.com exports are supported"])
   browserImportEB:SetFullWidth(true)
   self._iobrowserimport.editBox = browserImportEB
   self._iobrowserimport:Hide()

@@ -17,13 +17,22 @@ local filter = {["_FAV"]=C:Yellow(L["Favorites"])}
 local locsorted = {"_FAV", "INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CHEST", "INVTYPE_ROBE", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_WRIST", "INVTYPE_HAND", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_CLOAK", "INVTYPE_WEAPON", "INVTYPE_SHIELD", "INVTYPE_2HWEAPON", "INVTYPE_WEAPONMAINHAND", "INVTYPE_WEAPONOFFHAND", "INVTYPE_HOLDABLE", "INVTYPE_RANGED", "INVTYPE_THROWN", "INVTYPE_RANGEDRIGHT", "INVTYPE_RELIC", "INVTYPE_NON_EQUIP"}
 local progressmap
 local tierlist,tiersort
+local typelist,typesort = {["_ALL"]=C:Green(_G.ALL)}, { }
 local modlist,modsort
+local bulletpoint = "•"
 
 local questionblue = CreateAtlasMarkup("QuestRepeatableTurnin")
 
-local function st_sorter_numeric(st,rowa,rowb,col)
-
+local function itemtype_sort(a, b)
+  if a == "_ALL" then return true end
+  if b == "_ALL" then return false end
+  if typelist[a] and typelist[b] then
+    return typelist[a] < typelist[b]
+  else
+    return a < b
+  end
 end
+
 local favmap = bepgp._favmap
 local fav5,fav4,fav3,fav2,fav1 = favmap[5],favmap[4],favmap[3],favmap[2],favmap[1]
 local menu_close = function()
@@ -159,7 +168,7 @@ function bepgp_browser:OnEnable()
   local container = GUI:Create("Window")
   container:SetTitle(L["BastionLoot browser"])
   container:SetWidth(640)
-  container:SetHeight(290)
+  container:SetHeight(305)
   container:EnableResize(false)
   container:SetLayout("List")
   container:Hide()
@@ -171,7 +180,7 @@ function bepgp_browser:OnEnable()
     {["name"]=C:Orange(L["Item Pool"]),["width"]=60,}, --tier
     {["name"]=C:Orange(L["Favorites"]),["width"]=60}, -- favorited
   }
-  self._browser_table = ST:CreateST(headers,15,nil,colorHighlight,container.frame) -- cols, numRows, rowHeight, highlight, parent
+  self._browser_table = ST:CreateST(headers,16,nil,colorHighlight,container.frame) -- cols, numRows, rowHeight, highlight, parent
   self._browser_table:EnableSelection(true)
   self._browser_table:RegisterEvents({
     ["OnClick"] = item_interact,
@@ -192,6 +201,16 @@ function bepgp_browser:OnEnable()
   filterslots:SetWidth(150)
   self._container._filterslots = filterslots
   container:AddChild(filterslots)
+
+  local filtertype = GUI:Create("Dropdown")
+  filtertype:SetList(typelist,typesort)
+  filtertype:SetCallback('OnValueChanged', function(obj, event, choice)
+    bepgp_browser:Refresh()
+  end)
+  filtertype:SetLabel(L["Filter by Item Type"])
+  filtertype:SetWidth(150)
+  self._container._filtertype = filtertype
+  container:AddChild(filtertype)
 
   local filtertier = GUI:Create("Dropdown")
   filtertier:SetList(tierlist,tiersort)
@@ -242,12 +261,24 @@ function bepgp_browser:OnEnable()
 
   local help = GUI:Create("Label")
   help:SetWidth(150)
-  help:SetText("\n\n"..string.format("%s%s",questionblue,L["Right-click a row to add or remove a Favorite."]))
+  help:SetText(string.format("%s%s",questionblue,L["Right-click a row to add or remove a Favorite."]))
   help:SetColor(1,1,0)
   help:SetJustifyV("TOP")
   help:SetJustifyH("CENTER")
   self._container._help = help
   container:AddChild(help)
+
+  local clear = GUI:Create("Button")
+  clear:SetAutoWidth(true)
+  clear:SetText(_G.CLEAR_ALL)
+  clear:SetCallback("OnClick",function()
+    for item in pairs(favorites) do
+      favorites[item] = nil
+    end
+    bepgp_browser:Refresh()
+  end)
+  self._container._clear = clear
+  container:AddChild(clear)
 
   bepgp:make_escable(container,"add")
   self:RegisterMessage(addonName.."_INIT_DONE","CoreInit")
@@ -329,6 +360,7 @@ function bepgp_browser:Refresh()
       tiervalues[widget.userdata.value] = widget:GetValue()
     end
   end
+  local typevalue = self._container._filtertype:GetValue() or "_ALL"
   table.wipe(subdata)
   if slotvalue == "_FAV" then
     for id, rank in pairs(favorites) do
@@ -340,13 +372,17 @@ function bepgp_browser:Refresh()
         local favrank = favmap[rank]
         local name,link,_,_,_,_,subtype = GetItemInfo(id)
         if (link) then
-          populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+          if typevalue == "_ALL" or subtype == typevalue then
+            populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+          end
         else
           local item = Item:CreateFromItemID(id)
           item:ContinueOnItemLoad(function()
             local id = item:GetItemID()
             local name,link,_,_,_,_,subtype = GetItemInfo(id)
-            populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+            if typevalue == "_ALL" or subtype == typevalue then
+              populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+            end
           end)
         end        
       end
@@ -363,13 +399,17 @@ function bepgp_browser:Refresh()
         local favrank = rank and favmap[rank] or ""
         local name,link,_,_,_,_,subtype = GetItemInfo(id)
         if (link) then
-          populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+          if typevalue == "_ALL" or subtype == typevalue then
+            populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+          end
         else
           local item = Item:CreateFromItemID(id)
           item:ContinueOnItemLoad(function()
             local id = item:GetItemID()
             local name,link,_,_,_,_,subtype = GetItemInfo(id)
-            populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+            if typevalue == "_ALL" or subtype == typevalue then
+              populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+            end
           end)
         end
       end
@@ -389,6 +429,8 @@ function bepgp_browser:CoreInit()
     self:PriceListData()
     self._container._filterslots:SetList(filter,locsorted)
     self._container._filterslots:SetValue("_FAV")
+    self._container._filtertype:SetList(typelist,typesort)
+    self._container._filtertype:SetValue("_ALL")
     local tierfilter = progressmap[progress]
     for _,option in pairs(tierfilter) do
       self._container._filtertier:SetItemValue(option,true)
@@ -405,6 +447,7 @@ function bepgp_browser:PriceListData(redo)
     end
     for id,info in pairs(pricelist) do
       local itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = GetItemInfoInstant(id)
+      local subName, isArmor = GetItemSubClassInfo(itemClassID, itemSubClassID)
       local price, tier = bepgp:GetPrice(id,progress)
       --local tier = info[2]
       price = price or 0
@@ -424,13 +467,18 @@ function bepgp_browser:PriceListData(redo)
         table.insert(data[itemEquipLoc],{id,price,tier})
         filter[itemEquipLoc] = equipLocDesc
       end
+      typelist[itemSubType] = isArmor and format(" %s",C:Yellow(itemSubType)) or itemSubType
     end
     for i=#(locsorted),1,-1 do
       local loc = locsorted[i]
       if loc ~= "_FAV" and filter[loc]==nil then
         table.remove(locsorted,i)
       end
-    end    
+    end
+    for k,v in pairs(typelist) do
+      table.insert(typesort,k)
+    end
+    table.sort(typesort,itemtype_sort)
   end
 end
 
@@ -497,4 +545,5 @@ function bepgp_browser:PriceSystemUpdate()
   self._container._filtertier:SetList(tierlist,tiersort)
   self._container._modpreview:SetList(modlist,modsort)
   self._container._filterslots:SetList(filter,locsorted)
+  self._container._filtertype:SetList(typelist,typesort)
 end
