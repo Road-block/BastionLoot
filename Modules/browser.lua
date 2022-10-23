@@ -298,8 +298,10 @@ end
 function bepgp_browser:favoriteAdd(level,id)
   local itemID = bepgp_browser._selected or id
   if not itemID then return end
-  if not (GetItemInfoInstant(itemID)) then return end
+  itemID = GetItemInfoInstant(itemID)
+  if not itemID then return end
   favorites[itemID] = level
+  -- check if we're adding a reward and add the required turn-in (token)
   if tokens and tokens.GetToken then
     local token = tokens:GetToken(itemID)
     if token then
@@ -308,8 +310,12 @@ function bepgp_browser:favoriteAdd(level,id)
   end
   if tokens and tokens.GetReward then
     local reward = tokens:GetReward(itemID)
-    if reward and favorites[reward] then
-      favorites[reward] = level
+    if type(reward) == "number" then -- a single reward, add it as well
+      if favorites[reward] then
+        favorites[reward] = level
+      end
+    elseif type(reward) == "table" then
+      -- tbd
     end
   end
 end
@@ -320,10 +326,12 @@ function bepgp_browser:favoriteClear(id)
   favorites[itemID] = nil
   if tokens and tokens.GetReward then
     local reward = tokens:GetReward(itemID)
-    if reward then
+    if type(reward) == "number" then -- a single reward, remove it as well
       if favorites[reward] then
         favorites[reward] = nil
       end
+    elseif type(reward) == "table" then
+      -- tbd
     end
   end
 end
@@ -482,7 +490,7 @@ function bepgp_browser:PriceListData(redo)
   end
 end
 
-local priceModLookup = {_classic={"_prices","_tokens"},_bcc={"_prices_bc","_tokens_bc"},_wrath={"_prices_wrath","_tokens_wrath"}}
+local priceModLookup = {_classic={"_prices","_tokens"},_bcc={"_prices_bc","_tokens_bc"},_wrath={"_prices_wrath","_tokens_lk"}}
 function bepgp_browser:PriceListLookups()
   local system = bepgp:GetPriceSystem(bepgp.db.profile.system)
   local flavor = system and system.flavor

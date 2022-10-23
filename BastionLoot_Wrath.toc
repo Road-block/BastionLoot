@@ -16,11 +16,9 @@ Libs\libs.xml
 Locales\locales.xml
 
 core.lua
-# remove these after wrath is live
-Modules\prices_bc.lua
-Modules\tokens_bc.lua
-# --
+
 Modules\prices_wrath.lua
+Modules\tokens_lk.lua
 Modules\alts.lua
 Modules\autoroll.lua
 Modules\bench.lua

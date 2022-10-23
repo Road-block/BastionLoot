@@ -1,6 +1,6 @@
-## Interface: 20503
+## Interface: 30400
 ## LoadOnDemand: 1
-## Title: LibTourist Classic (TBC) library
+## Title: LibTourist Classic (WotLK) library
 ## Notes: A library to provide information about zones and instances.
 ## Author: Odica, Mishikal1
 ## X-Category: Library

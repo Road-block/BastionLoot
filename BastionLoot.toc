@@ -18,6 +18,7 @@ Locales\locales.xml
 core.lua
 
 Modules\prices_wrath.lua
+Modules\tokens_lk.lua
 Modules\alts.lua
 Modules\autoroll.lua
 Modules\bench.lua
