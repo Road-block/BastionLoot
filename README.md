@@ -14,6 +14,7 @@ Current version also offers a plusroll mode (toggle-able from minimap right-clic
 * from addon hosting sites (stable)
  1. [BastionLoot](https://www.curseforge.com/wow/addons/bastionloot) on Curseforge
  2. [BastionLoot](https://www.wowinterface.com/downloads/info25460) on Wowinterface
+ 3. [BastionLoot](https://addons.wago.io/addons/bastionloot) on wago
 
 ### Documentation
 [Member and Admin Docs](https://www.wowace.com/projects/bastionloot/pages/manual) on Curseforge.
