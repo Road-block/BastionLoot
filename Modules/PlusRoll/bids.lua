@@ -39,6 +39,22 @@ local roll_sorter_bids = function(a,b)
   end
 end
 
+local cell_tooltip_show = function(cell, hintKey)
+  if not bepgp_plusroll_bids.qtip then return end
+  bepgp_plusroll_bids.qtip:SetFrameStrata("DIALOG")
+  GameTooltip:SetOwner(cell, "ANCHOR_RIGHT")
+  GameTooltip:SetText(L[hintKey], LIGHTYELLOW_FONT_COLOR.r, LIGHTYELLOW_FONT_COLOR.g, LIGHTYELLOW_FONT_COLOR.b, 0.8, true)
+  GameTooltip:Show()
+end
+
+local cell_tooltip_hide = function(cell)
+  if not bepgp_plusroll_bids.qtip then return end
+  if GameTooltip:IsOwned(cell) then
+    GameTooltip:Hide()
+  end
+  bepgp_plusroll_bids.qtip:SetFrameStrata("TOOLTIP")
+end
+
 function bepgp_plusroll_bids:OnEnable()
   self:RegisterEvent("CHAT_MSG_SYSTEM", "captureRoll")
   self:RegisterEvent("CHAT_MSG_RAID", "captureLootCall")
@@ -110,6 +126,9 @@ function bepgp_plusroll_bids:Refresh()
   frame:SetCell(line,1,L["BastionLoot bids [roll]"],nil,"CENTER",3)
   frame:SetCell(line,4,pauseTex[bepgp_plusroll_bids.paused],nil,"RIGHT")
   frame:SetCell(line,5,"|TInterface\\Buttons\\UI-Panel-MinimizeButton-Up:16:16:2:-2:32:32:8:24:8:24|t",nil,"RIGHT")
+  frame:SetCellScript(line,5,"OnMouseUp", function()
+    frame:Hide()
+  end)
   frame:SetCellScript(line,4,"OnMouseUp", function()
     if bepgp_plusroll_bids.paused == 0 then
       bepgp_plusroll_bids.paused = 1
@@ -126,9 +145,8 @@ function bepgp_plusroll_bids:Refresh()
     end
     frame:SetCell(frame._header,4,pauseTex[bepgp_plusroll_bids.paused],nil,"RIGHT")
   end)
-  frame:SetCellScript(line,5,"OnMouseUp", function()
-    frame:Hide()
-  end)
+  frame:SetCellScript(line,4,"OnEnter", cell_tooltip_show, "BIDS_PAUSE_TIP_HINT")
+  frame:SetCellScript(line,4,"OnLeave", cell_tooltip_hide)
   frame:SetCellScript(line,1,"OnMouseDown", function() frame:StartMoving() end)
   frame:SetCellScript(line,1,"OnMouseUp", function() frame:StopMovingOrSizing() end)
 
@@ -148,10 +166,14 @@ function bepgp_plusroll_bids:Refresh()
     frame:SetCell(line,1,self.bid_item.itemlink,nil,"LEFT",2)
     frame:SetCell(line,3,num_reserves,nil,"RIGHT",2)
     if num_reserves then
-      frame:SetCellScript(line,3,"OnMouseUp", bepgp_plusroll_bids.showReserves )
+      frame:SetCellScript(line,3,"OnMouseUp", bepgp_plusroll_bids.showReserves)
+      frame:SetCellScript(line,3,"OnEnter", cell_tooltip_show, "BIDS_RES_SHOW_TIP_HINT")
+      frame:SetCellScript(line,3,"OnLeave", cell_tooltip_hide)
     end
-    frame:SetCell(line,5,"|TInterface\\Icons\\spell_holy_removecurse:18|t",nil,"RIGHT")
+    frame:SetCell(line,5,"|TInterface\\Buttons\\UI-GroupLoot-DE-Up:18:18:-1:1:32:32:2:30:2:30|t",nil,"RIGHT")
     frame:SetCellScript(line,5,"OnMouseUp", bepgp_plusroll_bids.announcedisench, bepgp_plusroll_bids.bid_item.itemlink)
+    frame:SetCellScript(line,5,"OnEnter", cell_tooltip_show, "DISENCHANT_TIP_HINT")
+    frame:SetCellScript(line,5,"OnLeave", cell_tooltip_hide)
 
     if #(self.bids_res) > 0 then
       line = frame:AddLine(" ")

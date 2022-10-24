@@ -115,6 +115,22 @@ local pr_sorter_bids = function(a,b)
   end
 end
 
+local cell_tooltip_show = function(cell, hintKey)
+  if not bepgp_bids.qtip then return end
+  bepgp_bids.qtip:SetFrameStrata("DIALOG")
+  GameTooltip:SetOwner(cell, "ANCHOR_RIGHT")
+  GameTooltip:SetText(L[hintKey], LIGHTYELLOW_FONT_COLOR.r, LIGHTYELLOW_FONT_COLOR.g, LIGHTYELLOW_FONT_COLOR.b, 0.8, true)
+  GameTooltip:Show()
+end
+
+local cell_tooltip_hide = function(cell)
+  if not bepgp_bids.qtip then return end
+  if GameTooltip:IsOwned(cell) then
+    GameTooltip:Hide()
+  end
+  bepgp_bids.qtip:SetFrameStrata("TOOLTIP")
+end
+
 function bepgp_bids:OnEnable()
   self:RegisterEvent("CHAT_MSG_WHISPER", "captureBid")
   self:RegisterEvent("CHAT_MSG_RAID", "captureLootCall")
@@ -217,6 +233,8 @@ function bepgp_bids:Refresh()
     frame:SetCell(line,4,C:Colorize(color_osgp,self.bid_item.off_price),nil,"RIGHT")
     frame:SetCell(line,5,"|TInterface\\Buttons\\UI-GroupLoot-DE-Up:18:18:-1:1:32:32:2:30:2:30|t",nil,"RIGHT")
     frame:SetCellScript(line,5,"OnMouseUp", bepgp_bids.announcedisench, bepgp_bids.bid_item.itemlink)
+    frame:SetCellScript(line,5,"OnEnter", cell_tooltip_show, "DISENCHANT_TIP_HINT")
+    frame:SetCellScript(line,5,"OnLeave", cell_tooltip_hide)
     frame:SetCell(line,6,"",nil,"RIGHT")
 
     if #(self.bids_main) > 0 then
@@ -263,6 +281,8 @@ function bepgp_bids:Refresh()
       if discount == 0 then
         frame:SetCell(line,6,"|TInterface\\Buttons\\UI-GroupLoot-Dice-Up:18:18:-1:1:32:32:2:30:2:30|t",nil,"RIGHT")
         frame:SetCellScript(line,6,"OnMouseUp", bepgp_bids.shuffleOffbids, bepgp_bids.bids_off)
+        frame:SetCellScript(line,6,"OnEnter", cell_tooltip_show, "OSBID_SHUFFLE_TIP_HINT")
+        frame:SetCellScript(line,6,"OnLeave", cell_tooltip_hide)
       end
       line = frame:AddHeader()
       frame:SetCell(line,1,C:Orange(L["Name"]),nil,"LEFT")

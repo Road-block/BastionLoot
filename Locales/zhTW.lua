@@ -417,5 +417,9 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L[",MinEP:%d"] = ",MinEP:%d" -- needs translation
   L["Filter by Item Type"] = "Filter by Item Type" -- needs translation
   L["AtlasLootClassic and eightyupgrades.com exports are supported"] = "AtlasLootClassic and eightyupgrades.com exports are supported" -- needs translation
+  L.DISENCHANT_TIP_HINT = "Click to announce item is going to Disenchant" -- needs translation
+  L.OSBID_SHUFFLE_TIP_HINT = "Click to randomize bids order" -- needs translation
+  L.BIDS_PAUSE_TIP_HINT = "Click to freeze/unfreeze bids countdown" -- needs translation
+  L.BIDS_RES_SHOW_TIP_HINT = "Click to show Reserves" -- needs translation
 
   bepgp.L = L
