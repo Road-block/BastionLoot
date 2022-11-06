@@ -421,5 +421,24 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L.OSBID_SHUFFLE_TIP_HINT = "Click to randomize bids order" -- needs translation
   L.BIDS_PAUSE_TIP_HINT = "Click to freeze/unfreeze bids countdown" -- needs translation
   L.BIDS_RES_SHOW_TIP_HINT = "Click to show Reserves" -- needs translation
+  L["Offspec Bids Shuffled"] = "Offspec Bids Shuffled" -- needs translation
+  L["Announce Loot"] = "Announce Loot" -- needs translation
+  L["Auto link loot to your Group when Masterlooter"] = "Auto link loot to your Group when Masterlooter" -- needs translation
+  -- Raid Loot Containers
+  L["Four Horsemen Chest"] = "Four Horsemen Chest" -- needs translation
+  L["Alexstrasza's Gift"] = "Alexstrasza's Gift" -- needs translation
+  L["Heart of Magic"] = "Heart of Magic" -- needs translation
+  L["Freya's Gift"] = "Freya's Gift" -- needs translation
+  L["Cache of Innovation"] = "Cache of Innovation" -- needs translation
+  L["Cache of Storms"] = "Cache of Storms" -- needs translation
+  L["Cache of Winter"] = "Cache of Winter" -- needs translation
+  L["Rare Cache of Winter"] = "Rare Cache of Winter" -- needs translation
+  L["Cache of Living Stone"] = "Cache of Living Stone" -- needs translation
+  L["Gift of the Observer"] = "Gift of the Observer" -- needs translation
+  L["Champions' Cache"] = "Champions' Cache" -- needs translation
+  L["Argent Crusade Tribute Chest"] = "Argent Crusade Tribute Chest" -- needs translation
+  L["Gunship Armory"] = "Gunship Armory" -- needs translation
+  L["Deathbringer's Cache"] = "Deathbringer's Cache" -- needs translation
+  L["Cache of the Dreamwalker"] = "Cache of the Dreamwalker" -- needs translation
 
   bepgp.L = L

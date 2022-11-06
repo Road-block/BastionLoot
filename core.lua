@@ -14,12 +14,9 @@ local G = LibStub("LibGratuity-3.0")
 local T = LibStub("LibQTip-1.0")
 
 bepgp._DEBUG = false
-local _,_,_,toc = GetBuildInfo()
-toc = tonumber(toc)
-bepgp._wrath = toc > 30000 and toc < 40000
 bepgp._classic = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC) or false
 bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) or false
-bepgp._bcc = bepgp._bcc and not bepgp._wrath
+bepgp._wrath = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC) or false
 --[[
 TODO: Transition to using fully qualified names to support connected realms
   Ambiguate("name", "mail")
@@ -388,6 +385,73 @@ local item_bind_patterns = {
   BOE = "("..ITEM_BIND_ON_USE..")",
   BOUND = "("..ITEM_SOULBOUND..")"
 }
+local object_names = {
+  [181366] = L["Four Horsemen Chest"],
+  [193426] = L["Four Horsemen Chest"],
+  [193905] = L["Alexstrasza's Gift"],
+  [193967] = L["Alexstrasza's Gift"],
+  [194158] = L["Heart of Magic"],
+  [194159] = L["Heart of Magic"],
+  [194324] = L["Freya's Gift"],
+  [194325] = L["Freya's Gift"],
+  [194326] = L["Freya's Gift"],
+  [194327] = L["Freya's Gift"],
+  [194328] = L["Freya's Gift"],
+  [194329] = L["Freya's Gift"],
+  [194330] = L["Freya's Gift"],
+  [194331] = L["Freya's Gift"],
+  [279654] = L["Freya's Gift"],
+  [281376] = L["Freya's Gift"],
+  [281377] = L["Freya's Gift"],
+  [194789] = L["Cache of Innovation"],
+  [194956] = L["Cache of Innovation"],
+  [194957] = L["Cache of Innovation"],
+  [194958] = L["Cache of Innovation"],
+  [279655] = L["Cache of Innovation"],
+  [281370] = L["Cache of Innovation"],
+  [194312] = L["Cache of Storms"],
+  [194313] = L["Cache of Storms"],
+  [194314] = L["Cache of Storms"],
+  [194315] = L["Cache of Storms"],
+  [218997] = L["Cache of Storms"],
+  [218998] = L["Cache of Storms"],
+  [279656] = L["Cache of Storms"],
+  [281368] = L["Cache of Storms"],
+  [281369] = L["Cache of Storms"],
+  [194307] = L["Cache of Winter"],
+  [194308] = L["Cache of Winter"],
+  [281374] = L["Cache of Winter"],
+  [194200] = L["Rare Cache of Winter"],
+  [194201] = L["Rare Cache of Winter"],
+  [281373] = L["Rare Cache of Winter"],
+  [195046] = L["Cache of Living Stone"],
+  [195047] = L["Cache of Living Stone"],
+  [281372] = L["Cache of Living Stone"],
+  [194821] = L["Gift of the Observer"],
+  [194822] = L["Gift of the Observer"],
+  [195631] = L["Champions' Cache"],
+  [195632] = L["Champions' Cache"],
+  [195633] = L["Champions' Cache"],
+  [195635] = L["Champions' Cache"],
+  [195665] = L["Argent Crusade Tribute Chest"],
+  [201872] = L["Gunship Armory"],
+  [201873] = L["Gunship Armory"],
+  [201874] = L["Gunship Armory"],
+  [201875] = L["Gunship Armory"],
+  [202177] = L["Gunship Armory"],
+  [202178] = L["Gunship Armory"],
+  [202179] = L["Gunship Armory"],
+  [202180] = L["Gunship Armory"],
+  [202238] = L["Deathbringer's Cache"],
+  [202239] = L["Deathbringer's Cache"],
+  [202240] = L["Deathbringer's Cache"],
+  [202241] = L["Deathbringer's Cache"],
+  [201959] = L["Cache of the Dreamwalker"],
+  [202338] = L["Cache of the Dreamwalker"],
+  [202339] = L["Cache of the Dreamwalker"],
+  [202340] = L["Cache of the Dreamwalker"],
+  [179564] = L["Gordok Tribute"], -- DEBUG
+}
 local GetGuildTabardFileNames = _G.GetGuildTabardFileNames or _G.GetGuildTabardFiles
 local defaults = {
   profile = {
@@ -437,7 +501,8 @@ local defaults = {
     wincountstack = true,
     plusrollepgp = false,
     rollfilter = false,
-    favalert = false,
+    favalert = true,
+    lootannounce = true,
     groupcache = {},
   },
 }
@@ -807,23 +872,33 @@ function bepgp:options(force)
         bepgp.db.char.favalert = not bepgp.db.char.favalert
       end,
     }
+    self._options.args.general.args.main.args["lootannounce"] = {
+      type = "toggle",
+      name = L["Announce Loot"],
+      desc = L["Auto link loot to your Group when Masterlooter"],
+      order = 87,
+      get = function() return not not bepgp.db.char.lootannounce end,
+      set = function(info, val)
+        bepgp.db.char.lootannounce = not bepgp.db.char.lootannounce
+      end,
+    }
     self._options.args.general.args.main.args["admin_options_header"] = {
       type = "header",
       name = L["Admin Options"],
-      order = 87,
+      order = 88,
       hidden = function() return (not bepgp:admin()) end,
     }
     self._options.args.general.args.main.args["progress_tier_header"] = {
       type = "header",
       name = string.format(L["Progress Setting: %s"],bepgp.db.profile.progress),
-      order = 88,
+      order = 90,
       hidden = function() return bepgp:admin() end,
     }
     self._options.args.general.args.main.args["progress_tier"] = {
       type = "select",
       name = L["Raid Progress"],
       desc = L["Highest Tier the Guild is raiding.\nUsed to adjust GP Prices.\nUsed for suggested EP awards."],
-      order = 90,
+      order = 92,
       hidden = function() return not (bepgp:admin()) end,
       get = function() return bepgp.db.profile.progress end,
       set = function(info, val)
@@ -2323,7 +2398,9 @@ function bepgp:OnEnable() -- 2. PLAYER_LOGIN
   self:SetMode(self.db.char.mode)
   if self:table_count(self.VARS.autoloot) > 0 then
     bepgp:RegisterEvent("LOOT_READY", "autoLoot")
-    bepgp:RegisterEvent("LOOT_OPENED", "autoLoot")
+  end
+  if bepgp.db.char.lootannounce or bepgp.db.char.favalert then
+    bepgp:RegisterEvent("LOOT_OPENED", "lootAnnounce")
   end
 end
 
@@ -2598,6 +2675,92 @@ function bepgp:AddTipInfo(tooltip,...)
   end
 end
 
+function bepgp:getInteractInfo()
+  local name
+  local guid = UnitGUID("npc")
+  if guid then
+    name = UnitName("npc")
+  end
+  if guid and name then
+    return name, guid
+  end
+  local guid = UnitExists("target") and UnitGUID("target")
+  if guid then
+    name = UnitName("target")
+  end
+  if guid and name then
+    return name, guid
+  end
+  return _G.UNKNOWNOBJECT, _G.NONE
+end
+
+function bepgp:getLootSourceName(guidType, guidID)
+  local objectName = object_names[guidID]
+  if objectName then
+    return format("%s %s%q",_G.LOOT_NOUN, _G.FROM, objectName)
+  else
+    return format("%s %s%s=%d",_G.LOOT_NOUN, _G.FROM, guidType, guidID)
+  end
+end
+
+function bepgp:lootAnnounce(event)
+  local numLoot = GetNumLootItems()
+  if numLoot == 0 then return end
+  local isML = bepgp:lootMaster()
+  local inGroup = IsInGroup()
+  local threshold = GetLootThreshold()
+  local tryName, tryGUID = bepgp:getInteractInfo()
+  local lootsourceGUID
+  for slot=1, numLoot do
+    if LootSlotHasItem(slot) then
+      local slotType = GetLootSlotType(slot)
+      if slotType == LOOT_SLOT_ITEM then
+        local itemLink = GetLootSlotLink(slot)
+        if (itemLink) then
+          local _,_,_,itemID = bepgp:getItemData(itemLink)
+          -- favorites alert
+          if bepgp.db.char.favalert then
+            if itemID and bepgp.db.char.favorites[itemID] then
+              bepgp:Alert(string.format(L["BastionLoot Favorite: %s"],itemLink))
+            end
+          end
+          -- loot announce
+          local lootIcon, lootName, _, _, lootQuality = GetLootSlotInfo(slot)
+          if bepgp.db.char.lootannounce and isML and inGroup and (lootQuality >= threshold) then
+            -- drag next block here when done testing
+            lootsourceGUID = GetLootSourceInfo(slot) -- this will need changing if AoE loot is implemented
+            local guidType, _, _, _, _, guidID = ("-"):split(lootsourceGUID)
+            bepgp._announceDone = bepgp._announceDone or {}
+            if not bepgp._announceDone[lootsourceGUID] then
+              if lootsourceGUID == tryGUID then
+                bepgp._announceDone[lootsourceGUID] = format("%s %s%q",_G.LOOT_NOUN, _G.FROM, tryName)
+              else
+                bepgp._announceDone[lootsourceGUID] = bepgp:getLootSourceName(guidType, tonumber(guidID))
+              end
+            end
+            bepgp._announceItems = bepgp._announceItems or {}
+            tinsert(bepgp._announceItems,itemLink)
+          end
+          -- testing block
+        end
+      end
+    end
+  end
+  if bepgp._announceItems and #bepgp._announceItems > 0 then
+    if type(bepgp._announceDone[lootsourceGUID])=="string" then
+      bepgp:safeAudience(bepgp._announceDone[lootsourceGUID])
+      for i,link in ipairs(bepgp._announceItems) do
+        local msg = format("%2d.%s",i,link)
+        bepgp:safeAudience(msg)
+      end
+    end
+    for k,v in pairs(bepgp._announceDone) do
+      bepgp._announceDone[k] = true
+    end
+    bepgp._announceItems = nil
+  end
+end
+
 function bepgp:autoLoot(event,auto)
   local numLoot = GetNumLootItems()
   if numLoot == 0 then return end
@@ -2626,11 +2789,6 @@ function bepgp:autoLoot(event,auto)
             ConfirmLootSlot(slot)
             local dialog = StaticPopup_FindVisible("LOOT_BIND")
             if dialog then _G[dialog:GetName().."Button1"]:Click() end
-          end
-          if bepgp.db.char.favalert then
-            if itemID and bepgp.db.char.favorites[itemID] then
-              bepgp:Alert(string.format(L["BastionLoot Favorite: %s"],itemLink))
-            end
           end
         end
       end
@@ -3167,6 +3325,24 @@ function bepgp:parseVersion(version,otherVersion)
   end
 end
 
+function bepgp:safeAudience(msg)
+  local groupstatus = self:GroupStatus()
+  local inInstance, instanceType = IsInInstance()
+  local channel
+  if groupstatus == "RAID" then
+    channel = "RAID"
+  elseif groupstatus == "PARTY" then
+    channel = "PARTY"
+  elseif inInstance and (instanceType == "party" or instanceType == "raid") then
+    channel = "SAY"
+  end
+  if channel then
+    SendChatMessage(msg, channel)
+  else
+    self:debugPrint(msg)
+  end
+end
+
 function bepgp:widestAudience(msg)
   local groupstatus = self:GroupStatus()
   local channel
@@ -3517,6 +3693,10 @@ function bepgp:table_count(t)
     end
   end
   return count
+end
+
+function bepgp:wrap_tuple(...)
+  return {...}
 end
 
 -- in-place shuffle, the original array is "destroyed"

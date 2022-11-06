@@ -721,6 +721,7 @@ local CACHED_ITEM_DATA = {
   [40400] = {4,226,"INVTYPE_SHIELD"}, -- "Wall of Terror"
   [40401] = {4,226,"INVTYPE_SHIELD"}, -- "Voice of Reason"
   [40402] = {4,226,"INVTYPE_WEAPON"}, -- "Last Laugh"
+  [40403] = {4,226,"INVTYPE_CLOAK"}, -- "Drape of the Deadly Foe"
   [40405] = {4,226,"INVTYPE_CLOAK"}, -- "Cape of the Unworthy Wizard"
   [40406] = {4,213,"INVTYPE_2HWEAPON"}, -- "Inevitable Defeat"
   [40407] = {4,213,"INVTYPE_WEAPON"}, -- "Silent Crusader"

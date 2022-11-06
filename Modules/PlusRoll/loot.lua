@@ -207,7 +207,7 @@ function bepgp_plusroll_loot:Refresh()
           local item = Item:CreateFromItemID(id)
           item:ContinueOnItemLoad(function()
             local id = item:GetItemID()
-            local _,link = GetItemInfo(id)
+            local link = item:GetItemLink()
             append(realrow,link,last)
           end)
         end

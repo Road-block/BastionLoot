@@ -182,8 +182,11 @@ function bepgp_bids:announcedisench(data)
 end
 
 function bepgp_bids:shuffleOffbids(off_bids)
-  bepgp:table_shuffle(off_bids)
-  bepgp_bids:Refresh()
+  if #off_bids > 1 then
+    bepgp:table_shuffle(off_bids)
+    bepgp_bids:Refresh()
+  end
+  bepgp:debugPrint(L["Offspec Bids Shuffled"])
 end
 
 function bepgp_bids:updateBids()

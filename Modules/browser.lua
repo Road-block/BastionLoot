@@ -362,6 +362,7 @@ function bepgp_browser:RefreshGUI(slotvalue)
 end
 
 function bepgp_browser:Refresh()
+  if not bepgp_browser._container.frame:IsShown() then return end
   local slotvalue = self._container._filterslots:GetValue() or "_FAV"
   for i, widget in self._container._filtertier.pullout:IterateItems() do
     if widget.GetValue and widget.userdata.value then
@@ -378,7 +379,7 @@ function bepgp_browser:Refresh()
         local price, tier = bepgp:GetPrice(id,progress) --,pricelist[id][2]
         price = price or 0
         local favrank = favmap[rank]
-        local name,link,_,_,_,_,subtype = GetItemInfo(id)
+        local _,link,_,_,_,_,subtype = GetItemInfo(id)
         if (link) then
           if typevalue == "_ALL" or subtype == typevalue then
             populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
@@ -387,7 +388,8 @@ function bepgp_browser:Refresh()
           local item = Item:CreateFromItemID(id)
           item:ContinueOnItemLoad(function()
             local id = item:GetItemID()
-            local name,link,_,_,_,_,subtype = GetItemInfo(id)
+            local link = item:GetItemLink()
+            local _,_, subtype = GetItemInfoInstant(id)
             if typevalue == "_ALL" or subtype == typevalue then
               populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
             end
@@ -405,7 +407,7 @@ function bepgp_browser:Refresh()
       if tiervalues[tier] then
         local rank = favorites[id]
         local favrank = rank and favmap[rank] or ""
-        local name,link,_,_,_,_,subtype = GetItemInfo(id)
+        local _,link,_,_,_,_,subtype = GetItemInfo(id)
         if (link) then
           if typevalue == "_ALL" or subtype == typevalue then
             populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
@@ -414,7 +416,8 @@ function bepgp_browser:Refresh()
           local item = Item:CreateFromItemID(id)
           item:ContinueOnItemLoad(function()
             local id = item:GetItemID()
-            local name,link,_,_,_,_,subtype = GetItemInfo(id)
+            local link = item:GetItemLink()
+            local _,_, subtype = GetItemInfoInstant(id)
             if typevalue == "_ALL" or subtype == typevalue then
               populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
             end

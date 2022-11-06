@@ -423,5 +423,25 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L.OSBID_SHUFFLE_TIP_HINT = "Click to randomize bids order"
   L.BIDS_PAUSE_TIP_HINT = "Click to freeze/unfreeze bids countdown"
   L.BIDS_RES_SHOW_TIP_HINT = "Click to show Reserves"
+  L["Offspec Bids Shuffled"] = true
+  L["Announce Loot"] = true
+  L["Auto link loot to your Group when Masterlooter"] = true
+  -- Raid Loot Containers
+  L["Four Horsemen Chest"] = true -- 181366, 193426
+  L["Alexstrasza's Gift"] = true -- 193905, 193967,
+  L["Heart of Magic"] = true -- 194158, 194159,
+  L["Freya's Gift"] = true -- 194324, 194325, 194326, 194327, 194328, 194329, 194330, 194331, 279654, 281376, 281377,
+  L["Cache of Innovation"] = true -- 194789, 194956, 194957, 194958, 279655, 281370,
+  L["Cache of Storms"] = true -- 194312, 194313, 194314, 194315, 218997, 218998, 279656, 281368, 281369,
+  L["Cache of Winter"] = true -- 194307, 194308, 281374,
+  L["Rare Cache of Winter"] = true -- 194200, 194201, 281373,
+  L["Cache of Living Stone"] = true -- 195046, 195047, 281372,
+  L["Gift of the Observer"] = true -- 194821, 194822,
+  L["Champions' Cache"] = true -- 195631, 195632, 195633, 195635,
+  L["Argent Crusade Tribute Chest"] = true -- 195665
+  L["Gunship Armory"] = true -- 201872, 201873, 201874, 201875, 202177, 202178, 202179, 202180,
+  L["Deathbringer's Cache"] = true -- 202238, 202239, 202240, 202241,
+  L["Cache of the Dreamwalker"] = true -- 201959, 202338, 202339, 202340,
+  L["Gordok Tribute"] = true -- DEBUG
 
 bepgp.L = L

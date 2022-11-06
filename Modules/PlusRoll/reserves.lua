@@ -482,7 +482,7 @@ function bepgp_plusroll_reserves:Refresh()
       local item = Item:CreateFromItemID(id)
       item:ContinueOnItemLoad(function()
         local id = item:GetItemID()
-        local _,link = GetItemInfo(id)
+        local link = item:GetItemLink()
         populate(data,link,player,lock,id)
       end)
     end
