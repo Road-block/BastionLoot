@@ -29,6 +29,7 @@ local loot_indices = {
   item=4,
   item_id=5,
   log=6,
+  class=7,
 }
 
 local itemCache = {}
@@ -350,21 +351,21 @@ function bepgp_plusroll_loot:processLootCallback(player,itemLink,source,itemColo
   local skipstacks = bepgp.db.char.wincountstack
   local is_stackable = iStackCount and (iStackCount > 1) or false
   if skipstacks and is_stackable then return end
-  local _,cached,class,hex
+  local _,cached,class,enClass,hexClass
   if player == bepgp._playerName then
     class = UnitClass("player") -- localized
-    _,_,hex = bepgp:getClassData(class)
+    enClass,_,hexClass = bepgp:getClassData(class)
   else
     cached = bepgp:groupCache(player)
     if cached then
-      class, hex = cached.class, cached.hex
+      class, enClass, hexClass = cached.class, cached.eclass, cached.hex
     end
   end
   if not (class) then return end
   self._lastPlayerItem, self._lastPlayerItemTime, self._lastPlayerItemSource = player_item, now, source
-  local player_color = C:Colorize(hex,player)
+  local player_color = C:Colorize(hexClass,player)
   local epoch, timestamp = bepgp:getServerTime()
-  local data = {[loot_indices.time]=epoch,[loot_indices.player]=player,[loot_indices.player_c]=player_color,[loot_indices.item]=itemLink,[loot_indices.item_id]=itemID,loot_indices=loot_indices}
+  local data = {[loot_indices.time]=epoch,[loot_indices.player]=player,[loot_indices.player_c]=player_color,[loot_indices.item]=itemLink,[loot_indices.item_id]=itemID,[loot_indices.class]=enClass,loot_indices=loot_indices}
   LD:Spawn(addonName.."DialogItemPlusPoints", data)
 end
 

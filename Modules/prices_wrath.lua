@@ -4,6 +4,7 @@ local bepgp_prices_wrath = bepgp:NewModule(moduleName, "AceEvent-3.0")
 local ST = LibStub("ScrollingTable")
 local name_version = "BastionEPGP_LK-1.0"
 local prices = {}
+local GetItemInventoryTypeByID = C_Item and C_Item.GetItemInventoryTypeByID or _G.GetItemInventoryTypeByID
 
 local EQUIPSLOT_MULTIPLIER_1 = {
   INVTYPE_HEAD = 1,
@@ -36,12 +37,14 @@ local EQUIPSLOT_MULTIPLIER_1 = {
 -- This is the low price equipslot multiplier (off hand weapons, non
 -- tanking shields).
 local EQUIPSLOT_MULTIPLIER_2 = {
-  INVTYPE_WEAPON = 0.5,     -- Off-hand weapon or Tank Main-hand
-  INVTYPE_SHIELD = 0.5,     -- Non-tank Shield
+  INVTYPE_WEAPON = 0.5,     -- One-handed subtype for melee Off-hand weapon or Tank Main-hand
+  INVTYPE_SHIELD = 0.5,     -- for Non-tank Shield
   INVTYPE_2HWEAPON = 1,     -- Hunter or Titan Grip Off-hand
   INVTYPE_RANGED = 0.5,     -- Non-hunter Ranged Weapon
-  INVTYPE_RANGEDRIGHT = 0.5,-- Wands
+  INVTYPE_RANGEDRIGHT = 0.5,-- Non-hunter Ranged Weapon or Wands
 }
+
+
 
 --Used to display GP values directly on tier tokens
 local CUSTOM_ITEM_DATA = {
@@ -4960,22 +4963,47 @@ local function calcTier(ilevel)
   return tier
 end
 
+local function GetDiscountDetail(invType, classID, subclassID)
+  --[[Bit of documentation here
+  Some discounts are baked-in for historical reasons of how the epgp price calculation worked off item equip location. Equip location lumps together some items (eg wands + some ranged weapon types) that have conditional discounts (based on class and role which is dynamic) so a human was needed to apply this manually. The formula just returned "this equiplocation has 2 possible valuations, you pick the correct one".
+
+  We can only decide discount status deterministically for certain combinations.
+  Two-Handed melee weapon to Hunter
+  Main-hand or One-hand melee weapon to Hunter (Off-hand melee weapon has discount baked-in)
+  Shield to Shaman (as the only non-tank shield bearer)
+  Any ranged weapon to melee (ie Warrior or Rogue)
+  All Wands (epgp formulat is done based on inventory type and they share IndexRangedRight with some ranged weapons)
+
+  Other cases still need a human deciding (One-hand melee weapon to Tank for tanking, One-hand melee weapon to tank or melee for Dual Wield Offhand use, Shield to Paladin, Two-hand melee weapon to Titan Grip warrior for Offhand use)
+  ]]
+  local wand_discount = subclassID == Enum.ItemWeaponSubclass.Wand
+  local ranged_discount = (invType == Enum.InventoryType.IndexRangedType) or (invType == Enum.InventoryType.IndexRangedrightType) and "WARRIOR:ROGUE"
+  local shield_discount = subclassID == Enum.ItemArmorSubclass.Shield and "SHAMAN"
+  local onehand_discount = (invType == Enum.InventoryType.IndexWeaponType) or (invType == Enum.InventoryType.IndexWeaponmainhandType) and "HUNTER"
+  local twohand_discount = invType == Enum.InventoryType.Index2HweaponType and "HUNTER"
+  return wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount
+end
+
 function bepgp_prices_wrath:GetPrice(item,progress)
   if not (type(item)=="number" or type(item)=="string") then return end
   if not progress then progress = "T10" end
   local price1,price2,itemID,data,tier,useful
-  itemID = GetItemInfoInstant(item)
+  local itemType, itemSubType, itemEquipLoc, icon, classID, subclassID
+  local wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount
+  itemID, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = GetItemInfoInstant(item)
   if (itemID) then
+    local invType = GetItemInventoryTypeByID(itemID)
     data = prices[itemID]
     if (data) then
       local quality, ilevel, equip = unpack(data)
       tier = calcTier(ilevel)
       price1, price2 = getStaticValues(itemID, quality, ilevel, equip)
+      wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount = GetDiscountDetail(invType, classID, subclassID)
     else
       return
     end
   end
-  return price1, tier, price2
+  return price1, tier, price2, wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount
 end
 
 function bepgp_prices_wrath:OnEnable()
@@ -5039,3 +5067,11 @@ function bepgp_prices_wrath:Recalculate()
 end
 
 bepgp_prices_wrath._prices = prices
+
+--[[
+Enum.ItemClass[Armor|Weapon|Miscellaneous]
+Enum.ItemArmorSubclass[Cloth|Leather|Mail|Plate|Shield|Libram|Idol|Totem|Sigil|Relic]
+Enum.ItemWeaponSubclass[Wand]
+Enum.ItemMiscellaneousSubclass[Junk]
+Enum.InventoryType[IndexNonEquipType|IndexHeadType|IndexNeckType|IndexShoulderType|IndexChestType|IndexWaistType|IndexLegsType|IndexFeetType|IndexWristType|IndexHandType|IndexFingerType|IndexTrinketType|IndexWeaponType|IndexShieldType|IndexRangedType|IndexCloakType|Index2HweaponType|IndexRobeType|IndexWeaponmainhandType|IndexWeaponoffhandType|IndexHoldableType|IndexRangedrightType|IndexRelicType]
+]]

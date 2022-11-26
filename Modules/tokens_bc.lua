@@ -151,5 +151,4 @@ end
 
 function bepgp_tokens_bc:OnEnable()
   self:RegisterMessage(addonName.."_INIT_DONE","CoreInit")
-  self:delayInit()
 end

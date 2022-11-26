@@ -5,7 +5,6 @@ local ST = LibStub("ScrollingTable")
 local C = LibStub("LibCrayon-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local GUI = LibStub("AceGUI-3.0")
-local LW = LibStub("LibWindow-1.1")
 
 local PLATE, MAIL, LEATHER, CLOTH = 4,3,2,1
 local DPS, CASTER, HEALER, TANK = 4,3,2,1

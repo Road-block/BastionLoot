@@ -21,6 +21,12 @@ bepgp._wrath = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_
 TODO: Transition to using fully qualified names to support connected realms
   Ambiguate("name", "mail")
 ]]
+-- Upvalue some API
+local GetGuildTabardFileNames = _G.GetGuildTabardFileNames or _G.GetGuildTabardFiles
+local GuildRoster = C_GuildInfo and C_GuildInfo.GuildRoster or _G.GuildRoster
+local CanEditOfficerNote = C_GuildInfo and C_GuildInfo.CanEditOfficerNote or _G.CanEditOfficerNote
+local CanSpeakInGuildChat = C_GuildInfo and C_GuildInfo.CanSpeakInGuildChat or _G.CanSpeakInGuildChat
+local GuildControlGetRankFlags = C_GuildInfo and C_GuildInfo.GuildControlGetRankFlags or _G.GuildControlGetRankFlags
 
 bepgp.VARS = {
   basegp = 100,
@@ -29,6 +35,7 @@ bepgp.VARS = {
   decay = 0.8,
   max = 1000,
   timeout = 60,
+  rosterthrottle = 10,
   minlevel = 80,
   maxloglines = 500,
   priorank = 100,
@@ -452,7 +459,6 @@ local object_names = {
   [202340] = L["Cache of the Dreamwalker"],
   [179564] = L["Gordok Tribute"], -- DEBUG
 }
-local GetGuildTabardFileNames = _G.GetGuildTabardFileNames or _G.GetGuildTabardFiles
 local defaults = {
   profile = {
     announce = "GUILD",
@@ -484,6 +490,7 @@ local defaults = {
     bidpopup = false,
     mode = "epgp", -- "plusroll"
     priorank = bepgp.VARS.priorank,
+    debugchat = 4, -- 1 is default, 2 is typically combatlog, 3 is typically voicetranscript
     priorank_ms = true,
     logs = {},
     loot = {},
@@ -503,6 +510,7 @@ local defaults = {
     rollfilter = false,
     favalert = true,
     lootannounce = true,
+    rosterthrottle = bepgp.VARS.rosterthrottle,
     groupcache = {},
   },
 }
@@ -882,16 +890,55 @@ function bepgp:options(force)
         bepgp.db.char.lootannounce = not bepgp.db.char.lootannounce
       end,
     }
+    self._options.args.general.args.main.args["rosterthrottle"] = {
+      type = "range",
+      name = L["Delay Updates"],
+      desc = L["Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)"],
+      order = 88,
+      get = function() return bepgp.db.char.rosterthrottle end,
+      set = function(info, val)
+        local value = tonumber(val)
+        if value <=0 then value = 1 end
+        if value >60 then value = 60 end
+        bepgp.db.char.rosterthrottle = value
+      end,
+      min = 0,
+      max = 60,
+      softMin = 5,
+      softMax = 30,
+      step = 5,
+    }
+    self._options.args.general.args.main.args["debugchat"] = {
+      type = "select",
+      name = L["Extra Messages"],
+      desc = L["Select the Chatframe to print Extra Informational messages to."],
+      order = 89,
+      get = function() return bepgp.db.char.debugchat end,
+      set = function(info, val)
+        bepgp.db.char.debugchat = tonumber(val)
+      end,
+      values = function()
+        local chatframes = {}
+        for i=1,NUM_CHAT_WINDOWS do
+          local name, fontsize, r, g, b, a, isShown, isLocked, isDocked = GetChatWindowInfo(i)
+          local cf = _G["ChatFrame"..i]
+          if (isShown or isDocked) and not IsBuiltinChatWindow(cf) then
+            chatframes[i] = name
+          end
+        end
+        return chatframes
+      end,
+    }
     self._options.args.general.args.main.args["admin_options_header"] = {
       type = "header",
       name = L["Admin Options"],
-      order = 88,
+      order = 90,
       hidden = function() return (not bepgp:admin()) end,
     }
     self._options.args.general.args.main.args["progress_tier_header"] = {
       type = "header",
       name = string.format(L["Progress Setting: %s"],bepgp.db.profile.progress),
-      order = 90,
+      order = 91,
       hidden = function() return bepgp:admin() end,
     }
     self._options.args.general.args.main.args["progress_tier"] = {
@@ -1872,7 +1919,8 @@ function bepgp:templateCache(id)
           local loot_indices = data.loot_indices
           local from_log = data[loot_indices.log]
           local item_id = data[loot_indices.item_id]
-          local price,tier,price2 = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+          local enClass = data[loot_indices.class]
+          local price,tier,price2,wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
           price2 = type(price2)=="number" and price2 or nil
           self.text:SetText(string.format(L["%s looted to %s. Mark it as.."],data[loot_indices.item],data[loot_indices.player_c]))
           local discountChkBx
@@ -1904,6 +1952,12 @@ function bepgp:templateCache(id)
             end)
             if not (price2 and bepgp.db.char.plusrollepgp) then
               discountChkBx:Hide()
+            else
+              if wand_discount then data.use_discount = true end
+              if ranged_discount and ranged_discount:match(enClass) then data.use_discount = true end
+              if shield_discount and shield_discount:match(enClass) then data.use_discount = true end
+              if onehand_discount and onehand_discount:match(enClass) then data.use_discount = true end
+              if twohand_discount and twohand_discount:match(enClass) then data.use_discount = true end
             end
           end          
         end,
@@ -2383,17 +2437,17 @@ function bepgp:OnEnable() -- 2. PLAYER_LOGIN
   if IsInGuild() then
     local guildname = GetGuildInfo("player")
     if not guildname then
-      GuildRoster()
+      self:safeGuildRoster()
     end
     self._playerLevel = UnitLevel("player")
     if self._playerLevel and self._playerLevel < MAX_PLAYER_LEVEL then
       self:RegisterEvent("PLAYER_LEVEL_UP")
     end
-    self._bucketGuildRoster = self:RegisterBucketEvent("GUILD_ROSTER_UPDATE",3.0)
+    self._bucketGuildRoster = self:RegisterBucketEvent("GUILD_ROSTER_UPDATE",(bepgp.db.char.rosterthrottle or bepgp.VARS.rosterthrottle))
   else
     bepgp:RegisterEvent("PLAYER_GUILD_UPDATE")
     -- TODO: Refactor parts that shouldn't be reliant on guild to initialize properly without a guild
-    bepgp:ScheduleTimer("deferredInit",5)
+    bepgp:ScheduleTimer("deferredInit",(bepgp.db.char.rosterthrottle or bepgp.VARS.rosterthrottle))
   end
   self:SetMode(self.db.char.mode)
   if self:table_count(self.VARS.autoloot) > 0 then
@@ -2510,6 +2564,8 @@ function bepgp:deferredInit(guildname)
     self._initdone = true
     self:SendMessage(addonName.."_INIT_DONE")
   end
+  self:UnregisterBucket(self._bucketGuildRoster)
+  self._bucketGuildRoster = self:RegisterBucketEvent("GUILD_ROSTER_UPDATE",bepgp.VARS.rosterthrottle)
   -- 2.5.1.39170 masterlooterframe bug workaround
   local oMasterLooterFrame_Show = _G.MasterLooterFrame_Show
   _G.MasterLooterFrame_Show = function(...)
@@ -3209,8 +3265,18 @@ function bepgp:debugPrint(msg,onlyWhenDebug)
       end
     end
   end
+  if self._optDebugChat==nil then
+    local _, _, _, _, _, _, isShown, _, isDocked, _ = GetChatWindowInfo(self.db.char.debugchat or 0)
+    if isShown or isDocked then
+      self._optDebugChat = _G["ChatFrame"..self.db.char.debugchat]
+    else
+      self._optDebugChat = false
+    end
+  end
   if self._debugchat then
     self:Print(self._debugchat,msg)
+  elseif self._optDebugChat then
+    self:Print(self._optDebugChat,msg)
   else
     self:Print(msg)
   end
@@ -3265,7 +3331,7 @@ end
 function bepgp:my_epgp(use_main)
   local _,perms = self:getGuildPermissions()
   if perms.OFFICER then
-    GuildRoster()
+    self:safeGuildRoster()
     if not self._myepgpTimer then
       self._myepgpTimer = self:ScheduleTimer("my_epgp_announce",3,use_main)
     end
@@ -3441,15 +3507,24 @@ function bepgp:PLAYER_LEVEL_UP(event,...)
   end
 end
 
-function bepgp:GUILD_ROSTER_UPDATE()
-  if GuildFrame and GuildFrame:IsShown() or InCombatLockdown() then
+function bepgp:PLAYER_REGEN_ENABLED()
+  self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+  self:GUILD_ROSTER_UPDATE("PLAYER_REGEN_ENABLED")
+end
+
+function bepgp:GUILD_ROSTER_UPDATE(event)
+  if GuildFrame and GuildFrame:IsShown() then return end
+  if InCombatLockdown() then
+    self:RegisterEvent("PLAYER_REGEN_ENABLED")
     return
   end
   local guildname = GetGuildInfo("player")
   if guildname then
     self:deferredInit(guildname)
   end
-  if not self._initdone then return end
+  if not self._initdone then
+    return
+  end
   local members = self:buildRosterTable()
   self:guildCache()
 end
@@ -3849,6 +3924,17 @@ function bepgp:verifyGuildMember(name,silent,levelignore)
   return
 end
 
+function bepgp:safeGuildRoster()
+  if not IsInGuild() then return end
+  if GuildFrame and GuildFrame:IsShown() then return end
+  if InCombatLockdown() then return end
+  local now = GetTime()
+  if not self._lastgRosterUpdate or (now - self._lastgRosterUpdate) >= 10 then
+    GuildRoster()
+    self._lastgRosterUpdate = GetTime()
+  end
+end
+
 local speakPermissions,readPermissions = {},{}
 function bepgp:getGuildPermissions()
   table.wipe(speakPermissions)
@@ -3857,12 +3943,12 @@ function bepgp:getGuildPermissions()
     local name, _, rankIndex = GetGuildRosterInfo(i)
     name = Ambiguate(name,"short")
     if name == self._playerName then
-      speakPermissions.OFFICER = C_GuildInfo.GuildControlGetRankFlags(rankIndex+1)[4]
-      readPermissions.OFFICER = C_GuildInfo.GuildControlGetRankFlags(rankIndex+1)[11]
+      speakPermissions.OFFICER = GuildControlGetRankFlags(rankIndex+1)[4]
+      readPermissions.OFFICER = GuildControlGetRankFlags(rankIndex+1)[11]
       break
     end
   end
-  speakPermissions.GUILD = C_GuildInfo.CanSpeakInGuildChat()
+  speakPermissions.GUILD = CanSpeakInGuildChat()
   local groupstatus = self:GroupStatus()
   speakPermissions.PARTY = (groupstatus == "PARTY") or (groupstatus == "RAID")
   speakPermissions.RAID = groupstatus == "RAID"
@@ -4065,6 +4151,7 @@ function bepgp:groupCache(member,update)
           local colortab = RAID_CLASS_COLORS[eclass]
           groupcache[member]["level"] = level
           groupcache[member]["class"] = lclass
+          groupcache[member]["eclass"] = eClass
           groupcache[member]["hex"] = hexColor
           groupcache[member]["color"] = colortab
           break
@@ -4379,4 +4466,3 @@ function bepgp:refreshPRTablets()
 end
 
 _G[addonName] = bepgp
-

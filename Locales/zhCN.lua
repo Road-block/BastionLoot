@@ -440,5 +440,9 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Gunship Armory"] = "Gunship Armory" -- needs translation
   L["Deathbringer's Cache"] = "Deathbringer's Cache" -- needs translation
   L["Cache of the Dreamwalker"] = "Cache of the Dreamwalker" -- needs translation
+  L["Delay Updates"] = "Delay Updates" -- needs translation
+  L["Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)"] = "Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)" -- needs translation
+  L["Extra Messages"] = "Extra Messages" -- needs translation
+  L["Select the Chatframe to print Extra Informational messages to."] = "Select the Chatframe to print Extra Informational messages to." -- needs translation
 
   bepgp.L = L

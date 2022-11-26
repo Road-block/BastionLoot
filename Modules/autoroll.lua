@@ -1,6 +1,6 @@
 local addonName, bepgp = ...
 local moduleName = addonName.."_autoroll"
-local bepgp_autoroll = bepgp:NewModule(moduleName, "AceEvent-3.0")
+local bepgp_autoroll = bepgp:NewModule(moduleName, "AceEvent-3.0", "AceTimer-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local GUI = LibStub("AceGUI-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
@@ -77,7 +77,7 @@ local autoroll = {
 if bepgp._bcc or bepgp._wrath then
   autoroll["dark_heart"] = {[32428] = true} -- Heart of Darkness
   autoroll["illi_mark"]  = {[32897] = true} -- Mark of the Illidari
-  autoroll["sunmote"] = {[34664] = true} -- Sunmote
+  autoroll["sunmote"]    = {[34664] = true} -- Sunmote
 end
 
 function bepgp_autoroll:getAction(itemID)
@@ -280,6 +280,42 @@ if bepgp._bcc or bepgp._wrath then
     values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
     sorting = {-1, 1, 2, 0}
   }
+end
+function bepgp_autoroll:injectOptions() -- .general.args.main.args
+  bepgp.db.char.autoroll = bepgp.db.char.autoroll or {
+    ["zg_coin"] = 1,
+    ["zg_bijou"] = 1,
+    ["aq_scarab"] = 1,
+    ["nx_scrap"] = 1,
+  }
+  if bepgp.db.char.autoroll.nx_scrap == nil then
+    bepgp.db.char.autoroll.nx_scrap = 1
+  end
+  bepgp.db.char.autoroll.aq_20_idol = bepgp.db.char.autoroll.aq_20_idol or {
+    ["class"] = 1,
+    ["other"] = 2,
+  }
+  bepgp.db.char.autoroll.aq_40_idol = bepgp.db.char.autoroll.aq_40_idol or {
+    ["class"] = 1,
+    ["other"] = 2,
+  }
+  if bepgp._bcc or bepgp._wrath then
+    self:ScheduleTimer("cacheItemOptions",20)
+    if bepgp.db.char.autoroll.dark_heart == nil then
+      bepgp.db.char.autoroll.dark_heart = -1
+    end
+    if bepgp.db.char.autoroll.illi_mark == nil then
+      bepgp.db.char.autoroll.illi_mark = 1
+    end
+    if bepgp.db.char.autoroll.sunmote == nil then
+      bepgp.db.char.autoroll.sunmote = 1
+    end
+  end
+  bepgp._options.args.general.args.autoroll = options
+  bepgp._options.args.general.args.autoroll.cmdHidden = true
+end
+
+function bepgp_autoroll:cacheItemOptions()
   local heart = Item:CreateFromItemID(32428)
   heart:ContinueOnItemLoad(function()
     local color = heart:GetItemQualityColor().color
@@ -308,38 +344,6 @@ if bepgp._bcc or bepgp._wrath then
     options.args["sunmote"]["desc"] = itemname
   end)
 end
-function bepgp_autoroll:injectOptions() -- .general.args.main.args
-  bepgp.db.char.autoroll = bepgp.db.char.autoroll or {
-    ["zg_coin"] = 1,
-    ["zg_bijou"] = 1,
-    ["aq_scarab"] = 1,
-    ["nx_scrap"] = 1,
-  }
-  if bepgp.db.char.autoroll.nx_scrap == nil then
-    bepgp.db.char.autoroll.nx_scrap = 1
-  end
-  bepgp.db.char.autoroll.aq_20_idol = bepgp.db.char.autoroll.aq_20_idol or {
-    ["class"] = 1,
-    ["other"] = 2,
-  }
-  bepgp.db.char.autoroll.aq_40_idol = bepgp.db.char.autoroll.aq_40_idol or {
-    ["class"] = 1,
-    ["other"] = 2,
-  }
-  if bepgp._bcc or bepgp._wrath then
-    if bepgp.db.char.autoroll.dark_heart == nil then
-      bepgp.db.char.autoroll.dark_heart = -1
-    end
-    if bepgp.db.char.autoroll.illi_mark == nil then
-      bepgp.db.char.autoroll.illi_mark = 1
-    end
-    if bepgp.db.char.autoroll.sunmote == nil then
-      bepgp.db.char.autoroll.sunmote = 1
-    end
-  end
-  bepgp._options.args.general.args.autoroll = options
-  bepgp._options.args.general.args.autoroll.cmdHidden = true
-end
 
 function bepgp_autoroll:delayInit()
   self:injectOptions()
@@ -357,5 +361,4 @@ end
 
 function bepgp_autoroll:OnEnable()
   self:RegisterMessage(addonName.."_INIT_DONE","CoreInit")
-  self:delayInit()
 end

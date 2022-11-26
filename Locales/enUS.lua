@@ -443,5 +443,9 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Deathbringer's Cache"] = true -- 202238, 202239, 202240, 202241,
   L["Cache of the Dreamwalker"] = true -- 201959, 202338, 202339, 202340,
   L["Gordok Tribute"] = true -- DEBUG
+  L["Delay Updates"] = true
+  L["Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)"] = true
+  L["Extra Messages"] = true
+  L["Select the Chatframe to print Extra Informational messages to."] = true
 
 bepgp.L = L

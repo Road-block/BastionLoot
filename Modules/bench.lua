@@ -328,5 +328,4 @@ end
 function bepgp_bench:OnEnable()
   self:RegisterMessage(addonName.."_INIT_DONE","CoreInit")
   self:RegisterMessage(addonName.."_PRICESYSTEM", "PriceSystemUpdate")
-  self:delayInit()
 end
