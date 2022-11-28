@@ -4977,10 +4977,10 @@ local function GetDiscountDetail(invType, classID, subclassID)
   Other cases still need a human deciding (One-hand melee weapon to Tank for tanking, One-hand melee weapon to tank or melee for Dual Wield Offhand use, Shield to Paladin, Two-hand melee weapon to Titan Grip warrior for Offhand use)
   ]]
   local wand_discount = subclassID == Enum.ItemWeaponSubclass.Wand
-  local ranged_discount = (invType == Enum.InventoryType.IndexRangedType) or (invType == Enum.InventoryType.IndexRangedrightType) and "WARRIOR:ROGUE"
-  local shield_discount = subclassID == Enum.ItemArmorSubclass.Shield and "SHAMAN"
-  local onehand_discount = (invType == Enum.InventoryType.IndexWeaponType) or (invType == Enum.InventoryType.IndexWeaponmainhandType) and "HUNTER"
-  local twohand_discount = invType == Enum.InventoryType.Index2HweaponType and "HUNTER"
+  local ranged_discount = ((invType == Enum.InventoryType.IndexRangedType) or (invType == Enum.InventoryType.IndexRangedrightType)) and "WARRIOR:ROGUE"
+  local shield_discount = (subclassID == Enum.ItemArmorSubclass.Shield) and "SHAMAN"
+  local onehand_discount = ((invType == Enum.InventoryType.IndexWeaponType) or (invType == Enum.InventoryType.IndexWeaponmainhandType)) and "HUNTER"
+  local twohand_discount = (invType == Enum.InventoryType.Index2HweaponType) and "HUNTER"
   return wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount
 end
 

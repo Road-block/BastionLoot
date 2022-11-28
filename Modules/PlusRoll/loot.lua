@@ -14,6 +14,9 @@ local colorSilver = {r=199/255, g=199/255, b=207/255, a=1.0}
 local colorHidden = {r=0.0, g=0.0, b=0.0, a=0.0}
 local colorHighlight = {r=0, g=0, b=0, a=.9}
 local nop = function() end
+local GetContainerItemLink = C_Container and C_Container.GetContainerItemLink or _G.GetContainerItemLink
+local GetContainerNumSlots = C_Container and C_Container.GetContainerNumSlots or _G.GetContainerNumSlots
+
 local function st_sorter_numeric(st,rowa,rowb,col)
   local cella = st.data[rowa].cols[2].value
   local cellb = st.data[rowb].cols[2].value

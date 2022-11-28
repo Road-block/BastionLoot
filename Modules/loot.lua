@@ -16,6 +16,8 @@ local colorHidden = {r=0.0, g=0.0, b=0.0, a=0.0}
 local colorHighlight = {r=0, g=0, b=0, a=.9}
 local tradeable_pattern = string.gsub(_G.BIND_TRADE_TIME_REMAINING, "%%s", "(.+)")
 local nop = function() end
+local GetContainerItemLink = C_Container and C_Container.GetContainerItemLink or _G.GetContainerItemLink
+local GetContainerNumSlots = C_Container and C_Container.GetContainerNumSlots or _G.GetContainerNumSlots
 
 local loot_indices = {
   time=1,
