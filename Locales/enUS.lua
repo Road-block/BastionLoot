@@ -408,9 +408,9 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L.DISCOUNT_HINT = "Check Discount for;• One-handed to Melee for Off-hand;• One-handed to Tank or Hunter;• Shield to non-Tank;• Two-handed weapon to Hunter;• Two-handed weapon to TitanGrip for Off-hand;• Ranged weapon to Tank or Melee;• Wand"
   L["5.RS"] = true
   L["4.ICC, VoA-T"] = true
-  L["3.ToCR, Ony, VoA-K"] = true
-  L["2.EoE, Uld, VoA-E"] = true
-  L["1.Naxx, OS, VoA-A"] = true
+  L["3.ToCR/Ony, VoA-K"] = true
+  L["2.Ulduar, VoA-E"] = true
+  L["1.Naxx/OS/EoE, VoA-A"] = true
   L["Rank Priority"] = true
   L["Select Rank for increased Loot Prio\n(Selected Rank and Higher override PR of lower ranks)"] = true
   L["Rank Priority MS"] = true

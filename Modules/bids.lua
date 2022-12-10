@@ -186,7 +186,7 @@ function bepgp_bids:shuffleOffbids(off_bids)
     bepgp:table_shuffle(off_bids)
     bepgp_bids:Refresh()
   end
-  bepgp:debugPrint(L["Offspec Bids Shuffled"])
+  bepgp:Print(L["Offspec Bids Shuffled"])
 end
 
 function bepgp_bids:updateBids()

@@ -27,6 +27,7 @@ local GuildRoster = C_GuildInfo and C_GuildInfo.GuildRoster or _G.GuildRoster
 local CanEditOfficerNote = C_GuildInfo and C_GuildInfo.CanEditOfficerNote or _G.CanEditOfficerNote
 local CanSpeakInGuildChat = C_GuildInfo and C_GuildInfo.CanSpeakInGuildChat or _G.CanSpeakInGuildChat
 local GuildControlGetRankFlags = C_GuildInfo and C_GuildInfo.GuildControlGetRankFlags or _G.GuildControlGetRankFlags
+local MAX_PLAYER_LEVEL = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT]
 
 bepgp.VARS = {
   basegp = 100,
@@ -299,9 +300,9 @@ do
       progress_values = {
         ["T10.5"]=L["5.RS"],
         ["T10"]  =L["4.ICC, VoA-T"],
-        ["T9"]   =L["3.ToCR, Ony, VoA-K"],
-        ["T8"]   =L["2.EoE, Uld, VoA-E"],
-        ["T7"]   =L["1.Naxx, OS, VoA-A"]
+        ["T9"]   =L["3.ToCR/Ony, VoA-K"],
+        ["T8"]   =L["2.Ulduar, VoA-E"],
+        ["T7"]   =L["1.Naxx/OS/EoE, VoA-A"]
       },
       progress_sorting = {"T10.5", "T10", "T9", "T8", "T7"},
       progressmap = {
@@ -314,11 +315,11 @@ do
         ["T7.5"]  = {"T7.5","T7"},
         ["T7"]    = {"T7.5","T7"},
       },
-      tierlist = {["T10.5"]="T10.5",["T10"]="T10",["T9.5"]="T9.5",["T9"]="T9",["T8.5"]="T8.5",["T8"]="T8",["T7.5"]="T7.5",["T7"]="T7"},
+      tierlist = {["T10.5"]="270+",["T10"]="260-269",["T9.5"]="250-259",["T9"]="240-249",["T8.5"]="230-239",["T8"]="220-229",["T7.5"]="210-219",["T7"]="200-209"},
       tiersort = {"T10.5","T10","T9.5","T9","T8.5","T8","T7.5","T7"},
       modlist = {["T10.5"]="T10.5",["T10"]="T10",["T9"]="T9",["T8"]="T8",["T7"]="T7"},
       modsort = {"T10.5","T10","T9","T8","T7"},
-      bench_values = {["T10.5"]=L["5.RS"], ["T10"]=L["4.ICC, VoA-T"], ["T9"]=L["3.ToCR, Ony, VoA-K"], ["T8"]=L["2.EoE, Uld, VoA-E"], ["T7"]=L["1.Naxx, OS, VoA-A"]},
+      bench_values = {["T10.5"]=L["5.RS"], ["T10"]=L["4.ICC, VoA-T"], ["T9"]=L["3.ToCR/Ony, VoA-K"], ["T8"]=L["2.Ulduar, VoA-E"], ["T7"]=L["1.Naxx/OS/EoE, VoA-A"]},
       bench_sorting = {"T7", "T8", "T9", "T10", "T10.5"},
       raidLimits = {
         ["T7"] = {total = 25,[_G.TANK] = 2,[_G.HEALER] = 5,},
@@ -372,7 +373,7 @@ do
       tierlist = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1.5"]="T1.5",["T1"]="T1"}, 
       tiersort = {"T3","T2.5","T2","T1.5","T1"},
       modlist = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1"]="T1"}, 
-      modsort = {"T3","T2.5","T2","T1.5","T1"},
+      modsort = {"T3","T2.5","T2","T1"},
       bench_values = { ["T3"]=L["4.Naxxramas"], ["T2.5"]=L["3.Temple of Ahn\'Qiraj"], ["T2"]=L["2.Blackwing Lair"], ["T1"]=L["1.Molten Core"]},
       bench_sorting = {"T1", "T2", "T2.5", "T3"},
       raidLimits = {
@@ -4172,12 +4173,12 @@ function bepgp:award_raid_ep(ep) -- awards ep to raid members in zone
       if name and name ~= _G.UNKNOWNOBJECT then
         if level == 0 or (not online) then
           level = (guildcache[name] and guildcache[name][1]) or 0
-          self:debugPrint(string.format(L["%s is offline. Getting info from guild cache."],name))
+          self:Print(string.format(L["%s is offline. Getting info from guild cache."],name))
         end
         if level >= bepgp.VARS.minlevel then
           local main = guildcache[name] and guildcache[name][5] or false
           if main and self:inRaid(main) then
-            self:debugPrint(string.format(L["Skipping %s. Main %q is also in the raid."],name,main))
+            self:Print(string.format(L["Skipping %s. Main %q is also in the raid."],name,main))
           else
             self:givename_ep(name,ep)
           end
