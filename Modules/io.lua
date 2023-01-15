@@ -34,6 +34,24 @@ function bepgp_io:OnEnable()
   end)
   self._iobrowserimport:AddChild(browserImportEB)
 
+  local thirdparty = GUI:Create("Button")
+  thirdparty:SetAutoWidth(true)
+  thirdparty:SetText(ADDONS)
+  thirdparty:SetCallback("OnClick",bepgp_io.addonImport)
+  self._iobrowserimport.addonBtn = thirdparty
+  self._iobrowserimport:AddChild(thirdparty)
+  thirdparty:SetPoint("LEFT", browserImportEB.button, "RIGHT", 5, 0)
+  thirdparty:SetDisabled(true)
+  hooksecurefunc(self._iobrowserimport, "Show", function()
+    bepgp_io._iobrowserimport.editBox:SetText("")
+    if LootReserve and LootReserve.Client and LootReserve.Client.CharacterFavorites then
+      if bepgp:table_count(LootReserve.Client.CharacterFavorites)>0 then
+        bepgp_io._iobrowserimport.addonBtn:SetDisabled(false)
+        bepgp_io._iobrowserimport.addonBtn:SetText("LootReserve")
+      end
+    end
+  end)
+
   self._ioreserves = Dump:New(L["Export Reserves"],450,320)
   self._ioroster = Dump:New(L["Export Raid Roster"],250,320)
   local bastionexport,_,_,_,reason = GetAddOnInfo("BastionEPGP_Export")
@@ -44,6 +62,20 @@ function bepgp_io:OnEnable()
       self._fileexport = BastionEPGPExport
       bepgp:debugPrint(L["BastionLoot will be saving to file in `\\WTF\\Account\\<ACCOUNT>\\SavedVariables\\BastionEPGP_Export.lua`"])
     end
+  end
+end
+
+function bepgp_io:addonImport()
+  local text
+  for k,v in pairs(LootReserve.Client.CharacterFavorites) do
+    if v then
+      text = text and (text..format("\nitem=%d",k)) or format("item=%d",k)
+    end
+  end
+  if text then
+    bepgp_io._iobrowserimport.editBox:SetText(text)
+    bepgp_io._iobrowserimport.editBox:Fire("OnTextChanged",text)
+    bepgp_io._iobrowserimport.editBox.button:Enable()
   end
 end
 
@@ -247,8 +279,17 @@ function bepgp_io:BrowserImport(text)
         end
       end
     end
-  else -- try atlasloot export format
+  else
+    -- try atlasloot export format
     for strid in text:gmatch(":(%d+)") do
+      local id = tonumber(strid)
+      if id then
+        browser:favoriteAdd(-2,id)
+        change = true
+      end
+    end
+    -- try our own export format
+    for strid in text:gmatch("item=(%d+)") do
       local id = tonumber(strid)
       if id then
         browser:favoriteAdd(-2,id)

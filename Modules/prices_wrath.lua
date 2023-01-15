@@ -4983,7 +4983,7 @@ local function GetDiscountDetail(invType, classID, subclassID)
   Main-hand or One-hand melee weapon to Hunter (Off-hand melee weapon has discount baked-in)
   Shield to Shaman (as the only non-tank shield bearer)
   Any ranged weapon to melee (ie Warrior or Rogue)
-  All Wands (epgp formulat is done based on inventory type and they share IndexRangedRight with some ranged weapons)
+  All Wands (epgp formula is done based on inventory type and they share IndexRangedRight with some ranged weapons)
 
   Other cases still need a human deciding (One-hand melee weapon to Tank for tanking, One-hand melee weapon to tank or melee for Dual Wield Offhand use, Shield to Paladin, Two-hand melee weapon to Titan Grip warrior for Offhand use)
   ]]
