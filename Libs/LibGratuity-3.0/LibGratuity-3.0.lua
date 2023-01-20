@@ -1,13 +1,13 @@
 --[[
 Name: LibGratuity-3.0
-Revision: $Rev: 42 $
+Revision: $Rev: 44 $
 Author: Tekkub Stoutwrithe (tekkub@gmail.com)
 SVN: svn://svn.wowace.com/root/trunk/LibGratuity-3.0
 Description: Tooltip parsing library
 Dependencies: (optional) Deformat-2.0
 ]]
 
-local vmajor, vminor = "LibGratuity-3.0", 90000 + tonumber(("$Revision: 42 $"):match("%d+"))
+local vmajor, vminor = "LibGratuity-3.0", 90000 + tonumber(("$Revision: 44 $"):match("%d+"))
 
 local lib = LibStub:NewLibrary(vmajor, vminor)
 if not lib then
@@ -30,19 +30,26 @@ else
 end
 
 function lib:CreateTooltip()
-	local tt = CreateFrame("GameTooltip")
+	tipName = "LibGratuity30_"..vminor.."_ScanTip"
+	local tt = CreateFrame("GameTooltip",tipName,nil,"GameTooltipTemplate")
 
 	self.vars.tooltip = tt
-	tt:SetOwner(UIParent, "ANCHOR_NONE")
---	tt:SetOwner(tt, "ANCHOR_NONE")
---	tooltip:SetParent()
+	self.vars.tipName = tipName
+	tt:SetOwner(WorldFrame, "ANCHOR_NONE")
 
 	self.vars.Llines, self.vars.Rlines = {}, {}
 	for i=1,30 do
-		self.vars.Llines[i], self.vars.Rlines[i] = tt:CreateFontString(), tt:CreateFontString()
-		self.vars.Llines[i]:SetFontObject(GameFontNormal)
-		self.vars.Rlines[i]:SetFontObject(GameFontNormal)
-		tt:AddFontStrings(self.vars.Llines[i], self.vars.Rlines[i])
+		local leftText, rightText = _G[tipName.."TextLeft"..i], _G[tipName.."TextRight"..i]
+		if leftText then
+			self.vars.Llines[i] = leftText
+			self.vars.Rlines[i] = rightText
+		else
+			self.vars.Llines[i] = tt:CreateFontString(tipName.."TextLeft"..i, "ARTWORK", "GameTooltipText")
+			self.vars.Rlines[i] = tt:CreateFontString(tipName.."TextRight"..i, "ARTWORK", "GameTooltipText")
+			self.vars.Llines[i]:SetFontObject(GameTooltipText)
+			self.vars.Rlines[i]:SetFontObject(GameTooltipText)
+			tt:AddFontStrings(self.vars.Llines[i], self.vars.Rlines[i])
+		end
 	end
 end
 
@@ -50,15 +57,10 @@ end
 --	Clears the tooltip completely, none of this "erase left, hide right" crap blizzard does
 function lib:Erase()
 	self.vars.tooltip:ClearLines() -- Ensures tooltip's NumLines is reset
-	for i=1,30 do self.vars.Rlines[i]:SetText() end -- Clear text from right side (ClearLines only hides them)
---	if not self.vars.tooltip:IsOwned(self.vars.tooltip) then self.vars.tooltip:SetOwner(self.vars.tooltip, "ANCHOR_NONE") end
-	if not self.vars.tooltip:IsOwned(UIParent) then self.vars.tooltip:SetOwner(UIParent, "ANCHOR_NONE") end
---	if not self.vars.tooltip:IsOwned(self.vars.tooltip) then
---		error("Gratuity's tooltip is not scannable", 2)
---	end
-	if not self.vars.tooltip:IsOwned(UIParent) then
-		error("Gratuity's tooltip is not scannable", 2)
+	for i,_ in pairs(self.vars.Rlines) do
+		self.vars.Rlines[i]:SetText()
 	end
+	if not self.vars.tooltip:IsOwned(WorldFrame) then self.vars.tooltip:SetOwner(WorldFrame, "ANCHOR_NONE") end
 end
 
 
@@ -210,6 +212,7 @@ function lib:CreateSetMethods()
 		self[meth] = function(self, ...)
 			self:Erase()
 			if not func(...) then return end
+			if not self.vars.tooltip:IsOwned(WorldFrame) then self.vars.tooltip:SetOwner(WorldFrame, "ANCHOR_NONE") end
 			return handlePcall(pcall(self.vars.tooltip[meth], self.vars.tooltip, ...))
 		end
 	end
@@ -218,6 +221,9 @@ end
 -- Activate a new instance of this library
 if not lib.vars then
 	lib.vars = {}
+	lib:CreateTooltip()
+end
+if not lib.vars.tipName then
 	lib:CreateTooltip()
 end
 lib:CreateSetMethods()

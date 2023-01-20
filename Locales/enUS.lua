@@ -447,5 +447,6 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)"] = true
   L["Extra Messages"] = true
   L["Select the Chatframe to print Extra Informational messages to."] = true
+  L["Initializing.. Try again in a few seconds!"] = true
 
 bepgp.L = L

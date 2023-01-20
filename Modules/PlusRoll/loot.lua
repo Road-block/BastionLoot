@@ -6,7 +6,6 @@ local LD = LibStub("LibDialog-1.0")
 local C = LibStub("LibCrayon-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local GUI = LibStub("AceGUI-3.0")
-local G = LibStub("LibGratuity-3.0")
 local DF = LibStub("LibDeformat-3.0")
 --/run BastionLoot:GetModule("BastionEPGP_plusroll_loot"):Toggle()
 local data = { }

@@ -33,6 +33,26 @@ local function itemtype_sort(a, b)
   end
 end
 
+local function st_sorter_plain(st,rowa,rowb,col)
+  local cella = st.data[rowa].cols[col].value
+  local cellb = st.data[rowb].cols[col].value
+  local sort = st.cols[col].sort or st.cols[col].defaultsort
+  if cella == cellb then
+    local sortnext = st.cols[col].sortnext
+    if sortnext then
+      return st.data[rowa].cols[sortnext].value < st.data[rowb].cols[sortnext].value
+    end
+  else
+    local plain_a = cella and strmatch(cella,"|h(%b[])|h|r") or ""
+    local plain_b = cellb and strmatch(cellb,"|h(%b[])|h|r") or ""
+    if sort == ST.SORT_DSC then
+      return plain_a > plain_b
+    else
+      return plain_a < plain_b
+    end
+  end
+end
+
 local favmap = bepgp._favmap
 local fav5,fav4,fav3,fav2,fav1 = favmap[5],favmap[4],favmap[3],favmap[2],favmap[1]
 local menu_close = function()
@@ -174,11 +194,11 @@ function bepgp_browser:OnEnable()
   container:Hide()
   self._container = container
   local headers = {
-    {["name"]=C:Orange(_G.ITEMS),["width"]=150}, --name
+    {["name"]=C:Orange(_G.ITEMS),["width"]=150,["comparesort"]=st_sorter_plain,["sortnext"]=2}, --name
     {["name"]=C:Orange(L["Item Type"]),["width"]=80}, --type
     {["name"]=C:Orange(L["Mainspec GP"]),["width"]=80}, --ms_gp
     {["name"]=C:Orange(L["Item Pool"]),["width"]=60,}, --tier
-    {["name"]=C:Orange(L["Favorites"]),["width"]=60}, -- favorited
+    {["name"]=C:Orange(L["Favorites"]),["width"]=60,["sort"]=ST.SORT_DSC}, -- favorited
   }
   self._browser_table = ST:CreateST(headers,16,nil,colorHighlight,container.frame) -- cols, numRows, rowHeight, highlight, parent
   self._browser_table:EnableSelection(true)
@@ -290,7 +310,12 @@ function bepgp_browser:Toggle()
   if self._container.frame:IsShown() then
     self._container:Hide()
   else
-    self._container:Show()
+    if self._initDone then
+      self._container:Show()
+    else
+      bepgp:Print(L["Initializing.. Try again in a few seconds!"])
+      return
+    end
   end
   self:Refresh()
 end

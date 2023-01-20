@@ -77,6 +77,7 @@ bepgp.VARS = {
     [43821] = "Withered",
     [43662] = "PlundererAxe",
     [48418] = "SoulFragment",
+    [202269] = "BountyAlpha",
     -- bcc
     [29434] = "Badge",
     [42] = "currency",
