@@ -24,7 +24,7 @@ local MAJOR = "LibDialog-1.0"
 
 _G.assert(LibStub, MAJOR .. " requires LibStub")
 
-local MINOR = 8 -- Should be manually increased
+local MINOR = 10 -- Should be manually increased
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not lib then
@@ -378,7 +378,11 @@ local function _AcquireCheckBox(parent, index)
     active_checkboxes[#active_checkboxes + 1] = checkbox
 
     checkbox:SetPoint("LEFT", 0, 0)
-    checkbox.text:SetText(parent.delegate.checkboxes[index].label or "")
+    if checkbox.Text then
+        checkbox.Text:SetText(parent.delegate.checkboxes[index].label or "")
+    elseif checkbox.text then
+        checkbox.text:SetText(parent.delegate.checkboxes[index].label or "")
+    end
     checkbox.container:SetParent(parent)
     checkbox:SetID(index)
     checkbox:SetChecked(CheckBox_GetValue(checkbox))
@@ -675,7 +679,12 @@ local function _BuildDialog(delegate, data)
         local max_string_width = 0
 
         for index = 1, #dialog.checkboxes do
-            local string_width = dialog.checkboxes[index].text:GetStringWidth()
+            local string_width = 0
+            if dialog.checkboxes[index].Text then
+                dialog.checkboxes[index].Text:GetStringWidth()
+            elseif dialog.checkboxes[index].text then
+                dialog.checkboxes[index].text:GetStringWidth()
+            end
 
             if string_width > max_string_width then
                 max_string_width = string_width

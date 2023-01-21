@@ -27,6 +27,7 @@ local GuildRoster = C_GuildInfo and C_GuildInfo.GuildRoster or _G.GuildRoster
 local CanEditOfficerNote = C_GuildInfo and C_GuildInfo.CanEditOfficerNote or _G.CanEditOfficerNote
 local CanSpeakInGuildChat = C_GuildInfo and C_GuildInfo.CanSpeakInGuildChat or _G.CanSpeakInGuildChat
 local GuildControlGetRankFlags = C_GuildInfo and C_GuildInfo.GuildControlGetRankFlags or _G.GuildControlGetRankFlags
+local C_TimerAfter = C_Timer.After
 local MAX_PLAYER_LEVEL = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT]
 
 bepgp.VARS = {
@@ -1776,9 +1777,12 @@ function bepgp:templateCache(id)
           local discountChkBx
           if self.checkboxes then
             for i=1,#self.checkboxes do
-              if self.checkboxes[i] and self.checkboxes[i].text and self.checkboxes[i].text:GetText() == L["Class/Role Discount"] then
-                discountChkBx = self.checkboxes[i]
-                break
+              if self.checkboxes[i] then
+                local chkBoxText = self.checkboxes[i].Text or self.checkboxes[i].text
+                if chkBoxText and chkBoxText:GetText() == L["Class/Role Discount"] then
+                  discountChkBx = self.checkboxes[i]
+                  break
+                end
               end
             end
           end
@@ -1928,9 +1932,12 @@ function bepgp:templateCache(id)
           local discountChkBx
           if self.checkboxes then
             for i=1,#self.checkboxes do
-              if self.checkboxes[i] and self.checkboxes[i].text and self.checkboxes[i].text:GetText() == L["Class/Role Discount"] then
-                discountChkBx = self.checkboxes[i]
-                break
+              if self.checkboxes[i] then
+                local chkBoxText = self.checkboxes[i].Text or self.checkboxes[i].text
+                if chkBoxText and chkBoxText:GetText() == L["Class/Role Discount"] then
+                  discountChkBx = self.checkboxes[i]
+                  break
+                end
               end
             end
           end
@@ -3305,8 +3312,13 @@ function bepgp:Alert(text)
   local now = GetTime()
   local lastAlert = alertCache[text]
   if not lastAlert or ((now - lastAlert) > 30) then
+    --local id = GetChatTypeIndex("LOOT")
     PlaySound(SOUNDKIT.ALARM_CLOCK_WARNING_3,"Master")
-    UIErrorsFrame:AddMessage(text, 1.0, 1.0, 0.0, 28, 4)
+    UIErrorsFrame:SetTimeVisible(6)
+    UIErrorsFrame:AddMessage(text, 1.0, 1.0, 0.0, 1.0) --, id) new signature (text[,r,g,b,a,id])
+    C_TimerAfter(2,function()
+      UIErrorsFrame:SetTimeVisible(2) -- back to defaults
+    end)
     alertCache[text] = now
   end
 end
