@@ -41,6 +41,7 @@ bepgp.VARS = {
   minlevel = 80,
   maxloglines = 500,
   priorank = 100,
+  maxreserves = 1,
   prefix = "BASTIONLOOT_PFX",
   pricesystem = "BastionEPGP_LK-1.0",
   progress = "T7",
@@ -79,6 +80,14 @@ bepgp.VARS = {
     [43662] = "PlundererAxe",
     [48418] = "SoulFragment",
     [202269] = "BountyAlpha",
+    [45788] = "FreyaSigil",
+    [45786] = "HodirSigil",
+    [45787] = "MimironSigil",
+    [45784] = "ThorimSigil",
+    [45814] = "FreyaSigilH",
+    [45815] = "HodirSigilH",
+    [45816] = "MimironSigilH",
+    [45817] = "ThorimSigilH",
     -- bcc
     [29434] = "Badge",
     [42] = "currency",
@@ -493,6 +502,7 @@ local defaults = {
     bidpopup = false,
     mode = "epgp", -- "plusroll"
     priorank = bepgp.VARS.priorank,
+    maxreserves = bepgp.VARS.maxreserves,
     debugchat = 4, -- 1 is default, 2 is typically combatlog, 3 is typically voicetranscript
     priorank_ms = true,
     logs = {},
@@ -1300,6 +1310,23 @@ function bepgp:options(force)
       end,
       hidden = function() return bepgp.db.char.mode ~= "plusroll" end,
     }
+    self._options.args.general.args.main.args["maxreserves"] = {
+      type = "range",
+      name = L["Max reserves"],
+      desc = L["Maximum number of reserves allowed"],
+      order = 165,
+      get = function() return bepgp.db.char.maxreserves end,
+      set = function(info, val)
+        local value = tonumber(val)
+        if value <=0 then value = 1 end
+        if value >5 then value = 5 end
+        bepgp.db.char.maxreserves = value
+      end,
+      min = 1,
+      max = 5,
+      step = 1,
+      hidden = function() return bepgp.db.char.mode ~= "plusroll" end,
+    }
   end
   return self._options
 end
@@ -2032,7 +2059,7 @@ function bepgp:templateCache(id)
                 local tag = log_entry[log_indices.tag]
                 if tag ~= "res" then
                   if reserves then
-                    if reserves:IsReservedExact(player,item_id) then
+                    if reserves:IsReservedExact(item_id, player) then
                       reserves:RemoveReserve(player,item_id)
                     end
                   end
@@ -2058,7 +2085,7 @@ function bepgp:templateCache(id)
                   end
                 end
                 if reserves then
-                  if reserves:IsReservedExact(player,item_id) then
+                  if reserves:IsReservedExact(item_id,player) then
                     reserves:RemoveReserve(player,item_id)
                   end
                 end

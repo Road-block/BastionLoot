@@ -372,6 +372,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Skip Stackable Items"] = "Skip Stackable Items" -- needs translation
   L["Skip Stackable Items from Wincount Prompts."] = "Skip Stackable Items from Wincount Prompts." -- needs translation
   L["res"] = "res" -- needs translation
+  L["rem"] = "rem" -- needs translation
+  L["cancel"] = "cancel" -- needs translation
   L["reserve"] = "reserve" -- needs translation
   L["reserves"] = "reserves" -- needs translation
   L["%s Reserves:"] = "%s Reserves:" -- needs translation
@@ -445,5 +447,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Extra Messages"] = "Extra Messages" -- needs translation
   L["Select the Chatframe to print Extra Informational messages to."] = "Select the Chatframe to print Extra Informational messages to." -- needs translation
   L["Initializing.. Try again in a few seconds!"] = "Initializing.. Try again in a few seconds!" -- needs translation
+  L["Max reserves"] = "Max reserves" -- needs translation
+  L["Maximum number of reserves allowed"] = "Maximum number of reserves allowed" -- needs translation
+  L["You already have %s/%s reserves. Whisper \'rem [itemlink]\' to remove one."] = "You already have %s/%s reserves. Whisper \'rem [itemlink]\' to remove one." -- needs translation
 
   bepgp.L = L

@@ -370,6 +370,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Skip Stackable Items"] = true
   L["Skip Stackable Items from Wincount Prompts."] = true
   L["res"] = true
+  L["rem"] = true
+  L["cancel"] = true
   L["reserve"] = true
   L["reserves"] = true
   L["%s Reserves:"] = true
@@ -448,5 +450,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Extra Messages"] = true
   L["Select the Chatframe to print Extra Informational messages to."] = true
   L["Initializing.. Try again in a few seconds!"] = true
+  L["Max reserves"] = true
+  L["Maximum number of reserves allowed"] = true
+  L["You already have %s/%s reserves. Whisper \'rem [itemlink]\' to remove one."] = true
 
 bepgp.L = L

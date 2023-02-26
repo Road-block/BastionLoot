@@ -79,6 +79,12 @@ if bepgp._bcc or bepgp._wrath then
   autoroll["illi_mark"]  = {[32897] = true} -- Mark of the Illidari
   autoroll["sunmote"]    = {[34664] = true} -- Sunmote
 end
+if bepgp._wrath then
+  autoroll["frozen_orb"]          = {[43102] = true} -- Frozen Orb
+  autoroll["runed_orb"]           = {[45087] = true} -- Runed Orb
+  autoroll["crusader_orb"]        = {[47556] = true} -- Crusader Orb
+  autoroll["primordial_saronite"] = {[49908] = true} -- Primordial Saronite
+end
 
 function bepgp_autoroll:getAction(itemID)
   local group,item
@@ -281,6 +287,48 @@ if bepgp._bcc or bepgp._wrath then
     sorting = {-1, 1, 2, 0}
   }
 end
+if bepgp._wrath then
+    options.args["frozen_orb"] = {
+    type = "select",
+    name = "Frozen Orb", -- we'll delay load updates
+    desc = "Frozen Orb", -- we'll delay load updates
+    order = 100,
+    get = function() return bepgp.db.char.autoroll.frozen_orb end,
+    set = function(info,val) bepgp.db.char.autoroll.frozen_orb = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0}
+  }
+  options.args["runed_orb"] = {
+    type = "select",
+    name = "Frozen Orb", -- delay loading localized versions
+    desc = "Frozen Orb", -- delay load updates
+    order = 110,
+    get = function() return bepgp.db.char.autoroll.runed_orb end,
+    set = function(info,val) bepgp.db.char.autoroll.runed_orb = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0}
+  }
+  options.args["crusader_orb"] = {
+    type = "select",
+    name = "Crusader Orb", -- delay loading localized versions
+    desc = "Crusader Orb", -- delay load updates
+    order = 120,
+    get = function() return bepgp.db.char.autoroll.crusader_orb end,
+    set = function(info,val) bepgp.db.char.autoroll.crusader_orb = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0}
+  }
+  options.args["primordial_saronite"] = {
+    type = "select",
+    name = "Primordial Saronite", -- delay loading localized versions
+    desc = "Primordial Saronite", -- delay load updates
+    order = 130,
+    get = function() return bepgp.db.char.autoroll.primordial_saronite end,
+    set = function(info,val) bepgp.db.char.autoroll.primordial_saronite = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0}
+  }
+end
 function bepgp_autoroll:injectOptions() -- .general.args.main.args
   bepgp.db.char.autoroll = bepgp.db.char.autoroll or {
     ["zg_coin"] = 1,
@@ -311,38 +359,48 @@ function bepgp_autoroll:injectOptions() -- .general.args.main.args
       bepgp.db.char.autoroll.sunmote = 1
     end
   end
+  if bepgp._wrath then
+    if bepgp.db.char.autoroll.frozen_orb == nil then
+      bepgp.db.char.autoroll.frozen_orb = -1
+    end
+    if bepgp.db.char.autoroll.runed_orb == nil then
+      bepgp.db.char.autoroll.runed_orb = -1
+    end
+    if bepgp.db.char.autoroll.crusader_orb == nil then
+      bepgp.db.char.autoroll.crusader_orb = -1
+    end
+    if bepgp.db.char.autoroll.primordial_saronite == nil then
+      bepgp.db.char.autoroll.primordial_saronite = -1
+    end
+  end
   bepgp._options.args.general.args.autoroll = options
   bepgp._options.args.general.args.autoroll.cmdHidden = true
 end
 
+local items_to_cache = {
+  dark_heart          = 32428,
+  illi_mark           = 32897,
+  sunmote             = 34664,
+  frozen_orb          = 43102,
+  runed_orb           = 45087,
+  crusader_orb        = 47556,
+  primordial_saronite = 49908,
+}
 function bepgp_autoroll:cacheItemOptions()
-  local heart = Item:CreateFromItemID(32428)
-  heart:ContinueOnItemLoad(function()
-    local color = heart:GetItemQualityColor().color
-    local itemname = heart:GetItemName()
-    local markup = CreateTextureMarkup(heart:GetItemIcon(), 32, 32, 16, 16, 0, 1, 0, 1)
-    local name = string.format("%s %s",markup,color:WrapTextInColorCode(itemname))
-    options.args["dark_heart"]["name"] = name
-    options.args["dark_heart"]["desc"] = itemname
-  end)
-  local mark = Item:CreateFromItemID(32897)
-  mark:ContinueOnItemLoad(function()
-    local color = mark:GetItemQualityColor().color
-    local itemname = mark:GetItemName()
-    local markup = CreateTextureMarkup(mark:GetItemIcon(), 32, 32, 16, 16, 0, 1, 0, 1)
-    local name = string.format("%s %s",markup,color:WrapTextInColorCode(itemname))
-    options.args["illi_mark"]["name"] = name
-    options.args["illi_mark"]["desc"] = itemname
-  end)
-  local sunmote = Item:CreateFromItemID(34664)
-  sunmote:ContinueOnItemLoad(function()
-    local color = sunmote:GetItemQualityColor().color
-    local itemname = sunmote:GetItemName()
-    local markup = CreateTextureMarkup(sunmote:GetItemIcon(), 32, 32, 16, 16, 0, 1, 0, 1)
-    local name = string.format("%s %s",markup,color:WrapTextInColorCode(itemname))
-    options.args["sunmote"]["name"] = name
-    options.args["sunmote"]["desc"] = itemname
-  end)
+  for option, itemid in pairs(items_to_cache) do
+    local id = GetItemInfoInstant(itemid)
+    if id then
+      local itemAsync = Item:CreateFromItemID(id)
+      itemAsync:ContinueOnItemLoad(function()
+        local color = itemAsync:GetItemQualityColor().color
+        local itemname = itemAsync:GetItemName()
+        local markup = CreateTextureMarkup(itemAsync:GetItemIcon(), 32, 32, 16, 16, 0, 1, 0, 1)
+        local name = string.format("%s %s",markup,color:WrapTextInColorCode(itemname))
+        options.args[option]["name"] = name
+        options.args[option]["desc"] = itemname
+      end)
+    end
+  end
 end
 
 function bepgp_autoroll:delayInit()

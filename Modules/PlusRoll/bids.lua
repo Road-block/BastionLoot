@@ -388,7 +388,7 @@ function bepgp_plusroll_bids:captureRoll(event, text)
       if (msroll) then
         bids_blacklist[who] = true
         reserves = reserves or bepgp:GetModule(addonName.."_plusroll_reserves")
-        if reserves and (reserves:IsReservedExact(who, bepgp_plusroll_bids.bid_item.itemid)) then
+        if reserves and (reserves:IsReservedExact(bepgp_plusroll_bids.bid_item.itemid, who)) then
           table.insert(bepgp_plusroll_bids.bids_res,{who,color,msroll,nil,pr,rank})
         else
           plusroll_loot = plusroll_loot or bepgp:GetModule(addonName.."_plusroll_loot")

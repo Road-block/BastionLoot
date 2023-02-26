@@ -14,7 +14,7 @@ local colorHighlight = {r=0, g=0, b=0, a=.9}
 local colorLocked = {r=1, g=0, b=0, a=.9}
 local colorUnlocked = {r=0, g=1, b=0, a=.9}
 local colorUnknown = {r=.75, g=.75, b=.75, a=.9}
-local players, items = {},{}
+local players, items, unlocks = {},{},{}
 local bepgp_plusroll_bids
 local questionblue = CreateAtlasMarkup("QuestRepeatableTurnin")
 local call_icon = L["Call"].."|TInterface\\CHATFRAME\\UI-ChatIcon-ArmoryChat:16:16:0:0:16:16:0:16:0:16:255:127:0|t"
@@ -34,23 +34,6 @@ local reserve_options = {
   desc = L["BastionLoot options"],
   handler = bepgp_plusroll_reserves,
   args = {
-    ["lock"] = {
-      type = "execute",
-      name = L["Lock Reserve"],
-      desc = L["Lock Reserve"],
-      order = 1,
-      func = function(info)
-        local p, i = bepgp_plusroll_reserves._selected.player,bepgp_plusroll_reserves._selected.item
-        local entry = players[p]
-        if entry then
-          if entry[1]==i then
-            entry[2]=true
-          end
-        end
-        bepgp_plusroll_reserves:Refresh()
-        C_Timer.After(0.2, menu_close)
-      end,
-    },
     ["unlock"] = {
       type = "execute",
       name = L["Unlock Reserve"],
@@ -58,12 +41,7 @@ local reserve_options = {
       order = 2,
       func = function(info)
         local p, i = bepgp_plusroll_reserves._selected.player,bepgp_plusroll_reserves._selected.item
-        local entry = players[p]
-        if entry then
-          if entry[1]==i then
-            entry[2]=false
-          end
-        end
+        unlocks[p] = true
         bepgp_plusroll_reserves:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
@@ -219,6 +197,7 @@ function bepgp_plusroll_reserves:OnEnable()
 end
 
 function bepgp_plusroll_reserves:ToggleLock(value)
+  table.wipe(unlocks)
   local bvalue = value and true or false
   if bvalue then
     if type(value)=="string" then
@@ -236,15 +215,13 @@ function bepgp_plusroll_reserves:ToggleLock(value)
     self._container._togglelock:SetLabel(C:Green(L["Unlocked"]))
     bepgp.db.char.reserves.locked = bvalue
   end
-  for player,item in pairs(players) do
-    item[2] = bvalue
-  end
   self:Refresh()
 end
 
 function bepgp_plusroll_reserves:Clear()
   table.wipe(players)
   table.wipe(items)
+  table.wipe(unlocks)
   bepgp.db.char.reserves.locked = false
   self:Refresh()
   bepgp:Print(L["Soft reserves Cleared."])
@@ -258,6 +235,7 @@ end
 local lootRes = {
   ["res"] = {L["(res)"],L["(reserve)"]},
   ["resq"] = {L["res"],L["reserve"],L["reserves"]},
+  ["resrm"] = {L["rem"],L["cancel"]},
 }
 function bepgp_plusroll_reserves:captureRes(fromfilter, event, text, sender)
   if type(fromfilter)~="boolean" then
@@ -273,6 +251,9 @@ function bepgp_plusroll_reserves:captureRes(fromfilter, event, text, sender)
   if sender ~= bepgp._playerName then
     if not fromfilter then
       if self:resReply(text,sender) then
+        return true
+      end
+      if self:resRemove(text,sender) then
         return true
       end
     end
@@ -338,10 +319,9 @@ function bepgp_plusroll_reserves:resReply(text,sender)
     if res_query then break end
   end
   if res_query then
-    local found = players[sender]
-    if found then
-      local item = found[1]
-      if item then
+    local entries = players[sender]
+    if bepgp:table_count(entries) > 0 then
+      for _,item in ipairs(entries) do
         local num_reserves, players = self:IsReserved(item)
         local names = ""
         if num_reserves > 0 then
@@ -366,53 +346,107 @@ function bepgp_plusroll_reserves:resReply(text,sender)
   end
 end
 
---/run BastionLoot:GetModule("BastionEPGP_plusroll_reserves"):AddReserve("Jumpshot",19915)
-function bepgp_plusroll_reserves:AddReserve(player,item)
-  local found = players[player]
-  local locked = bepgp.db.char.reserves.locked
-  local inform = player ~= bepgp._playerName
-  if found then -- already has a reserve, if permitted update
-    if found[2] == false then
-      if locked then -- overall list is locked
-        found[2]=true -- revert temporary unlock
-      end
-      local prev_item = found[1]
-      if items[prev_item] and items[prev_item][player] then
-        items[prev_item][player] = nil
-        if bepgp:table_count(items[prev_item]) == 0 then
-          items[prev_item]=nil
-        end
-      end
-      found[1]=item -- update the item
-      items[item] = items[item] or {}
-      items[item][player] = true
-      if inform then
-        SendChatMessage(string.format("%s:%s",addonName,L["Reserve updated."]),"WHISPER",nil,player)
-      end
-    else -- item is locked
-      if inform then
-        SendChatMessage(string.format("%s:%s",addonName,L["Reserves are locked."]),"WHISPER",nil,player)
+function bepgp_plusroll_reserves:resRemove(text, sender)
+  local rem_query
+  for _,f in ipairs(lootRes.resrm) do
+    rem_query = (string.match(text, "^("..f..")%A+"))
+    if rem_query then break end
+  end
+  if rem_query then
+    if not (string.find(text, "|Hitem:", 1, true)) then return false end
+    local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%d]+|h%[.-%]|h|r"," ; ")
+    if count > 1 then return false end
+    local _, itemLink, itemColor, itemString, itemName, itemID
+    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%d]+|h%[.-%]|h|r)")
+    if (itemLink) and (itemLink ~= "") then
+      itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
+    end
+    if (itemName) then
+      bepgp_plusroll_reserves:RemoveReserve(sender, itemID)
+      return true
+    end
+  end
+end
+
+function bepgp_plusroll_reserves:IsReservedExact(item, player)
+  if not players[player] then return false end
+  local index = tIndexOf(players[player], item)
+  if index then
+    return true, index
+  end
+end
+
+function bepgp_plusroll_reserves:NumReserves(player)
+  if not players[player] then return 0 end
+  return #players[player]
+end
+
+function bepgp_plusroll_reserves:RemoveReserve(player, item, masterlooter)
+  local reserved, index = bepgp_plusroll_reserves:IsReservedExact(item, player)
+  if reserved then
+    table.remove(players[player],index)
+    if bepgp:table_count(players[player]) == 0 then
+      players[player] = nil
+    end
+    if items[item] and items[item][player] then
+      items[item][player] = nil
+      if bepgp:table_count(items[item]) == 0 then
+        items[item]=nil
       end
     end
-  else
-    if locked then -- overall list is locked
-      if inform then
-        SendChatMessage(string.format("%s:%s",addonName,L["Reserves are locked."]),"WHISPER",nil,player)
+    if masterlooter and (player ~= bepgp._playerName) and bepgp:inRaid(player) then
+      SendChatMessage(string.format("%s:%s",addonName,L["Reserve removed."]),"WHISPER",nil,player)
+    end
+  end
+  self:Refresh()
+end
+
+--[[
+Add the ability to send reserve requests from browser
+Add comms sending reserve list
+]]
+--/run BastionLoot:GetModule("BastionLoot_plusroll_reserves"):AddReserve("Bushido",45587)
+function bepgp_plusroll_reserves:AddReserve(player,item)
+  local reserved, index = bepgp_plusroll_reserves:IsReservedExact(item, player)
+  if reserved and index then return end
+  local inform = player ~= bepgp._playerName
+  if bepgp.db.char.reserves.locked and not unlocks[player] then
+    SendChatMessage(string.format("%s:%s",addonName,L["Reserves are locked."]),"WHISPER",nil,player)
+    return
+  end
+  local count = bepgp_plusroll_reserves:NumReserves(player)
+  local max_reserves = bepgp.db.char.maxreserves
+  if count == max_reserves and max_reserves > 1 then
+    if inform then
+      SendChatMessage(string.format("%s:%s",addonName,string.format(L["You already have %s/%s reserves. Whisper \'rem [itemlink]\' to remove one."],count,max_reserves)),"WHISPER",nil,player)
+    end
+    return
+  end
+  if count < max_reserves or max_reserves == 1 then
+    players[player] = players[player] or {}
+    local index = math.min(#(players[player])+1,max_reserves)
+    local prev_item = players[player][index]
+    if prev_item and items[prev_item] and items[prev_item][player] then
+      items[prev_item][player] = nil
+      if bepgp:table_count(items[prev_item]) == 0 then
+        items[prev_item]=nil
       end
-    else
-      players[player] = {item, false}
-      items[item] = items[item] or {}
-      items[item][player] = true
-      if inform then
+    end
+    players[player][index] = item
+    items[item] = items[item] or {}
+    items[item][player] = true
+    if unlocks[player] and bepgp.db.char.reserves.locked then
+      unlocks[player] = nil
+    end
+    if inform then
+      if prev_item then
+        SendChatMessage(string.format("%s:%s",addonName,L["Reserve updated."]),"WHISPER",nil,player)
+      else
         SendChatMessage(string.format("%s:%s",addonName,L["Reserve added."]),"WHISPER",nil,player)
       end
     end
   end
   self:Toggle(true)
-end
-
-function bepgp_plusroll_reserves:IsReservedExact(player,item)
-  return players[player] and players[player][1] and (players[player][1] == item)
 end
 
 function bepgp_plusroll_reserves:IsReserved(item)
@@ -422,22 +456,6 @@ function bepgp_plusroll_reserves:IsReserved(item)
   else
     return
   end
-end
-
-function bepgp_plusroll_reserves:RemoveReserve(player,item, force)
-  if players[player] then
-    players[player]=nil
-  end
-  if items[item] and items[item][player] then
-    items[item][player] = nil
-    if force and (player ~= bepgp._playerName) and bepgp:inRaid(player) then
-      SendChatMessage(string.format("%s:%s",addonName,L["Reserve removed."]),"WHISPER",nil,player)
-    end
-    if bepgp:table_count(items[item]) == 0 then
-      items[item]=nil
-    end
-  end
-  self:Refresh()
 end
 
 function bepgp_plusroll_reserves:Toggle(show)
@@ -453,6 +471,7 @@ local function populate(data,link,player,lock,id)
   local cached = bepgp:groupCache(player)
   local color = cached and cached.color or colorUnknown
   local c_lock = lock and colorLocked or colorUnlocked
+  lock = lock and _G.YES or _G.NO
   table.insert(data,{["cols"]={
     {["value"]=link},
     {["value"]=player,["color"]=color},
@@ -466,25 +485,38 @@ function bepgp_plusroll_reserves:RefreshGUI()
   self._reserves_table:SetData(data)
   if self._reserves_table and self._reserves_table.showing then
     self._reserves_table:SortData()
-    local count = bepgp:table_count(data)
-    self._container:SetTitle(string.format("%s (%s)",L["BastionLoot reserves"],count))
+    local player_count = bepgp:table_count(players)
+    local item_count = bepgp:table_count(data)
+    player_count = string.format("%d |4Player:Players;",player_count)
+    item_count = string.format("%d |4Item:Items;",item_count)
+    self._container:SetTitle(string.format("%s: %s/%s",L["BastionLoot reserves"],player_count, item_count))
   end
 end
 
 function bepgp_plusroll_reserves:Refresh()
   table.wipe(data)
-  for player,entry in pairs(players) do
-    local id, lock = entry[1], (not not entry[2])
-    local _,link = GetItemInfo(id)
-    if (link) then
-      populate(data,link,player,lock,id)
-    else
-      local item = Item:CreateFromItemID(id)
-      item:ContinueOnItemLoad(function()
-        local id = item:GetItemID()
-        local link = item:GetItemLink()
-        populate(data,link,player,lock,id)
-      end)
+  for player,items in pairs(players) do
+    for i,id in ipairs(items) do
+      local lock = bepgp.db.char.reserves.locked
+      if unlocks[player] then
+        lock = false
+      end
+      if tonumber(id) then
+        local _, link = GetItemInfo(id)
+        if (link) then
+          populate(data,link,player,lock,id)
+        else
+          local itemAsync = Item:CreateFromItemID(id)
+          itemAsync:ContinueOnItemLoad(function()
+            local id = itemAsync:GetItemID()
+            local link = itemAsync:GetItemLink()
+            populate(data,link,player,lock,id)
+          end)
+        end
+      else
+        -- cleanup old structure
+        items[i] = nil
+      end
     end
   end
   self:RefreshGUI()
