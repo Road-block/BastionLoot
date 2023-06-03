@@ -28,6 +28,7 @@ local CanEditOfficerNote = C_GuildInfo and C_GuildInfo.CanEditOfficerNote or _G.
 local CanSpeakInGuildChat = C_GuildInfo and C_GuildInfo.CanSpeakInGuildChat or _G.CanSpeakInGuildChat
 local GuildControlGetRankFlags = C_GuildInfo and C_GuildInfo.GuildControlGetRankFlags or _G.GuildControlGetRankFlags
 local C_TimerAfter = C_Timer.After
+local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or _G.GetAddOnMetadata
 local MAX_PLAYER_LEVEL = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT]
 
 bepgp.VARS = {
@@ -41,6 +42,7 @@ bepgp.VARS = {
   minlevel = 80,
   maxloglines = 500,
   priorank = 100,
+  standinrank = 100,
   maxreserves = 1,
   prefix = "BASTIONLOOT_PFX",
   pricesystem = "BastionEPGP_LK-1.0",
@@ -64,6 +66,7 @@ bepgp.VARS = {
     [49426] = "BadgeFrost",
     [341] = "currency",
     [241] = "currency",
+    [2589] = "currency",
     [22484] = "Necrotic",
     [43494] = "Watcher",
     [43670] = "Tiki",
@@ -189,7 +192,7 @@ local raidStatus,lastRaidStatus
 local lastUpdate = 0
 local running_check
 local partyUnit,raidUnit = {},{}
-local hexClassColor, classToEnClass = {}, {}
+local hexClassColor, classToEnClass, classToClassID, classidToClass = {}, {}, {}, {}
 local hexColorQuality = {}
 local price_systems = {}
 local special_frames = {}
@@ -225,6 +228,15 @@ do
   end
   for eClass, class in pairs(LOCALIZED_CLASS_NAMES_FEMALE) do
     hexClassColor[class] = RAID_CLASS_COLORS[eClass].colorStr:gsub("^(ff)","")
+  end
+end
+do
+  for id = 1, GetNumClasses() do
+    local lClass, eClass, classId = GetClassInfo(id)
+    if classId then
+      classToClassID[eClass] = classId
+      classidToClass[classId] = eClass
+    end
   end
 end
 do
@@ -480,6 +492,8 @@ local defaults = {
     progress = bepgp.VARS.progress,
     discount = 0.1,
     altspool = false,
+    allypool = true,
+    standinrank = bepgp.VARS.standinrank,
     altpercent = 1.0,
     main = false,
     minimap = {
@@ -487,6 +501,7 @@ local defaults = {
     },
     guildcache = {},
     alts = {},
+    allies = {},
   },
   char = {
     raidonly = false,
@@ -742,11 +757,29 @@ function bepgp:options(force)
               order = 1,
               args = { },
             },
+            alts = {
+              type = "group",
+              name = L["Alts"],
+              order = 2,
+              args = { },
+              hidden = function()
+                return not bepgp:admin()
+              end,
+            },
+            allies = {
+              type = "group",
+              name = "Allies", -- TODO: Localization
+              order = 3,
+              args = { },
+              hidden = function()
+                return not bepgp:admin()
+              end,
+            },
             ttip = {
               type = "group",
               name = L["Tooltip"],
               desc = L["Tooltip Additions"],
-              order = 2,
+              order = 4,
               args = { },
             }
           }
@@ -813,7 +846,7 @@ function bepgp:options(force)
       name = L["Set Main"],
       desc = L["Set your Main Character for Standby List."],
       order = 70,
-      usage = "<MainChar>",
+      usage = "Type your main name and press Enter",
       get = function() return bepgp.db.profile.main end,
       set = function(info, val) bepgp.db.profile.main = (bepgp:verifyGuildMember(val)) end,
     }
@@ -1159,17 +1192,15 @@ function bepgp:options(force)
         bepgp:refreshPRTablets()
       end,
       values = function()
-        bepgp._guildRanks = {[100]=_G.NONE}
-        bepgp._guildRankSorting = {100}
-        if IsInGuild() then
-          for i=1, GuildControlGetNumRanks() do
-            bepgp._guildRanks[i-1]=GuildControlGetRankName(i)
-            tinsert(bepgp._guildRankSorting,i-1)
-          end
+        if not bepgp._guildRanks then
+          bepgp._guildRanks = bepgp:getGuildRanks()
         end
         return bepgp._guildRanks
       end,
       sorting = function()
+        if not bepgp._guildRankSorting then
+          bepgp._guildRanks, bepgp._guildRankSorting = bepgp:getGuildRanks()
+        end
         return bepgp._guildRankSorting
       end,
       order = 142,
@@ -2900,15 +2931,17 @@ end
 
 local function epgpResponder(frame, event, text, sender, ...)
   if event == "CHAT_MSG_WHISPER" then
-    local epgp, name = text:match("^[%c%s]*(![pP][rR])[%c%s%p]*([^%c%d%p%s]*)")
+    local query, name = text:match("^[%c%s]*(![pP][rR])[%c%s%p]*([^%c%d%p%s]*)")
     local sender_stripped = Ambiguate(sender,"short")
     local guild_name, _, _, guild_officernote = bepgp:verifyGuildMember(sender_stripped,true,true) -- ignore level req
-    if epgp and (epgp:upper()=="!PR") and guild_name then
-      local _,perms = bepgp:getGuildPermissions()
-      if perms.OFFICER then
-        if name and strlen(name)>=2 then
+    local allies = bepgp.db.profile.allies
+    local _,perms = bepgp:getGuildPermissions()
+    if perms.OFFICER then
+      if query and (query:upper()=="!PR") then
+        local guild_name, _, _, guild_officernote = bepgp:verifyGuildMember(sender_stripped,true,true)
+        if name and strlen(name)>=2 then -- query a 3rd player
           name = bepgp:Capitalize(name)
-          local g_name, _, _, g_officernote = bepgp:verifyGuildMember(name,true)
+          local g_name, _, _, g_officernote = bepgp:verifyGuildMember(name,true) -- is it a guild member
           if g_name then
             local ep,gp
             local main_name, _, _, main_onote = bepgp:parseAlt(g_name, g_officernote)
@@ -2927,18 +2960,33 @@ local function epgpResponder(frame, event, text, sender, ...)
               end
               return true
             end
-          end
-        else
-          if sender_stripped ~= bepgp._playerName then
-            local ep,gp
-            local main_name, _, _, main_onote = bepgp:parseAlt(guild_name, guild_officernote)
-            if main_name then
-              ep = bepgp:get_ep(main_name,main_onote)
-              gp = bepgp:get_gp(main_name,main_onote)
-            else
-              ep = bepgp:get_ep(guild_name,guild_officernote)
-              gp = bepgp:get_gp(guild_name,guild_officernote)
+          elseif allies[name] then -- is it an ally player
+            local ep = bepgp:get_ep(name)
+            local gp = bepgp:get_gp(name)
+            if ep and gp then
+              local pr = ep/gp
+              local msg = string.format(L["{bepgp}%s has: %d EP %d GP %.03f PR."], name, ep,gp,pr)
+              if not bepgp:sendThrottle(sender_stripped) then
+                SendChatMessage(msg,"WHISPER",nil,sender_stripped)
+              end
+              return true
             end
+          end
+        else -- query sender
+          if guild_name then --
+            local ep = bepgp:get_ep(guild_name,guild_officernote)
+            local gp = bepgp:get_gp(guild_name,guild_officernote)
+            if ep and gp then
+              local pr = ep/gp
+              local msg = string.format(L["{bepgp}You have: %d EP %d GP %.03f PR"], ep,gp,pr)
+              if not bepgp:sendThrottle(sender_stripped) then
+                SendChatMessage(msg,"WHISPER",nil,sender_stripped)
+              end
+              return true
+            end
+          elseif allies[sender_stripped] then -- is it from an ally
+            local ep = bepgp:get_ep(sender_stripped)
+            local gp = bepgp:get_gp(sender_stripped)
             if ep and gp then
               local pr = ep/gp
               local msg = string.format(L["{bepgp}You have: %d EP %d GP %.03f PR"], ep,gp,pr)
@@ -3139,25 +3187,36 @@ function bepgp:GuildRosterSetOfficerNote(index,note,fromAddon)
   else
     local name, _, _, _, _, _, _, prevnote, _, _ = GetGuildRosterInfo(index)
     name = Ambiguate(name, "short")
-    local _,_,_,oldepgp,_ = string.find(prevnote or "","(.*)({%d+:%d+})(.*)")
-    local _,_,_,epgp,_ = string.find(note or "","(.*)({%d+:%d+})(.*)")
-    if (self.db.profile.altspool) then
-      local oldmain = self:parseAlt(name,prevnote)
-      local main = self:parseAlt(name,note)
-      if oldmain ~= nil then
-        if main == nil or main ~= oldmain then
-          self:adminSay(string.format(L["Manually modified %s\'s note. Previous main was %s"],name,oldmain))
-          self:Print(string.format(L["|cffff0000Manually modified %s\'s note. Previous main was %s|r"],name,oldmain))
-        end
-      end
+    prevnote = prevnote or ""
+    local oldtype, _, olddata, _, t1, t2, t3, t4 = bepgp:parseNote(prevnote,index)
+    local oldmain, ally, ally_class, ally_ep, ally_gp, ep, gp
+    local msg, admin_msg
+    if oldtype == "alt" --[[and self.db.profile.altspool]] then
+      oldmain = t1
+    elseif oldtype == "standin" --[[and self.db.profile.allypool]] then
+      ally, ally_class, ally_ep, ally_gp = t1, t2, t3, t4
+    elseif oldtype == "epgp" then
+      ep, gp = t1, t2
     end
-    if oldepgp ~= nil then
-      if epgp == nil or epgp ~= oldepgp then
-        self:adminSay(string.format(L["Manually modified %s\'s note. EPGP was %s"],name,oldepgp))
-        self:Print(string.format(L["|cffff0000Manually modified %s\'s note. EPGP was %s|r"],name,oldepgp))
-      end
+    local datatype, _, epgpdata, _, t1, t2, t3, t4 = bepgp:parseNote(note)
+    if oldmain then
+      admin_msg = string.format(L["Manually modified %s\'s note. Previous main was %s"],name,oldmain)
+      msg = string.format(L["|cffff0000Manually modified %s\'s note. Previous main was %s|r"],name,oldmain)
+    elseif ally and ally_class then
+      admin_msg = string.format(L["Manually modified %s\'s note. Previous ally info %s, %d:%d"],name,ally,(ally_ep or 0), (ally_gp or bepgp.VARS.basegp))
+      msg = string.format(L["|cffff0000Manually modified %s\'s note. Previous ally info %s, %d:%d"],name,ally,(ally_ep or 0), (ally_gp or bepgp.VARS.basegp))
+    elseif ep and gp then
+      local oldepgp = string.format("{%d:%d}",ep,gp)
+      admin_msg = string.format(L["Manually modified %s\'s note. EPGP was %s"],name,oldepgp)
+      msg = string.format(L["|cffff0000Manually modified %s\'s note. EPGP was %s|r"],name,oldepgp)
     end
-    local safenote = string.gsub(note,"(.*)({%d+:%d+})(.*)",self.sanitizeNote)
+    if admin_msg then
+      self:adminSay(admin_msg)
+    end
+    if msg then
+      self:Print(msg)
+    end
+    local safenote = string.gsub(note,"(.*)(%b{})(.*)",self.sanitizeNote)
     return self.hooks["GuildRosterSetOfficerNote"](index,safenote)
   end
 end
@@ -3167,7 +3226,7 @@ function bepgp:addonMessage(msg, distro, target)
   if distro == "WHISPER" then
     prio = "NORMAL"
   end
-  self:SendCommMessage(bepgp.VARS.prefix,msg,distro,target,prio)
+  self:SendCommMessage(bepgp.VARS.prefix,msg,distro,target,prio) TODO: Enable for release
 end
 
 function bepgp:OnCommReceived(prefix, msg, distro, sender)
@@ -3175,7 +3234,7 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
   local sender = Ambiguate(sender, "short")
   if sender == self._playerName then return end -- don't care for our own message
   local name, class, rank = self:verifyGuildMember(sender, true)
-  if not name and class then return end -- only messages from guild
+  if not (name and class) then return end -- only messages from guild
   local is_admin = self:admin()
   local who,what,amount
   for name,epgp,change in string.gmatch(msg,"([^;]+);([^;]+);([^;]+)") do
@@ -3219,6 +3278,7 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
         minep = tonumber(minep)
         alts = (alts == "true") and true or false
         altspct = tonumber(altspct)
+        allies = (allies == "true") and true or false
         local settings_notice
         if progress and progress ~= bepgp.db.profile.progress then
           bepgp.db.profile.progress = progress -- DEBUG print("shared:"..progress)
@@ -3264,6 +3324,16 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
               settings_notice = settings_notice..L[", alts ep %"]
             else
               settings_notice = L["New Alts EP %"]
+            end
+          end
+        end
+        if allies ~= nil and allies ~= bepgp.db.profile.allypool then
+          bepgp.db.profile.allypool = allies
+          if (is_admin) then
+            if (settings_notice) then
+              settings_notice = settings_notice..L[", allies"]
+            else
+              settings_notice = L["New Allies"]
             end
           end
         end
@@ -3383,7 +3453,7 @@ function bepgp:shareSettings(force)
   local now = GetTime()
   if self._lastSettingsShare == nil or (now - self._lastSettingsShare > 30) or (force) then
     self._lastSettingsShare = now
-    local addonMsg = string.format("SETTINGS;%s:%s:%s:%s:%s:%s;1",self.db.profile.progress, self.db.profile.discount, self.db.profile.decay, self.db.profile.minep, tostring(self.db.profile.altspool), self.db.profile.altpercent)
+    local addonMsg = string.format("SETTINGS;%s:%s:%s:%s:%s:%s:%s;1",self.db.profile.progress, self.db.profile.discount, self.db.profile.decay, self.db.profile.minep, tostring(self.db.profile.altspool), self.db.profile.altpercent, tostring(self.db.profile.allypool))
     self:addonMessage(addonMsg,"GUILD")
   end
 end
@@ -3824,8 +3894,13 @@ function bepgp:table_shuffle(t)
 end
 
 function bepgp:Capitalize(word)
-  return (string.gsub(word,"^[%c%s]*([^%c%s%p%d])([^%c%s%p%d]*)",function(head,tail)
-    return string.format("%s%s",string.upper(head),string.lower(tail))
+  return (string.gsub(word,"^[%c%s]*([%U])([^%c%s%p%d]*)",function(head,tail)
+    local newword = string.format("%s%s",string.upper(head),string.lower(tail))
+      if string.len(newword) == string.len(word) then
+        return newword
+      else
+        return word
+      end
     end))
 end
 
@@ -3866,15 +3941,6 @@ function bepgp:getServerTime(date_fmt, time_fmt, epoch)
   local t = date(time_fmt,epoch)
   local timestamp = string.format("%s %s",d,t)
   return tostring(epoch), timestamp
-end
-
-function bepgp:sanitizeNote(epgp,postfix)
-  local prefix = self
-  -- reserve 12 chars for the epgp pattern {xxxxx:yyyy} max public/officernote = 31
-  local remainder = string.format("%s%s",prefix,postfix)
-  local clip = math.min(31-12,string.len(remainder))
-  local prepend = string.sub(remainder,1,clip)
-  return string.format("%s%s",prepend,epgp)
 end
 
 function bepgp:getClassData(class) -- CLASS, class, classColor
@@ -3951,12 +4017,12 @@ end
 
 -- local fullName, rank, rankIndex, level, class, zone, note, officernote, online, isAway, classFileName, achievementPoints, achievementRank, isMobile, canSoR, repStanding, GUID = GetGuildRosterInfo(index)
 function bepgp:verifyGuildMember(name,silent,levelignore)
-  for i=1,GetNumGuildMembers(true) do
-    local g_name, g_rank, g_rankIndex, g_level, g_class, g_zone, g_note, g_officernote, g_online, g_status, g_eclass, _, _, g_mobile, g_sor, _, g_GUID = GetGuildRosterInfo(i)
+  for roster_index=1,GetNumGuildMembers(true) do
+    local g_name, g_rank, g_rankIndex, g_level, g_class, g_zone, g_note, g_officernote, g_online, g_status, g_eclass, _, _, g_mobile, g_sor, _, g_GUID = GetGuildRosterInfo(roster_index)
     g_name = Ambiguate(g_name,"short")
     local level = tonumber(g_level)
     if (string.lower(name) == string.lower(g_name)) and ((level >= bepgp.VARS.minlevel) or (levelignore and level > 0)) then
-      return g_name, g_class, g_rank, g_officernote
+      return g_name, g_class, g_rank, g_officernote, g_rankIndex, roster_index
     end
   end
   if (name) and name ~= "" and not (silent) then
@@ -3996,6 +4062,19 @@ function bepgp:getGuildPermissions()
   return speakPermissions,readPermissions
 end
 
+function bepgp:getGuildRanks()
+  self._guildRanks = {[100]=_G.NONE}
+  self._guildRankSorting = {100}
+  if IsInGuild() then
+    for i=1, GuildControlGetNumRanks() do
+      self._guildRanks[i-1]=GuildControlGetRankName(i)
+      tinsert(self._guildRankSorting,i-1)
+    end
+  end
+  self._guildRankIndex = tInvert(self._guildRanks)
+  return self._guildRanks, self._guildRankSorting
+end
+
 function bepgp:testMain()
   if not IsInGuild() then return end
   if (not self.db.profile.main) or self.db.profile.main == "" then
@@ -4018,12 +4097,13 @@ function bepgp:testLootPrompt(event)
   lastRaidStatus = raidStatus
 end
 
+-- parse potential Alt (in-guild) officernote, return Main (in-guild)
 function bepgp:parseAlt(name,officernote)
   if (officernote) then
     local _,_,_,main,_ = string.find(officernote or "","(.*){([^%c%s%d{}][^%c%s%d{}][^%c%s%d{}]*)}(.*)")
-    if type(main)=="string" and (string.len(main) < 13) then
+    if type(main)=="string" and (strlen(main) < 13) then
       main = self:Capitalize(main)
-      local g_name, g_class, g_rank, g_officernote = self:verifyGuildMember(main,true)
+      local g_name, g_class, g_rank, g_officernote, g_rankIndex, roster_index = self:verifyGuildMember(main,true)
       if (g_name) then
         return g_name, g_class, g_rank, g_officernote
       else
@@ -4044,33 +4124,186 @@ function bepgp:parseAlt(name,officernote)
   return nil
 end
 
+-- parse potential Standin (in-guild), return Ally, Ally class, ally epgp (off guild)
+function bepgp:parseStandin(officernote) -- {Standin2;ep:gp} -- {<PlayerName><classid>;<epnum>:<gpnum>}
+  if (officernote) then
+    local allyinfo = officernote:match("%b{}")
+    if allyinfo then
+      local ally_name,classId,epgpinfo = allyinfo:match("{([^%c%s%d{};][^%c%s%d{};][^%c%s%d{};]*)(%d+);([%d:]*)}")
+      classId = tonumber(classId)
+      if type(ally_name)=="string" and (strlen(ally_name) < 13) then
+        ally_name = self:Capitalize(ally_name)
+        if ally_name and classId then
+          local ally_class = classidToClass[classId]
+          local ep, gp
+          if epgpinfo then
+            ep, gp = epgpinfo:match("(%d+):(%d+)")
+            ep = tonumber(ep)
+            gp = tonumber(gp)
+          end
+          return ally_name, ally_class, ep, gp
+        else
+          return nil
+        end
+      else
+        return nil
+      end
+    end
+  end
+  return nil
+end
+
+function bepgp:linkAlt(main, alt)
+  if not bepgp:admin() then return end
+  -- check alt is not linked to another main
+  local alts = self.db.profile.alts
+  for checkmain, altinfo in pairs(alts) do
+    for altname in pairs(altinfo) do
+      if altname == alt and checkmain ~= main then
+        bepgp:removeAlt(alt)
+        break
+      end
+    end
+  end
+  local alt_name,alt_class,alt_rank,alt_ofnote,alt_rnkIdx,roster_index = self:verifyGuildMember(alt,true,true)
+  if alt_name and roster_index then
+    alt_ofnote = alt_ofnote or ""
+    local newnote, count
+    local epgpinfo = alt_ofnote:match("%b{}")
+    if epgpinfo then -- some epgp modifications to the note already (epgp, existing main or ally notation)
+    else
+      newnote, count = string.gsub(alt_ofnote,main,"{"..main.."}")
+      if count == 0 then
+        newnote = string.format("{%s}",main)
+        newnote = newnote..alt_ofnote
+      end
+      local notelen = strlen(newnote)
+      if notelen > 31 then
+        newnote = string.sub(newnote,1,notelen-31)
+      end
+    end
+    if newnote then
+      GuildRosterSetOfficerNote(roster_index,newnote,true)
+      self:Print(string.format(L["%s set as an Alt of %s"],alt, main))
+      self:safeGuildRoster()
+    end
+  end
+end
+
+function bepgp:linkStandin(ally, standin, ally_classid)
+  if not bepgp:admin() then return end
+  local std_name,std_class,std_rank,std_ofnote,std_rnkIdx,roster_index = self:verifyGuildMember(standin,true,true)
+  if std_name and roster_index then -- intended standin exists and is in the guild
+    std_ofnote = std_ofnote or ""
+    local newnote
+    local epgpinfo = std_ofnote:match("%b{}")
+    if epgpinfo then -- already holds some kind of epgp data (pr, main or ally)
+    else
+      newnote, count = string.gsub(std_ofnote,ally,"{"..ally)
+      if count == 0 then
+        newnote = string.format("{%s%d;}",ally,ally_classid)
+        newnote = newnote..std_ofnote
+      end
+      local notelen = strlen(newnote)
+      if notelen > 31 then
+        newnote = string.sub(newnote,1,notelen-31)
+      end
+    end
+    if newnote then
+      GuildRosterSetOfficerNote(roster_index,newnote,true)
+      self:Print(string.format(L["%s set as the Stand-in for %s"],standin,ally))
+      self:safeGuildRoster()
+    end
+    -- check its rank matches one allowed for standins
+    -- check it's not marked as guildmain alt
+    -- check it's not marked as another ally's standin
+  end
+end
+
+function bepgp:removeAlt(alt)
+  if not bepgp:admin() then return end
+  local alt_name,alt_class,alt_rank,alt_ofnote,alt_rnkIdx,roster_index = self:verifyGuildMember(alt,true,true)
+  if alt_name and roster_index then
+    alt_ofnote = alt_ofnote or ""
+    local newnote
+    local datatype = self:parseNote(alt_ofnote, roster_index)
+    if datatype == "alt" then
+      newnote = alt_ofnote:gsub("{"," ")
+      newnote = newnote:gsub("}"," ")
+    else
+      -- notify warning
+    end
+    if newnote then
+      GuildRosterSetOfficerNote(roster_index,newnote,true)
+      self:safeGuildRoster()
+    end
+  end
+end
+
+function bepgp:removeStandin(standin)
+  if not bepgp:admin() then return end
+  local std_name,std_class,std_rank,std_ofnote,std_rnkIdx,roster_index = self:verifyGuildMember(std,true,true)
+  if std_name and roster_index then
+    std_ofnote = std_ofnote or ""
+    local newnote
+    local datatype = self:parseNote(std_ofnote, roster_index)
+    if datatype == "standin" then
+      newnote = std_ofnote:gsub("{"," ")
+      newnote = newnote:gsub("}"," ")
+    else
+      -- notify warning
+    end
+    if newnote then
+      GuildRosterSetOfficerNote(roster_index,newnote,true)
+      self:safeGuildRoster()
+    end
+  end
+end
+
 function bepgp:guildCache()
   table.wipe(self.db.profile.guildcache)
   table.wipe(self.db.profile.alts)
+  table.wipe(self.db.profile.allies)
   for i = 1, GetNumGuildMembers(true) do
     local member_name,rank,_,level,class,_,note,officernote,_,_ = GetGuildRosterInfo(i)
     member_name = Ambiguate((member_name or ""),"short")
     if member_name and level and (member_name ~= UNKNOWNOBJECT) and (level > 0) then
-      self.db.profile.guildcache[member_name] = {level,rank,class,(officernote or "")}
+      self.db.profile.guildcache[member_name] = {l=level,r=rank,c=class,o=(officernote or "")}
     end
   end
   for name,data in pairs(self.db.profile.guildcache) do
-    local class,officernote = data[3], data[4]
+    local class,officernote = data.c, data.o
     local main, main_class, main_rank = self:parseAlt(name,officernote)
     if (main) then
-      data[5]=main
+      data.m = main
       if ((self._playerName) and (name == self._playerName)) then
         if (not self.db.profile.main) or (self.db.profile.main and self.db.profile.main ~= main) then
           self.db.profile.main = main
           self:Print(string.format(L["Your main has been set to %s"],self.db.profile.main))
         end
       end
-      main = C:Colorize(hexClassColor[main_class], main)
+      local main_c = C:Colorize(hexClassColor[main_class], main)
       self.db.profile.alts[main] = self.db.profile.alts[main] or {}
+      self.db.profile.alts[main].c_name = main_c
       self.db.profile.alts[main][name] = class
+    else
+      local ally, ally_class = self:parseStandin(officernote)
+      if (ally and ally_class) and not self.db.profile.guildcache[ally] then
+        if not self.db.profile.allies[ally] then
+          self.db.profile.allies[ally] = {}
+          self.db.profile.allies[ally].standin = name
+          self.db.profile.allies[ally].class = ally_class
+          data.a = ally
+        else
+          local standin = self.db.profile.allies[ally].standin
+          if standin and standin ~= name then
+            self:debugPrint(L["Duplicate standin detected for ally %q: %s < %s"],ally,standin,name)
+          end
+        end
+      end
     end
   end
-  return self.db.profile.guildcache, self.db.profile.alts
+  return self.db.profile.guildcache, self.db.profile.alts, self.db.profile.allies
 end
 
 function bepgp:buildRosterTable()
@@ -4094,13 +4327,19 @@ function bepgp:buildRosterTable()
       local level = tonumber(level)
       local is_raid_level = level and level >= bepgp.VARS.minlevel
       local main, main_class, main_rank = self:parseAlt(member_name,officernote)
+      local ally_name, ally_class, ally_ep, ally_gp = self:parseStandin(officernote)
       if (self.db.char.raidonly) and next(r) then
-        if r[member_name] and is_raid_level then
+        if is_raid_level and r[member_name] and not ally_name  then
           table.insert(g,{["name"]=member_name,["class"]=class,["onote"]=officernote,["alt"]=(not not main)})
         end
+        if r[ally_name] then
+          table.insert(g,{["name"]=ally_name,["class"]=ally_class,["onote"]=officernote,["standin"]=member_name})
+        end
       else
-        if is_raid_level then
+        if is_raid_level and not ally_name then
           table.insert(g,{["name"]=member_name,["class"]=class,["onote"]=officernote,["alt"]=(not not main)})
+        elseif ally_name then
+          table.insert(g,{["name"]=ally_name,["class"]=ally_class,["onote"]=officernote,["standin"]=member_name})
         end
       end
     end
@@ -4118,27 +4357,42 @@ function bepgp:buildClassMemberTable(roster,epgp)
     usage = "<GP>"
   end
   local c = { }
+  local order = 0
   for i,member in ipairs(roster) do
-    local class,name,is_alt = member.class, member.name, member.alt
-    if (class) and (not is_alt) and (c[class] == nil) then
+    local class,name,is_alt,is_standin = member.class, member.name, member.alt, member.standin
+    if (class) and (not is_alt) and (not is_standin) and (c[class] == nil) then
       c[class] = { }
       c[class].type = "group"
       c[class].name = C:Colorize(hexClassColor[class],class)
       c[class].desc = class .. " members"
-      c[class].order = 1
+      c[class].order = order + 1
       c[class].args = { }
+    end
+    if is_standin and (c["ALLIES"] == nil) then
+      c["ALLIES"] = { }
+      c["ALLIES"].type = "group"
+      c["ALLIES"].name = " "..C:Green(L["Allies"])
+      c["ALLIES"].desc = L["Allies"]
+      c["ALLIES"].order = 11
+      c["ALLIES"].args = { }
     end
     if is_alt and (c["ALTS"] == nil) then
       c["ALTS"] = { }
       c["ALTS"].type = "group"
-      c["ALTS"].name = C:Silver(L["Alts"])
+      c["ALTS"].name = "  ".. C:Silver(L["Alts"])
       c["ALTS"].desc = L["Alts"]
-      c["ALTS"].order = 9
+      c["ALTS"].order = 12
       c["ALTS"].args = { }
     end
     local key
     if name and class then
-      key = is_alt and "ALTS" or class
+      if is_alt then
+        key = "ALTS"
+      elseif is_standin then
+        key = "ALLIES"
+      else
+        key = class
+      end
     end
     if (key) then
       if key == "ALTS" then
@@ -4156,6 +4410,18 @@ function bepgp:buildClassMemberTable(roster,epgp)
           c[key].args[initial].args[name].name = name
           c[key].args[initial].args[name].desc = string.format(desc,name)
           c[key].args[initial].args[name].func = function(info)
+            local what = epgp == "ep" and C:Green(L["Effort Points"]) or C:Red(L["Gear Points"])
+            LD:Spawn(addonName.."DialogMemberPoints", {epgp, what, name})
+          end
+        end
+      elseif key == "ALLIES" then
+        local _,_,hexColor = bepgp:getClassData(class)
+        if c[key].args[name] == nil then
+          c[key].args[name] = { }
+          c[key].args[name].type = "execute"
+          c[key].args[name].name = C:Colorize(hexColor,name)
+          c[key].args[name].desc = L["standin: "] .. is_standin
+          c[key].args[name].func = function(info)
             local what = epgp == "ep" and C:Green(L["Effort Points"]) or C:Red(L["Gear Points"])
             LD:Spawn(addonName.."DialogMemberPoints", {epgp, what, name})
           end
@@ -4205,6 +4471,56 @@ function bepgp:groupCache(member,update)
   end
 end
 
+function bepgp:sanitizeNote(epgp,postfix)
+  local prefix = self
+  -- reserve enough chars for the epgp pattern {xxxxx:yyyy} max public/officernote = 31
+  local remainder = string.format("%s%s",prefix,postfix)
+  local clip = math.min(31-strlen(epgp),strlen(remainder))
+  local prepend = string.sub(remainder,1,clip)
+  return string.format("%s%s",prepend,epgp)
+end
+
+-- returns type ("standin"|"alt"|"epgp")
+-- tail arguments per type, also the pre and post epgp pattern text fragments
+--  "standin": pre, epgppattern, post, ally, ally_class, ally_ep, ally_gp
+--  "alt": pre, epgppattern, post, main
+--  "epgp": pre, epgppattern, post, ep, gp
+function bepgp:parseNote(officernote, guild_index)
+  if not IsInGuild() then return end
+  if not (officernote or guild_index) then return end
+  if guild_index and not officernote then
+    local g_name, g_rank, g_rankIndex, g_level, g_class, g_zone, g_note, g_officernote, g_online, g_status, g_eclass, _, _, g_mobile, g_sor, _, g_GUID = GetGuildRosterInfo(guild_index)
+    if g_officernote then
+      return bepgp:parseNote(g_officernote)
+    else
+      return
+    end
+  end
+  local officernote = officernote or ""
+  local pre, epgpdata, post = officernote:match("(.*)(%b{})(.*)")
+  local main, ally, ally_class, ep, gp, epgp
+  if epgpdata and #epgpdata>3 then
+    ally, ally_class, epgp = epgpdata:match("{([^%c%s%d{};][^%c%s%d{};][^%c%s%d{};]*)(%d+);([%d:]*)}")
+    if ally and strlen(ally)<13 and ally_class then
+      ep, gp = epgp:match("(%d+):(%d+)")
+      ep = tonumber(ep) or 0
+      gp = tonumber(gp) or bepgp.VARS.basegp
+      return "standin", pre, epgpdata, post, ally, tonumber(ally_class), ep, gp
+    end
+    main = epgpdata:match("{([^%c%s%d{}][^%c%s%d{}][^%c%s%d{}]*)}")
+    if main and strlen(main)<13 then
+      return "alt", pre, epgpdata, post, main
+    end
+    ep, gp = epgpdata:match("{(%d+):(%d+)}")
+    ep = tonumber(ep) or 0
+    gp = tonumber(gp) or bepgp.VARS.basegp
+    if ep and gp then
+      return "epgp", pre, epgpdata, post, ep, gp
+    end
+  end
+  -- test for: <epgp pattern>, <mainname pattern>, <allyinfo pattern>
+end
+
 function bepgp:award_raid_ep(ep) -- awards ep to raid members in zone
   if IsInRaid() and GetNumGroupMembers()>0 then
     local guildcache = self:guildCache()
@@ -4212,11 +4528,11 @@ function bepgp:award_raid_ep(ep) -- awards ep to raid members in zone
       local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
       if name and name ~= _G.UNKNOWNOBJECT then
         if level == 0 or (not online) then
-          level = (guildcache[name] and guildcache[name][1]) or 0
+          level = (guildcache[name] and guildcache[name].l) or 0
           self:Print(string.format(L["%s is offline. Getting info from guild cache."],name))
         end
         if level >= bepgp.VARS.minlevel then
-          local main = guildcache[name] and guildcache[name][5] or false
+          local main = guildcache[name] and guildcache[name].m or false
           if main and self:inRaid(main) then
             self:Print(string.format(L["Skipping %s. Main %q is also in the raid."],name,main))
           else
@@ -4310,77 +4626,120 @@ function bepgp:wipe_epgp()
 end
 
 function bepgp:get_ep(getname,officernote) -- gets ep by name or note
+  local allies = self.db.profile.allies
+  if allies[getname] then
+    local standin = allies[getname].standin
+    --print("getting standin")
+    return bepgp:get_ep(standin)
+  end
   if (officernote) then
-    local _,_,ep = string.find(officernote,".*{(%d+):%d+}.*")
-    return tonumber(ep)
+    local datatype, prefix, epgpdata, postfix, t1, t2, t3, t4 = self:parseNote(officernote, guild_index)
+    --print(datatype)
+    if datatype == "epgp" then
+      local ep, gp = t1, t2
+      return ep
+    elseif datatype == "standin" then
+      local ally_name, ally_class, ally_ep, ally_gp = t1, t2, t3, t4
+      --print("%s:%s:%s",ally_name,ally_class,ally_ep)
+      return ally_ep
+    else
+      return
+    end
   end
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
     name = Ambiguate(name,"short")
-    local _,_,ep = string.find(officernote,".*{(%d+):%d+}.*")
-    if (name==getname) then return tonumber(ep) end
+    if (name == getname) and officernote then
+      return bepgp:get_ep(getname,officernote)
+    end
   end
   return
 end
+
 function bepgp:get_gp(getname,officernote) -- gets gp by name or officernote
+  local allies = self.db.profile.allies
+  if allies[getname] then
+    local standin = allies[getname].standin
+    return bepgp:get_gp(standin)
+  end
   if (officernote) then
-    local _,_,gp = string.find(officernote,".*{%d+:(%d+)}.*")
-    return tonumber(gp)
+    local datatype, prefix, epgpdata, postfix, t1, t2, t3, t4 = self:parseNote(officernote, guild_index)
+    if datatype == "epgp" then
+      local ep, gp = t1, t2
+      return gp
+    elseif datatype == "standin" then
+      local ally_name, ally_class, ally_ep, ally_gp = t1, t2, t3, t4
+      return ally_gp
+    else
+      return
+    end
   end
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
     name = Ambiguate(name,"short")
-    local _,_,gp = string.find(officernote,".*{%d+:(%d+)}.*")
-    if (name==getname) then return tonumber(gp) end
+    if (name == getname) and officernote then
+      return bepgp:get_gp(getname,officernote)
+    end
   end
   return
 end
 
 function bepgp:init_notes(guild_index,name,officernote)
-  local ep,gp = self:get_ep(name,officernote), self:get_gp(name,officernote)
-  if not (ep and gp) then
-    local initstring = string.format("{%d:%d}",0,bepgp.VARS.basegp)
-    local newnote = string.format("%s%s",officernote,initstring)
+  local datatype, prefix, epgpdata, postfix, t1, t2, t3, t4 = self:parseNote(officernote,guild_index)
+  if datatype == "epgp" then
+    local ep, gp = t1, t2
+    officernote = string.gsub(officernote,"(.*)({%d+:%d+})(.*)",self.sanitizeNote)
+  elseif datatype == "standin" then
+    local ally_name, ally_class, ally_ep, ally_gp = t1, t2, t3, t4
+    epgpdata = string.format("{%s%d;%d:%d}",ally_name,ally_class,ally_ep,ally_gp)
+    local newnote = string.gsub(officernote,"%b{}",epgpdata)
+    newnote = string.gsub(newnote,"(.*)({[^%c%s%d{};][^%c%s%d{};][^%c%s%d{};]*%d+;[%d:]*})(.*)",self.sanitizeNote)
+    officernote = newnote
+  elseif datatype == "alt" then
+    local main = t1
+  else -- no epgp infoblock found, add a standard {ep:gp} string
+    epgpdata = string.format("{%d:%d}",0,100)
+    local newnote = string.format("%s%s",officernote,epgpdata)
     newnote = string.gsub(newnote,"(.*)({%d+:%d+})(.*)",self.sanitizeNote)
     officernote = newnote
-  else
-    officernote = string.gsub(officernote,"(.*)({%d+:%d+})(.*)",self.sanitizeNote)
   end
   GuildRosterSetOfficerNote(guild_index,officernote,true)
-  return officernote
+  return officernote, datatype
 end
 
 function bepgp:update_epgp(ep,gp,guild_index,name,officernote,special_action)
-  officernote = self:init_notes(guild_index,name,officernote)
+  local officernote, datatype = self:init_notes(guild_index,name,officernote)
   local newnote
   if (ep) then
     ep = math.max(0,ep)
-    newnote = string.gsub(officernote,"(.*{)(%d+)(:)(%d+)(}.*)",function(head,oldep,divider,oldgp,tail)
+    newnote = string.gsub(officernote,"(.*[{;])(%d+)(:)(%d+)(}.*)",function(head,oldep,divider,oldgp,tail)
       return string.format("%s%s%s%s%s",head,ep,divider,oldgp,tail)
       end)
   end
   if (gp) then
-    gp = math.max(bepgp.VARS.basegp,gp)
+    gp = math.max(100,gp)
     if (newnote) then
-      newnote = string.gsub(newnote,"(.*{)(%d+)(:)(%d+)(}.*)",function(head,oldep,divider,oldgp,tail)
+      newnote = string.gsub(newnote,"(.*[{;])(%d+)(:)(%d+)(}.*)",function(head,oldep,divider,oldgp,tail)
         return string.format("%s%s%s%s%s",head,oldep,divider,gp,tail)
         end)
     else
-      newnote = string.gsub(officernote,"(.*{)(%d+)(:)(%d+)(}.*)",function(head,oldep,divider,oldgp,tail)
+      newnote = string.gsub(officernote,"(.*[{;])(%d+)(:)(%d+)(}.*)",function(head,oldep,divider,oldgp,tail)
         return string.format("%s%s%s%s%s",head,oldep,divider,gp,tail)
         end)
     end
   end
   if (newnote) then
+    newnote = string.gsub(newnote,"(.*)(%b{})(.*)",bepgp.sanitizeNote)
     GuildRosterSetOfficerNote(guild_index,newnote,true)
   end
 end
 
 function bepgp:givename_ep(getname,ep,single) -- awards ep to a single character
   if not (self:admin()) then return end
-  local postfix, alt = ""
+  local postfix, alt, ally = ""
   local guildcache = self.db.profile.guildcache
-  local main = guildcache[getname] and guildcache[getname][5] or false
+  local main = guildcache[getname] and guildcache[getname].m or false
+  local logs = self:GetModule(addonName.."_logs")
   if (main) then
     if self.db.profile.altspool then
       alt = getname
@@ -4390,13 +4749,32 @@ function bepgp:givename_ep(getname,ep,single) -- awards ep to a single character
     else
       local msg = string.format(L["%s is %s and %s is an Alt of %s. Skipping %s."],L["Enable Alts"],_G.OFF,getname,main,string.upper(L["ep"]))
       self:debugPrint(msg)
+      if logs then
+        logs:addToLog(msg)
+      end
       return
+    end
+  end
+  local allies = self.db.profile.allies
+  if allies[getname] then
+    local standin = allies[getname].standin
+    if (standin) then
+      if self.db.profile.allypool then
+        ally = getname
+        getname = standin
+        postfix = string.format(L[", %s\'s Standin"],ally)
+      else
+        local msg = string.format(L["%s is %s and %s is an Ally with %s standin. Skipping %s."],L["Enable Allies"],_G.OFF,ally,getname,string.upper(L["ep"]))
+        self:debugPrint(msg)
+        if logs then
+          logs:addToLog(msg)
+        end
+      end
     end
   end
   local newep = ep + (self:get_ep(getname) or 0)
   self:update_ep(getname,newep)
   local msg = string.format(L["Giving %d ep to %s%s."],ep,getname,postfix)
-  local logs = self:GetModule(addonName.."_logs")
   if ep < 0 then -- inform member of penalty
     msg = string.format(L["%s EP Penalty to %s%s."],ep,getname,postfix)
     self:debugPrint(msg)
@@ -4418,11 +4796,11 @@ function bepgp:givename_ep(getname,ep,single) -- awards ep to a single character
 end
 
 function bepgp:givename_gp(getname,gp) -- assigns gp to a single character
-  --print(getname..">"..gp) -- DEBUG
   if not (self:admin()) then return end
-  local postfix, alt = ""
+  local postfix, alt, ally = ""
   local guildcache = self.db.profile.guildcache
-  local main = guildcache[getname] and guildcache[getname][5] or false
+  local main = guildcache[getname] and guildcache[getname].m or false
+  local logs = self:GetModule(addonName.."_logs")
   if (main) then
     if self.db.profile.altspool then
       alt = getname
@@ -4431,7 +4809,27 @@ function bepgp:givename_gp(getname,gp) -- assigns gp to a single character
     else
       local msg = string.format(L["%s is %s and %s is an Alt of %s. Skipping %s."],L["Enable Alts"],_G.OFF,getname,main,string.upper(L["gp"]))
       self:debugPrint(msg)
+      if logs then
+        logs:addToLog(msg)
+      end
       return
+    end
+  end
+  local allies = self.db.profile.allies
+  if allies[getname] then
+    local standin = allies[getname].standin
+    if (standin) then
+      if self.db.profile.allypool then
+        ally = getname
+        getname = standin
+        postfix = string.format(L[", %s\'s Standin"],ally)
+      else
+        local msg = string.format(L["%s is %s and %s is an Ally with %s standin. Skipping %s."],L["Enable Allies"],_G.OFF,ally,getname,string.upper(L["gp"]))
+        self:debugPrint(ms)
+        if logs then
+          logs:addToLog(msg)
+        end
+      end
     end
   end
   local oldgp = (self:get_gp(getname) or bepgp.VARS.basegp)
@@ -4440,7 +4838,6 @@ function bepgp:givename_gp(getname,gp) -- assigns gp to a single character
   self:debugPrint(string.format(L["Giving %d gp to %s%s."],gp,getname,postfix))
   local msg = string.format(L["Awarding %d GP to %s%s. (Previous: %d, New: %d)"],gp,getname,postfix,oldgp,math.max(bepgp.VARS.basegp,newgp))
   self:adminSay(msg)
-  local logs = self:GetModule(addonName.."_logs")
   if logs then
     logs:addToLog(msg)
   end

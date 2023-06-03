@@ -3,7 +3,7 @@
 ## Title: BastionLoot
 ## Notes: In-game EPGP loot helper, supports standby, main/alt shared pool, minEP, offpecGP. Pluggable price list. Alternative +roll mode.
 ## Version: 2.6.7
-## X-Alpha: 
+## X-Alpha: 2.7.0
 ## X-Website: https://github.com/Road-block/BastionLoot/releases/latest
 ## OptionalDeps: Ace3, MizusRaidTracker
 ## SavedVariables: BastionLootDB
@@ -20,6 +20,7 @@ core.lua
 Modules\prices_bc.lua
 Modules\tokens_bc.lua
 Modules\alts.lua
+Modules\allies.lua
 Modules\autoroll.lua
 Modules\bench.lua
 Modules\bids.lua

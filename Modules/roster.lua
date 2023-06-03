@@ -75,8 +75,8 @@ function bepgp_roster:Refresh()
           local colortab = RAID_CLASS_COLORS[eclass]
           roster[name] = roster[name] or {}
           roster[name].color = colortab and {r=colortab.r, g=colortab.g, b=colortab.b, a=1.0} or colorSilver
-          roster[name].rank = guildcache[name] and guildcache[name][2] or _G.NOT_APPLICABLE
-          roster[name].main = guildcache[name] and guildcache[name][5] or _G.NOT_APPLICABLE
+          roster[name].rank = guildcache[name] and guildcache[name].r or _G.NOT_APPLICABLE
+          roster[name].main = guildcache[name] and guildcache[name].m or _G.NOT_APPLICABLE
         end
       end
     end

@@ -265,6 +265,13 @@ function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemStr
   else
     _, class = bepgp:verifyGuildMember(player,true) -- localized
   end
+  local allies = self.db.profile.allies
+  if allies[player] and not class then
+    local standin = allies[player].standin
+    if standin then
+      class = allies[player].class
+    end
+  end
   if not (class) then return end
   local enClass,_,hexclass = bepgp:getClassData(class)
   self._lastPlayerItem, self._lastPlayerItemTime, self._lastPlayerItemSource = player_item, now, source
@@ -326,6 +333,13 @@ function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,
   if (not bind) then return end
   if (bind == bepgp.VARS.bop) and (not tmpTrade) then return end
   local _, class = bepgp:verifyGuildMember(tradeTarget,true)
+  local allies = self.db.profile.allies
+  if allies[tradeTarget] and not class then
+    local standin = allies[tradeTarget].standin
+    if standin then
+      class = allies[tradeTarget].class
+    end
+  end
   if not class then return end
   local _,_,hexclass = bepgp:getClassData(class)
   local target_color = C:Colorize(hexclass,tradeTarget)

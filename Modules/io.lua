@@ -210,7 +210,7 @@ end
 function bepgp_io:Reserves(reserves)
   local keys
   self._ioreserves:Clear()
-  local char_count = 8
+  local char_count = 11
   local num_reserves = #(reserves)
   local locked = bepgp.db.char.reserves.locked
   if num_reserves > 0 then
@@ -221,12 +221,12 @@ function bepgp_io:Reserves(reserves)
     local link, player, lock, id = data.cols[1].value, data.cols[2].value, data.cols[3].value, data.cols[4].value
     local _,_,itemname = bepgp:getItemData(link)
     local line = string.format("%s - %s",itemname,player)
-    char_count = char_count + line:len()
-    if char_count > 2000 then
+    char_count = char_count + line:len() + 1 -- also add the linefeed
+    if char_count >= 2000 then
       self._ioreserves:AddLine("```")
       self._ioreserves:AddLine("```css")
       i = i - 1
-      char_count = 8
+      char_count = 11
     else
       self._ioreserves:AddLine(line)
     end

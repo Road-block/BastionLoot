@@ -18,10 +18,25 @@ local players, items, unlocks = {},{},{}
 local bepgp_plusroll_bids
 local questionblue = CreateAtlasMarkup("QuestRepeatableTurnin")
 local call_icon = L["Call"].."|TInterface\\CHATFRAME\\UI-ChatIcon-ArmoryChat:16:16:0:0:16:16:0:16:0:16:255:127:0|t"
-local function st_sorter_numeric(st,rowa,rowb,col)
-  local cella = st.data[rowa].cols[4].value
+local function st_sorter(st,rowa,rowb,col)
+  --[[local cella = st.data[rowa].cols[4].value
   local cellb = st.data[rowb].cols[4].value
-  return tonumber(cella) > tonumber(cellb)
+  return tonumber(cella) > tonumber(cellb)]]
+  local cella = st.data[rowa].cols[col].value
+  local cellb = st.data[rowb].cols[col].value
+  local sort = st.cols[col].sort or st.cols[col].defaultsort
+  if cella == cellb then
+    local sortnext = st.cols[col].sortnext
+    if sortnext then
+      return st.data[rowa].cols[sortnext].value < st.data[rowb].cols[sortnext].value
+    end
+  else
+    if sort == ST.SORT_DSC then
+      return cella > cellb
+    else
+      return cella < cellb
+    end
+  end
 end
 local menu_close = function()
   if bepgp_plusroll_reserves._ddmenu then
@@ -122,9 +137,9 @@ function bepgp_plusroll_reserves:OnEnable()
   container:Hide()
   self._container = container
   local headers = {
-    {["name"]=C:Orange(L["Item"]),["width"]=200,["comparesort"]=st_sorter_numeric,["sort"]=ST.SORT_DSC}, --item
-    {["name"]=C:Orange(L["Name"]),["width"]=100,["comparesort"]=st_sorter_numeric}, --name
-    {["name"]=C:Orange(L["Locked"]),["width"]=80,["comparesort"]=st_sorter_numeric}, --lock
+    {["name"]=C:Orange(L["Item"]),["width"]=200,["comparesort"]=st_sorter,["sortnext"]=2,["sort"]=ST.SORT_DSC}, --item
+    {["name"]=C:Orange(L["Name"]),["width"]=100,["comparesort"]=st_sorter}, --name
+    {["name"]=C:Orange(L["Locked"]),["width"]=80,["comparesort"]=st_sorter}, --lock
   }
   self._reserves_table = ST:CreateST(headers,20,nil,colorHighlight,container.frame) -- cols, numRows, rowHeight, highlight, parent
   self._reserves_table:EnableSelection(true)
@@ -362,7 +377,7 @@ function bepgp_plusroll_reserves:resRemove(text, sender)
       itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
     end
     if (itemName) then
-      bepgp_plusroll_reserves:RemoveReserve(sender, itemID)
+      bepgp_plusroll_reserves:RemoveReserve(sender, itemID, true)
       return true
     end
   end

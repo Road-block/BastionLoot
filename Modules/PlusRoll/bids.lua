@@ -384,6 +384,15 @@ function bepgp_plusroll_bids:captureRoll(event, text)
           end
           rank = g_rank
         end
+        local allies = bepgp.db.profile.allies
+        if allies[who] then
+          local ep = bepgp:get_ep(who)
+          local gp = bepgp:get_gp(who)
+          if ep and gp then
+            pr = string.format("%.03f",ep/gp)
+          end
+          rank = L["Ally"]
+        end
       end
       if (msroll) then
         bids_blacklist[who] = true
