@@ -3226,7 +3226,7 @@ function bepgp:addonMessage(msg, distro, target)
   if distro == "WHISPER" then
     prio = "NORMAL"
   end
-  self:SendCommMessage(bepgp.VARS.prefix,msg,distro,target,prio) TODO: Enable for release
+  self:SendCommMessage(bepgp.VARS.prefix,msg,distro,target,prio)
 end
 
 function bepgp:OnCommReceived(prefix, msg, distro, sender)
