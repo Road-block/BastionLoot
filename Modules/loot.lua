@@ -265,7 +265,7 @@ function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemStr
   else
     _, class = bepgp:verifyGuildMember(player,true) -- localized
   end
-  local allies = self.db.profile.allies
+  local allies = bepgp.db.profile.allies
   if allies[player] and not class then
     local standin = allies[player].standin
     if standin then
@@ -333,7 +333,7 @@ function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,
   if (not bind) then return end
   if (bind == bepgp.VARS.bop) and (not tmpTrade) then return end
   local _, class = bepgp:verifyGuildMember(tradeTarget,true)
-  local allies = self.db.profile.allies
+  local allies = bepgp.db.profile.allies
   if allies[tradeTarget] and not class then
     local standin = allies[tradeTarget].standin
     if standin then

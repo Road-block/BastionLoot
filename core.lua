@@ -185,7 +185,7 @@ if bepgp._classic then
     [22708] = "Ramaladni",
   }
 end
-bepgp._playerName = GetUnitName("player")
+bepgp._playerName = UnitNameUnmodified("player")--GetUnitName("player")
 bepgp._playerFullName = bepgp._playerName
 
 local raidStatus,lastRaidStatus
@@ -2497,7 +2497,9 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
 end
 
 function bepgp:OnEnable() -- 2. PLAYER_LOGIN
-  self._playerFullName = string.format("%s-%s", UnitFullName("player"))
+  local _
+  _, self._playerRealm = UnitFullName("player")
+  self._playerFullName = string.format("%s-%s", self._playerName, self._playerRealm)
   if GetMaxPlayerLevel and bepgp.VARS.minlevel > GetMaxPlayerLevel() then
     bepgp.VARS.minlevel = GetMaxPlayerLevel()
   end
