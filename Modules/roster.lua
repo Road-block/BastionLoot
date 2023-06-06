@@ -69,7 +69,7 @@ function bepgp_roster:Refresh()
     local guildcache = bepgp:guildCache()
     if bepgp:GroupStatus() == "RAID" then
       for i=1, MAX_RAID_MEMBERS do
-        local name, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
+        local name, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(i)
         if name and (name ~= _G.UNKNOWNOBJECT) then
           name = bepgp:Ambiguate(name)
           local colortab = RAID_CLASS_COLORS[eclass]

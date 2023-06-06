@@ -3707,7 +3707,7 @@ function bepgp:inRaid(name)
     local groupcache = self.db.char.groupcache
     if not groupcache[name] then
       groupcache[name] = {}
-      local member, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = GetRaidRosterInfo(rid)
+      local member, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(rid)
       member = bepgp:Ambiguate((member or ""))
       if member and (member == name) and (member ~= _G.UNKNOWNOBJECT) then
         local _,_,hexColor = self:getClassData(lclass)
@@ -3947,6 +3947,19 @@ function bepgp:Ambiguate(name)
     end
   else
     return Ambiguate(name,"short")
+  end
+end
+
+function bepgp:GetRaidRosterInfo(rid)
+  local fullnames = self.db.profile.fullnames
+  if fullnames then
+    local member, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = GetRaidRosterInfo(rid)
+    if member and not strfind(member,"-") then
+      member = member .. "-" .. bepgp._playerRealm
+    end
+    return member, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML
+  else
+    return GetRaidRosterInfo(rid)
   end
 end
 
@@ -4365,7 +4378,7 @@ function bepgp:buildRosterTable()
   local numGuildMembers = GetNumGuildMembers(true)
   if (self.db.char.raidonly) and self:GroupStatus()=="RAID" then
     for i = 1, MAX_RAID_MEMBERS do
-      local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
+      local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(i)
       if name and name ~= _G.UNKNOWNOBJECT then
         name = bepgp:Ambiguate(name)
         if (name) then
@@ -4505,7 +4518,7 @@ function bepgp:groupCache(member,update)
     if self:GroupStatus()=="RAID" then
       groupcache[member] = groupcache[member] or {}
       for i=1, MAX_RAID_MEMBERS do
-        local name, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
+        local name, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(i)
         name = bepgp:Ambiguate((name or ""))
         if name and (name == member) and (name ~= _G.UNKNOWNOBJECT) then
           local _,_,hexColor = self:getClassData(lclass)
@@ -4542,7 +4555,7 @@ function bepgp:refreshUnitCaches(force)
   if status == "RAID" then
     local groupcache = self.db.char.groupcache
     for i=1, MAX_RAID_MEMBERS do
-      local name, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
+      local name, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(i)
       name = bepgp:Ambiguate((name or ""))
       if name and (name ~= _G.UNKNOWNOBJECT) then
         local _,_,hexColor = self:getClassData(lclass)
@@ -4621,7 +4634,7 @@ function bepgp:award_raid_ep(ep) -- awards ep to raid members in zone
   if IsInRaid() and GetNumGroupMembers() > 0 then
     local guildcache = self:guildCache()
     for i = 1, MAX_RAID_MEMBERS do
-      local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
+      local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(i)
       if name and name ~= _G.UNKNOWNOBJECT then
         if level == 0 or (not online) then
           level = (guildcache[name] and guildcache[name].l) or 0
