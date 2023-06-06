@@ -1183,7 +1183,10 @@ function bepgp:options(force)
       desc = L["Push admin-only options to guild members currently online"],
       order = 137,
       hidden = function() return not (IsGuildLeader()) end,
-      func = function() bepgp:shareSettings(true) end,
+      func = function()
+        bepgp:shareSettings(true)
+        bepgp:Print(L["Pushed admin-only options to online guild members"])
+      end,
     }
     self._options.args.general.args.main.args["mode_options_header"] = {
       type = "header",

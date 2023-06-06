@@ -211,6 +211,9 @@ function bepgp_loot:GiveMasterLoot(slot, index)
 end
 
 -- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("You receive loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
+-- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("Bushido receives loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
+-- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("Bushido-PyrewoodVillage receives loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
+-- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("Ursegor-NethergardeKeep receives loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
 function bepgp_loot:captureLoot(message)
   if bepgp.db.char.mode ~= "epgp" then return end
   if not self:raidLootAdmin() then return end -- DEBUG
