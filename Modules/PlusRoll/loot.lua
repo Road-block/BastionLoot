@@ -320,6 +320,9 @@ function bepgp_plusroll_loot:captureLoot(message)
       player, itemLink = bepgp._playerName, DF.Deformat(message,LOOT_ITEM_SELF)
     end
   end
+  if player and type(player) == "string" then
+    player = bepgp:Ambiguate(player)
+  end
   if not (player and itemLink) then return end
   self:processLoot(player,itemLink,"chat")
 end
