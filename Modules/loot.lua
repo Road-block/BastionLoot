@@ -387,13 +387,19 @@ function bepgp_loot:tradeLoot()
 end
 function bepgp_loot:tradeUnit(unit) -- we are trading a unit
   if self:raidLootAdmin() then
-    self._tradeTarget = GetUnitName(unit,bepgp.db.profile.fullnames)
+    local name = GetUnitName(unit, bepgp.db.profile.fullnames)
+    if name and name ~= _G.UNKNOWNOBJECT then
+      name = bepgp:Ambiguate(name)
+      self._tradeTarget = name
+    end
   end
 end
 function bepgp_loot:tradeName(event, name) -- someone else is trading us
   if self:raidLootAdmin() then
-    local name = bepgp:Ambiguate(name)
-    self._tradeTarget = name
+    if name and name ~= _G.UNKNOWNOBJECT then
+      name = bepgp:Ambiguate(name)
+      self._tradeTarget = name
+    end
   end
 end
 function bepgp_loot:tradeItemAccept() -- we accepted trade
