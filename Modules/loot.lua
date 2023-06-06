@@ -203,7 +203,7 @@ function bepgp_loot:GiveMasterLoot(slot, index)
     if quantity == 1 and quality >= LE_ITEM_QUALITY_RARE then -- not a stack and rare or higher
       local itemLink = GetLootSlotLink(slot)
       local player = GetMasterLootCandidate(slot, index)
-      player = Ambiguate(player,"short")
+      player = bepgp:Ambiguate(player)
       if not (player and itemLink) then return end
       self:processLoot(player,itemLink,"masterloot")
     end
@@ -381,20 +381,20 @@ function bepgp_loot:tradeLoot()
 end
 function bepgp_loot:tradeUnit(unit) -- we are trading a unit
   if self:raidLootAdmin() then
-    self._tradeTarget = GetUnitName(unit)
+    self._tradeTarget = GetUnitName(unit,bepgp.db.profile.fullnames)
   end
 end
 function bepgp_loot:tradeName(event, name) -- someone else is trading us
   if self:raidLootAdmin() then
-    local name = Ambiguate(name,"short")
+    local name = bepgp:Ambiguate(name)
     self._tradeTarget = name
   end
 end
 function bepgp_loot:tradeItemAccept() -- we accepted trade
   if self:raidLootAdmin() then
-    local name = UnitName("NPC")
+    local name = GetUnitName("npc",bepgp.db.profile.fullnames)
     if name and name ~= _G.UNKNOWNOBJECT then
-      name = Ambiguate(name, "short")
+      name = bepgp:Ambiguate(name)
       self._tradeTarget = name
     end
     if self._tradeTarget then

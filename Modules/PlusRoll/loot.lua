@@ -227,7 +227,7 @@ function bepgp_plusroll_loot:GiveMasterLoot(slot, index)
     if quantity == 1 and quality >= LE_ITEM_QUALITY_RARE then -- not a stack and rare or higher
       local itemLink = GetLootSlotLink(slot)
       local player = GetMasterLootCandidate(slot, index)
-      player = Ambiguate(player,"short")
+      player = bepgp:Ambiguate(player)
       if not (player and itemLink) then return end
       self:processLoot(player,itemLink,"masterloot")
     end

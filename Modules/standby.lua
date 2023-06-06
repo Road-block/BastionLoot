@@ -127,7 +127,7 @@ end
 
 function bepgp_standby:captureStandbyChat(event, text, sender, _, _, _, _, _, channelIndex)
   if channelIndex ~= self._standbyID then return end
-  local sender = Ambiguate(sender,"short")
+  local sender = bepgp:Ambiguate(sender)
   local sender_name, sender_class, sender_rank, sender_officernote = bepgp:verifyGuildMember(sender,true)
   if not sender_name then return end
   -- call incoming, should we respond?

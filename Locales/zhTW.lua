@@ -494,5 +494,10 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["|cffff0000Manually modified %s\'s note. Previous ally info %s, %d:%d"] = "|cffff0000Manually modified %s\'s note. Previous ally info %s, %d:%d" -- needs translation
   L["%s set as an Alt of %s"] = "%s set as an Alt of %s" -- needs translation
   L["%s set as the Stand-in for %s"] = "%s set as the Stand-in for %s" -- needs translation
+  L["Value must be greater than zero and smaller than %s"] = "Value must be greater than zero and smaller than %s" -- needs translation
+  L["Use Fullnames"] = "Use Fullnames" -- needs translation
+  L["Use Playername-Realmname where available"] = "Use Playername-Realmname where available" -- needs translation
+  L[", fullnames"] = ", fullnames" -- needs translation
+  L["New Fullnames"] = "New Fullnames" -- needs translation
 
   bepgp.L = L

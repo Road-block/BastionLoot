@@ -322,7 +322,7 @@ function bepgp_plusroll_bids:captureLootCall(event, text, sender)
     rollkw_found = string.find(lowtext,f)
     if (rollkw_found) then break end
   end
-  sender = Ambiguate(sender,"short")
+  sender = bepgp:Ambiguate(sender)
   local _, itemLink, itemColor, itemString, itemName, itemID
   if (rollkw_found) then
     _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%d]+|h%[.-%]|h|r)")
@@ -361,7 +361,7 @@ function bepgp_plusroll_bids:captureRoll(event, text)
   local msroll, osroll
   local inraid
   if who then
-    who = Ambiguate(who,"short")
+    who = bepgp:Ambiguate(who)
     inraid = bepgp:inRaid(who)
     if inraid then -- DEBUG
       msroll = (low == 1 and high == 100) and roll
