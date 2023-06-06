@@ -499,5 +499,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Use Playername-Realmname where available"] = "Use Playername-Realmname where available" -- needs translation
   L[", fullnames"] = ", fullnames" -- needs translation
   L["New Fullnames"] = "New Fullnames" -- needs translation
+  L["Share Admin Options"] = "Share Admin Options" -- needs translation
+  L["Push admin-only options to guild members currently online"] = "Push admin-only options to guild members currently online" -- needs translation
 
   bepgp.L = L

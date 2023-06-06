@@ -175,7 +175,7 @@ if bepgp._bcc then
   }
 end
 if bepgp._classic then
-  bepgp.VARS.minlevel = 1--55
+  bepgp.VARS.minlevel = 55
   bepgp.VARS.prefix = "BEPGP_PREFIX"
   bepgp.VARS.pricesystem = "BastionEPGPFixed-1.1"
   bepgp.VARS.progress = "T1"
@@ -1177,10 +1177,18 @@ function bepgp:options(force)
       end,
       hidden = function() return not (bepgp:admin()) end,
     }
+    self._options.args.general.args.main.args["push"] = {
+      type = "execute",
+      name = L["Share Admin Options"],
+      desc = L["Push admin-only options to guild members currently online"],
+      order = 137,
+      hidden = function() return not (IsGuildLeader()) end,
+      func = function() bepgp:shareSettings(true) end,
+    }
     self._options.args.general.args.main.args["mode_options_header"] = {
       type = "header",
       name = L["PlusRoll"].."/"..L["EPGP"],
-      order = 137,
+      order = 138,
     }
     self._options.args.general.args.main.args["mode"] = {
       type = "select",

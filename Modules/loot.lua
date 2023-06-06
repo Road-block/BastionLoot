@@ -210,7 +210,7 @@ function bepgp_loot:GiveMasterLoot(slot, index)
   end
 end
 
--- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("You receive loot: \124cffa335ee\124Hitem:28509::::::::70:::::\124h[Worgen Claw Necklace]\124h\124r.")
+-- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("You receive loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
 function bepgp_loot:captureLoot(message)
   if bepgp.db.char.mode ~= "epgp" then return end
   if not self:raidLootAdmin() then return end -- DEBUG
@@ -226,6 +226,9 @@ function bepgp_loot:captureLoot(message)
     if not (player and itemLink) then
       player, itemLink = bepgp._playerName, DF.Deformat(message,LOOT_ITEM_SELF)
     end
+  end
+  if player and type(player) == "string" then
+    player = bepgp:Ambiguate(player)
   end
   if not (player and itemLink) then return end
   self:processLoot(player,itemLink,"chat")

@@ -502,5 +502,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Use Playername-Realmname where available"] = true
   L[", fullnames"] = true
   L["New Fullnames"] = true
+  L["Share Admin Options"] = true
+  L["Push admin-only options to guild members currently online"] = true
 
 bepgp.L = L
