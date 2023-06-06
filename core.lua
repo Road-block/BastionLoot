@@ -3701,7 +3701,7 @@ function bepgp:raidAssistant()
 end
 
 function bepgp:inRaid(name)
-  local rid = UnitInRaid(name)
+  local rid = bepgp:UnitInRaid(name)
   local inraid = IsInRaid() and rid and (rid >= 0)
   if inraid then
     local groupcache = self.db.char.groupcache
@@ -3936,7 +3936,10 @@ function bepgp:Capitalize(word)
     end))
 end
 
-function bepgp:Ambiguate(name)
+function bepgp:Ambiguate(name, passthroughOpt)
+  if passthroughOpt then
+    return Ambiguate(name, passthroughOpt)
+  end
   local fullnames = self.db.profile.fullnames
   if fullnames then
     local name = Ambiguate(name,"mail")
@@ -3948,6 +3951,14 @@ function bepgp:Ambiguate(name)
   else
     return Ambiguate(name,"short")
   end
+end
+
+function bepgp:UnitInRaid(name)
+  local realm = name:match("%-(.+)")
+  if realm and realm == bepgp._playerRealm then
+    name = self:Ambiguate(name, "short")
+  end
+  return UnitInRaid(name)
 end
 
 function bepgp:GetRaidRosterInfo(rid)
