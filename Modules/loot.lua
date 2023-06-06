@@ -203,14 +203,17 @@ function bepgp_loot:GiveMasterLoot(slot, index)
     if quantity == 1 and quality >= LE_ITEM_QUALITY_RARE then -- not a stack and rare or higher
       local itemLink = GetLootSlotLink(slot)
       local player = GetMasterLootCandidate(slot, index)
-      player = Ambiguate(player,"short")
+      player = bepgp:Ambiguate(player)
       if not (player and itemLink) then return end
       self:processLoot(player,itemLink,"masterloot")
     end
   end
 end
 
--- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("You receive loot: \124cffa335ee\124Hitem:28509::::::::70:::::\124h[Worgen Claw Necklace]\124h\124r.")
+-- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("You receive loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
+-- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("Bushido receives loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
+-- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("Bushido-PyrewoodVillage receives loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
+-- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("Ursegor-NethergardeKeep receives loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
 function bepgp_loot:captureLoot(message)
   if bepgp.db.char.mode ~= "epgp" then return end
   if not self:raidLootAdmin() then return end -- DEBUG
@@ -226,6 +229,9 @@ function bepgp_loot:captureLoot(message)
     if not (player and itemLink) then
       player, itemLink = bepgp._playerName, DF.Deformat(message,LOOT_ITEM_SELF)
     end
+  end
+  if player and type(player) == "string" then
+    player = bepgp:Ambiguate(player)
   end
   if not (player and itemLink) then return end
   self:processLoot(player,itemLink,"chat")
@@ -381,20 +387,26 @@ function bepgp_loot:tradeLoot()
 end
 function bepgp_loot:tradeUnit(unit) -- we are trading a unit
   if self:raidLootAdmin() then
-    self._tradeTarget = GetUnitName(unit)
+    local name = GetUnitName(unit, bepgp.db.profile.fullnames)
+    if name and name ~= _G.UNKNOWNOBJECT then
+      name = bepgp:Ambiguate(name)
+      self._tradeTarget = name
+    end
   end
 end
 function bepgp_loot:tradeName(event, name) -- someone else is trading us
   if self:raidLootAdmin() then
-    local name = Ambiguate(name,"short")
-    self._tradeTarget = name
+    if name and name ~= _G.UNKNOWNOBJECT then
+      name = bepgp:Ambiguate(name)
+      self._tradeTarget = name
+    end
   end
 end
 function bepgp_loot:tradeItemAccept() -- we accepted trade
   if self:raidLootAdmin() then
-    local name = UnitName("NPC")
+    local name = GetUnitName("npc",bepgp.db.profile.fullnames)
     if name and name ~= _G.UNKNOWNOBJECT then
-      name = Ambiguate(name, "short")
+      name = bepgp:Ambiguate(name)
       self._tradeTarget = name
     end
     if self._tradeTarget then

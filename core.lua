@@ -30,6 +30,7 @@ local GuildControlGetRankFlags = C_GuildInfo and C_GuildInfo.GuildControlGetRank
 local C_TimerAfter = C_Timer.After
 local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or _G.GetAddOnMetadata
 local MAX_PLAYER_LEVEL = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT]
+local strlen = string.utf8len or string.len
 
 bepgp.VARS = {
   basegp = 100,
@@ -209,10 +210,10 @@ local modes = {
 local item_swaps = {}
 local switch_icon = "|TInterface\\Buttons\\UI-OptionsButton:16|t"..L["Switch Mode"]
 do
-  for i=1,40 do
+  for i=1,MAX_RAID_MEMBERS do
     raidUnit[i] = "raid"..i
   end
-  for i=1,4 do
+  for i=1,MAX_PARTY_MEMBERS do
     partyUnit[i] = "party"..i
   end
 end
@@ -490,6 +491,7 @@ local defaults = {
     minep = bepgp.VARS.minep,
     system = bepgp.VARS.pricesystem,
     progress = bepgp.VARS.progress,
+    fullnames = false,
     discount = 0.1,
     altspool = false,
     allypool = true,
@@ -768,7 +770,7 @@ function bepgp:options(force)
             },
             allies = {
               type = "group",
-              name = "Allies", -- TODO: Localization
+              name = L["Allies"],
               order = 3,
               args = { },
               hidden = function()
@@ -1127,7 +1129,7 @@ function bepgp:options(force)
         if n and n >= 0 and n <= bepgp.VARS.max then
           return true
         else
-          return string.format("Value must be greater than zero and smaller than %s",bepgp.VARS.max) --localization
+          return string.format(L["Value must be greater than zero and smaller than %s"],bepgp.VARS.max) --localization
         end
       end,
       hidden = function() return not bepgp:admin() end,
@@ -1160,10 +1162,36 @@ function bepgp:options(force)
         return v
       end,
     }
+    self._options.args.general.args.main.args["fullname"] = {
+      type = "toggle",
+      name = L["Use Fullnames"],
+      desc = L["Use Playername-Realmname where available"],
+      order = 136,
+      get = function() return not not bepgp.db.profile.fullnames end,
+      set = function(info, val)
+        bepgp.db.profile.fullnames = not bepgp.db.profile.fullnames
+        bepgp:refreshUnitCaches()
+        if IsGuildLeader() then
+          bepgp:shareSettings()
+        end
+      end,
+      hidden = function() return not (bepgp:admin()) end,
+    }
+    self._options.args.general.args.main.args["push"] = {
+      type = "execute",
+      name = L["Share Admin Options"],
+      desc = L["Push admin-only options to guild members currently online"],
+      order = 137,
+      hidden = function() return not (IsGuildLeader()) end,
+      func = function()
+        bepgp:shareSettings(true)
+        bepgp:Print(L["Pushed admin-only options to online guild members"])
+      end,
+    }
     self._options.args.general.args.main.args["mode_options_header"] = {
       type = "header",
       name = L["PlusRoll"].."/"..L["EPGP"],
-      order = 137,
+      order = 138,
     }
     self._options.args.general.args.main.args["mode"] = {
       type = "select",
@@ -2468,6 +2496,7 @@ end
 function bepgp:OnInitialize() -- 1. ADDON_LOADED
   -- guild specific stuff should go in profile named after guild
   -- player specific in char
+  strlen = string.utf8len or string.len
   self._versionString = GetAddOnMetadata(addonName,"Version")
   self._websiteString = GetAddOnMetadata(addonName,"X-Website")
   self._labelfull = string.format("%s %s",label,self._versionString)
@@ -2500,6 +2529,7 @@ function bepgp:OnEnable() -- 2. PLAYER_LOGIN
   local _
   _, self._playerRealm = UnitFullName("player")
   self._playerFullName = string.format("%s-%s", self._playerName, self._playerRealm)
+  self:setPlayerName()
   if GetMaxPlayerLevel and bepgp.VARS.minlevel > GetMaxPlayerLevel() then
     bepgp.VARS.minlevel = GetMaxPlayerLevel()
   end
@@ -2804,14 +2834,14 @@ function bepgp:getInteractInfo()
   local name
   local guid = UnitGUID("npc")
   if guid then
-    name = UnitName("npc")
+    name = GetUnitName("npc",bepgp.db.profile.fullnames)
   end
   if guid and name then
     return name, guid
   end
   local guid = UnitExists("target") and UnitGUID("target")
   if guid then
-    name = UnitName("target")
+    name = GetUnitName("target",bepgp.db.profile.fullnames)
   end
   if guid and name then
     return name, guid
@@ -2934,7 +2964,7 @@ end
 local function epgpResponder(frame, event, text, sender, ...)
   if event == "CHAT_MSG_WHISPER" then
     local query, name = text:match("^[%c%s]*(![pP][rR])[%c%s%p]*([^%c%d%p%s]*)")
-    local sender_stripped = Ambiguate(sender,"short")
+    local sender_stripped = bepgp:Ambiguate(sender)
     local guild_name, _, _, guild_officernote = bepgp:verifyGuildMember(sender_stripped,true,true) -- ignore level req
     local allies = bepgp.db.profile.allies
     local _,perms = bepgp:getGuildPermissions()
@@ -3048,7 +3078,7 @@ local function rollfilter(frame, event, text, sender, ...)
   end
   local who, roll, low, high = DF.Deformat(text, RANDOM_ROLL_RESULT)
   if who then
-    who = Ambiguate(who,"short")
+    who = bepgp:Ambiguate(who)
     if who == bepgp._playerName then
       return false, text, sender, ...
     else
@@ -3188,7 +3218,7 @@ function bepgp:GuildRosterSetOfficerNote(index,note,fromAddon)
     self.hooks["GuildRosterSetOfficerNote"](index,note)
   else
     local name, _, _, _, _, _, _, prevnote, _, _ = GetGuildRosterInfo(index)
-    name = Ambiguate(name, "short")
+    name = bepgp:Ambiguate(name)
     prevnote = prevnote or ""
     local oldtype, _, olddata, _, t1, t2, t3, t4 = bepgp:parseNote(prevnote,index)
     local oldmain, ally, ally_class, ally_ep, ally_gp, ep, gp
@@ -3233,7 +3263,7 @@ end
 
 function bepgp:OnCommReceived(prefix, msg, distro, sender)
   if not prefix == bepgp.VARS.prefix then return end -- not our message
-  local sender = Ambiguate(sender, "short")
+  local sender = bepgp:Ambiguate(sender)
   if sender == self._playerName then return end -- don't care for our own message
   local name, class, rank = self:verifyGuildMember(sender, true)
   if not (name and class) then return end -- only messages from guild
@@ -3274,13 +3304,14 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
         self:shareSettings()
       end
     elseif who == "SETTINGS" then
-      for progress,discount,decay,minep,alts,altspct in string.gmatch(what, "([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+)") do
+      for progress,discount,decay,minep,alts,altspct,allies,fullnames in string.gmatch(what, "([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+)") do
         discount = tonumber(discount)
         decay = tonumber(decay)
         minep = tonumber(minep)
         alts = (alts == "true") and true or false
         altspct = tonumber(altspct)
         allies = (allies == "true") and true or false
+        fullnames = (fullnames == "true") and true or false
         local settings_notice
         if progress and progress ~= bepgp.db.profile.progress then
           bepgp.db.profile.progress = progress -- DEBUG print("shared:"..progress)
@@ -3336,6 +3367,16 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
               settings_notice = settings_notice..L[", allies"]
             else
               settings_notice = L["New Allies"]
+            end
+          end
+        end
+        if fullnames ~= nil and fullnames ~= bepgp.db.profile.fullnames then
+          bepgp.db.profile.fullnames = fullnames
+          if (is_admin) then
+            if (settings_notice) then
+              settings_notice = settings_notice..L[", fullnames"]
+            else
+              settings_notice = L["New Fullnames"]
             end
           end
         end
@@ -3455,7 +3496,7 @@ function bepgp:shareSettings(force)
   local now = GetTime()
   if self._lastSettingsShare == nil or (now - self._lastSettingsShare > 30) or (force) then
     self._lastSettingsShare = now
-    local addonMsg = string.format("SETTINGS;%s:%s:%s:%s:%s:%s:%s;1",self.db.profile.progress, self.db.profile.discount, self.db.profile.decay, self.db.profile.minep, tostring(self.db.profile.altspool), self.db.profile.altpercent, tostring(self.db.profile.allypool))
+    local addonMsg = string.format("SETTINGS;%s:%s:%s:%s:%s:%s:%s:%s;1",self.db.profile.progress, self.db.profile.discount, self.db.profile.decay, self.db.profile.minep, tostring(self.db.profile.altspool), self.db.profile.altpercent, tostring(self.db.profile.allypool),tostring(self.db.profile.fullnames))
     self:addonMessage(addonMsg,"GUILD")
   end
 end
@@ -3671,14 +3712,14 @@ function bepgp:raidAssistant()
 end
 
 function bepgp:inRaid(name)
-  local rid = UnitInRaid(name)
+  local rid = bepgp:UnitInRaid(name)
   local inraid = IsInRaid() and rid and (rid >= 0)
   if inraid then
     local groupcache = self.db.char.groupcache
     if not groupcache[name] then
       groupcache[name] = {}
-      local member, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = GetRaidRosterInfo(rid)
-      member = Ambiguate((member or ""),"short")
+      local member, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(rid)
+      member = bepgp:Ambiguate((member or ""))
       if member and (member == name) and (member ~= _G.UNKNOWNOBJECT) then
         local _,_,hexColor = self:getClassData(lclass)
         local colortab = RAID_CLASS_COLORS[eclass]
@@ -3906,6 +3947,44 @@ function bepgp:Capitalize(word)
     end))
 end
 
+function bepgp:Ambiguate(name, passthroughOpt)
+  if passthroughOpt then
+    return Ambiguate(name, passthroughOpt)
+  end
+  local fullnames = self.db.profile.fullnames
+  if fullnames then
+    local name = Ambiguate(name,"mail")
+    if strfind(name,"-") then
+      return name
+    else
+      return name.."-"..self._playerRealm
+    end
+  else
+    return Ambiguate(name,"short")
+  end
+end
+
+function bepgp:UnitInRaid(name)
+  local realm = name:match("%-(.+)")
+  if realm and realm == bepgp._playerRealm then
+    name = self:Ambiguate(name, "short")
+  end
+  return UnitInRaid(name)
+end
+
+function bepgp:GetRaidRosterInfo(rid)
+  local fullnames = self.db.profile.fullnames
+  if fullnames then
+    local member, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = GetRaidRosterInfo(rid)
+    if member and not strfind(member,"-") then
+      member = member .. "-" .. bepgp._playerRealm
+    end
+    return member, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML
+  else
+    return GetRaidRosterInfo(rid)
+  end
+end
+
 local classSpecStringCache = {}
 function bepgp:ClassSpecString(class,spec,text) -- pass it CLASS
   local key = class..(spec and "-"..spec or "")..(text and "text" or "")
@@ -4021,7 +4100,7 @@ end
 function bepgp:verifyGuildMember(name,silent,levelignore)
   for roster_index=1,GetNumGuildMembers(true) do
     local g_name, g_rank, g_rankIndex, g_level, g_class, g_zone, g_note, g_officernote, g_online, g_status, g_eclass, _, _, g_mobile, g_sor, _, g_GUID = GetGuildRosterInfo(roster_index)
-    g_name = Ambiguate(g_name,"short")
+    g_name = bepgp:Ambiguate(g_name)
     local level = tonumber(g_level)
     if (string.lower(name) == string.lower(g_name)) and ((level >= bepgp.VARS.minlevel) or (levelignore and level > 0)) then
       return g_name, g_class, g_rank, g_officernote, g_rankIndex, roster_index
@@ -4050,7 +4129,7 @@ function bepgp:getGuildPermissions()
   table.wipe(readPermissions)
   for i=1,GetNumGuildMembers(true) do
     local name, _, rankIndex = GetGuildRosterInfo(i)
-    name = Ambiguate(name,"short")
+    name = bepgp:Ambiguate(name)
     if name == self._playerName then
       speakPermissions.OFFICER = GuildControlGetRankFlags(rankIndex+1)[4]
       readPermissions.OFFICER = GuildControlGetRankFlags(rankIndex+1)[11]
@@ -4102,8 +4181,12 @@ end
 -- parse potential Alt (in-guild) officernote, return Main (in-guild)
 function bepgp:parseAlt(name,officernote)
   if (officernote) then
-    local _,_,_,main,_ = string.find(officernote or "","(.*){([^%c%s%d{}][^%c%s%d{}][^%c%s%d{}]*)}(.*)")
-    if type(main)=="string" and (strlen(main) < 13) then
+    local _,_,_,main,_ = string.find(officernote or "","(.*){([^%c%s%d{}][^%c%s%d{}][^%c%s%d{}]*%-?[^%c%s%d{}]*)}(.*)")
+    local namelimit = 13
+    if main and main:match("%-") == "-" then
+      namelimit = 30
+    end
+    if type(main)=="string" and (strlen(main) < namelimit) then
       main = self:Capitalize(main)
       local g_name, g_class, g_rank, g_officernote, g_rankIndex, roster_index = self:verifyGuildMember(main,true)
       if (g_name) then
@@ -4117,7 +4200,7 @@ function bepgp:parseAlt(name,officernote)
   else
     for i=1,GetNumGuildMembers(true) do
       local g_name, g_rank, g_rankIndex, g_level, g_class, g_zone, g_note, g_officernote, g_online, g_status, g_eclass, _, _, g_mobile, g_sor, _, g_GUID = GetGuildRosterInfo(i)
-      g_name = Ambiguate(g_name,"short")
+      g_name = bepgp:Ambiguate(g_name)
       if (name == g_name) then
         return self:parseAlt(g_name, g_officernote)
       end
@@ -4131,9 +4214,13 @@ function bepgp:parseStandin(officernote) -- {Standin2;ep:gp} -- {<PlayerName><cl
   if (officernote) then
     local allyinfo = officernote:match("%b{}")
     if allyinfo then
-      local ally_name,classId,epgpinfo = allyinfo:match("{([^%c%s%d{};][^%c%s%d{};][^%c%s%d{};]*)(%d+);([%d:]*)}")
+      local ally_name,classId,epgpinfo = allyinfo:match("{([^%c%s%d{};][^%c%s%d{};][^%c%s%d{};]*%-?[^%c%s%d{};]*)(%d+);([%d:]*)}")
       classId = tonumber(classId)
-      if type(ally_name)=="string" and (strlen(ally_name) < 13) then
+      local namelimit = 13
+      if ally_name and ally_name:match("%-") == "-" then
+        namelimit = 30
+      end
+      if type(ally_name)=="string" and (strlen(ally_name) < namelimit) then
         ally_name = self:Capitalize(ally_name)
         if ally_name and classId then
           local ally_class = classidToClass[classId]
@@ -4268,7 +4355,7 @@ function bepgp:guildCache()
   table.wipe(self.db.profile.allies)
   for i = 1, GetNumGuildMembers(true) do
     local member_name,rank,_,level,class,_,note,officernote,_,_ = GetGuildRosterInfo(i)
-    member_name = Ambiguate((member_name or ""),"short")
+    member_name = bepgp:Ambiguate((member_name or ""))
     if member_name and level and (member_name ~= UNKNOWNOBJECT) and (level > 0) then
       self.db.profile.guildcache[member_name] = {l=level,r=rank,c=class,o=(officernote or "")}
     end
@@ -4312,10 +4399,10 @@ function bepgp:buildRosterTable()
   local g, r = { }, { }
   local numGuildMembers = GetNumGuildMembers(true)
   if (self.db.char.raidonly) and self:GroupStatus()=="RAID" then
-    for i = 1, GetNumGroupMembers() do
-      local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
+    for i = 1, MAX_RAID_MEMBERS do
+      local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(i)
       if name and name ~= _G.UNKNOWNOBJECT then
-        name = Ambiguate(name,"short")
+        name = bepgp:Ambiguate(name)
         if (name) then
           r[name] = true
         end
@@ -4325,7 +4412,7 @@ function bepgp:buildRosterTable()
   for i = 1, numGuildMembers do
     local member_name,rank,_,level,class,_,note,officernote,_,_ = GetGuildRosterInfo(i)
     if member_name and member_name ~= _G.UNKNOWNOBJECT then
-      member_name = Ambiguate(member_name,"short")
+      member_name = bepgp:Ambiguate(member_name)
       local level = tonumber(level)
       local is_raid_level = level and level >= bepgp.VARS.minlevel
       local main, main_class, main_rank = self:parseAlt(member_name,officernote)
@@ -4452,9 +4539,9 @@ function bepgp:groupCache(member,update)
   else
     if self:GroupStatus()=="RAID" then
       groupcache[member] = groupcache[member] or {}
-      for i=1,GetNumGroupMembers() do
-        local name, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
-        name = Ambiguate((name or ""),"short")
+      for i=1, MAX_RAID_MEMBERS do
+        local name, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(i)
+        name = bepgp:Ambiguate((name or ""))
         if name and (name == member) and (name ~= _G.UNKNOWNOBJECT) then
           local _,_,hexColor = self:getClassData(lclass)
           local colortab = RAID_CLASS_COLORS[eclass]
@@ -4471,6 +4558,40 @@ function bepgp:groupCache(member,update)
       end
     end
   end
+end
+
+function bepgp:setPlayerName(force)
+  if self.db.profile.fullnames then
+    self._playerName = (UnitNameUnmodified("player")).."-"..GetNormalizedRealmName()
+  else
+    self._playerName = UnitNameUnmodified("player")
+  end
+end
+
+function bepgp:refreshUnitCaches(force)
+  self:setPlayerName(force)
+  if IsInGuild() then
+    self:guildCache()
+  end
+  local status = self:GroupStatus()
+  if status == "RAID" then
+    local groupcache = self.db.char.groupcache
+    for i=1, MAX_RAID_MEMBERS do
+      local name, rank, subgroup, level, lclass, eclass, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(i)
+      name = bepgp:Ambiguate((name or ""))
+      if name and (name ~= _G.UNKNOWNOBJECT) then
+        local _,_,hexColor = self:getClassData(lclass)
+        local colortab = RAID_CLASS_COLORS[eclass]
+        groupcache[name] = groupcache[name] or {}
+        groupcache[name]["level"] = level
+        groupcache[name]["class"] = lclass
+        groupcache[name]["eclass"] = eClass
+        groupcache[name]["hex"] = hexColor
+        groupcache[name]["color"] = colortab
+      end
+    end
+  end
+  self:buildRosterTable()
 end
 
 function bepgp:sanitizeNote(epgp,postfix)
@@ -4502,15 +4623,23 @@ function bepgp:parseNote(officernote, guild_index)
   local pre, epgpdata, post = officernote:match("(.*)(%b{})(.*)")
   local main, ally, ally_class, ep, gp, epgp
   if epgpdata and #epgpdata>3 then
-    ally, ally_class, epgp = epgpdata:match("{([^%c%s%d{};][^%c%s%d{};][^%c%s%d{};]*)(%d+);([%d:]*)}")
-    if ally and strlen(ally)<13 and ally_class then
+    local namelimit = 13
+    ally, ally_class, epgp = epgpdata:match("{([^%c%s%d{};][^%c%s%d{};][^%c%s%d{};]*%-?[^%c%s%d{};]*)(%d+);([%d:]*)}")
+    if ally and ally:match("%-") == "-" then
+      namelimit = 30
+    end
+    if ally and strlen(ally)<namelimit and ally_class then
       ep, gp = epgp:match("(%d+):(%d+)")
       ep = tonumber(ep) or 0
       gp = tonumber(gp) or bepgp.VARS.basegp
       return "standin", pre, epgpdata, post, ally, tonumber(ally_class), ep, gp
     end
-    main = epgpdata:match("{([^%c%s%d{}][^%c%s%d{}][^%c%s%d{}]*)}")
-    if main and strlen(main)<13 then
+    main = epgpdata:match("{([^%c%s%d{}][^%c%s%d{}][^%c%s%d{}]*%-?[^%c%s%d{}]*)}")
+    namelimit = 13
+    if main and main:match("%-") == "-" then
+      namelimit = 30
+    end
+    if main and strlen(main)<namelimit then
       return "alt", pre, epgpdata, post, main
     end
     ep, gp = epgpdata:match("{(%d+):(%d+)}")
@@ -4524,10 +4653,10 @@ function bepgp:parseNote(officernote, guild_index)
 end
 
 function bepgp:award_raid_ep(ep) -- awards ep to raid members in zone
-  if IsInRaid() and GetNumGroupMembers()>0 then
+  if IsInRaid() and GetNumGroupMembers() > 0 then
     local guildcache = self:guildCache()
-    for i = 1, GetNumGroupMembers() do
-      local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
+    for i = 1, MAX_RAID_MEMBERS do
+      local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(i)
       if name and name ~= _G.UNKNOWNOBJECT then
         if level == 0 or (not online) then
           level = (guildcache[name] and guildcache[name].l) or 0
@@ -4650,7 +4779,7 @@ function bepgp:get_ep(getname,officernote) -- gets ep by name or note
   end
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    name = Ambiguate(name,"short")
+    name = bepgp:Ambiguate(name)
     if (name == getname) and officernote then
       return bepgp:get_ep(getname,officernote)
     end
@@ -4678,7 +4807,7 @@ function bepgp:get_gp(getname,officernote) -- gets gp by name or officernote
   end
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    name = Ambiguate(name,"short")
+    name = bepgp:Ambiguate(name)
     if (name == getname) and officernote then
       return bepgp:get_gp(getname,officernote)
     end
@@ -4850,7 +4979,7 @@ end
 function bepgp:update_ep(getname,ep)
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    name = Ambiguate(name,"short")
+    name = bepgp:Ambiguate(name)
     if (name==getname) then
       self:update_epgp(ep,nil,i,name,officernote)
     end
@@ -4859,7 +4988,7 @@ end
 function bepgp:update_gp(getname,gp)
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    name = Ambiguate(name,"short")
+    name = bepgp:Ambiguate(name)
     if (name==getname) then
       self:update_epgp(nil,gp,i,name,officernote)
     end

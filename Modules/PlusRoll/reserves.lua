@@ -261,7 +261,7 @@ function bepgp_plusroll_reserves:captureRes(fromfilter, event, text, sender)
   end
   if bepgp.db.char.mode ~= "plusroll" then return false end
   if not (bepgp:lootMaster()) then return false end -- DEBUG
-  sender = Ambiguate(sender,"short")
+  sender = bepgp:Ambiguate(sender)
   if not bepgp:inRaid(sender) then return false end -- DEBUG
   if sender ~= bepgp._playerName then
     if not fromfilter then
