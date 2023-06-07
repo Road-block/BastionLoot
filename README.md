@@ -6,7 +6,8 @@ Current version also offers a plusroll mode (toggle-able from minimap right-clic
 * from master (alpha/beta)
  1. Download [BastionLoot-master.zip](https://github.com/Road-block/BastionLoot/archive/master.zip)
  2. Extract the folder on Desktop
- 3. Paste it into `World of Warcraft\_classic_\Interface\AddOns\` answering yes to any overwrite prompts.
+ 3. Rename the folder to `BastionLoot`
+ 4. Cut and Paste it into `World of Warcraft\_classic_\Interface\AddOns\` answering yes to any overwrite prompts.
 
 * from releases (stable)
  1. Download latest [BastionLoot-wrath.zip](https://github.com/Road-block/BastionLootRoot/releases/latest/download/BastionLoot-wrath.zip) and extract in AddOns.
