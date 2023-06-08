@@ -1,0 +1,23 @@
+## Interface: 11403
+## Title: BastionLoot - Price plugin example
+## Notes: Classic prices plugin for BastionLoot
+## Author: Road-block
+## Dependencies: BastionLoot
+## Version: 1.0
+
+prices.lua
+
+# Comments
+# Dependencies: BastionLoot
+# must not be edited
+#
+# other toc fields can be edited to personalize
+# for your guild (title, notes, author, version etc)
+#
+# If the plugin addon folder name is changed
+# the enclosed .toc file must be renamed to
+# exactly match the folder name.
+# Example: if this plugin folder was to be renamed to
+# BastionLoot_BBQPrices
+# this .toc file must also be renamed to
+# BastionLoot_BBQPrices.toc
