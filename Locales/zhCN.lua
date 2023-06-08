@@ -8,7 +8,7 @@ if not L then return end
   L["Clear"] = "清除"
   L["Name"] = "名字"
   L["Raid Only"] = "只显示团队"
-  L["Only show members in raid."] = "只显示在团队里的成员"
+  L["Filter EPGP Standings to current raid members."] = "只显示在团队里的成员"
   -- bids
   L["BastionLoot bids"] = "BastionLoot 竞拍"
   L["Winning Mainspec Bid: %s (%.03f PR)"] = "副天赋竞标获胜: %s (%.03f PR)"
@@ -40,7 +40,7 @@ if not L then return end
   L["%s\nFailed to import:"] = "%s\n未能导入:"
   L["BastionLoot standings"] = "BastionLoot 名单列表"
   L["Group by class"] = "由职业分组"
-  L["Group members by class."] = "按职业分组"
+  L["Group EPGP Standings by class."] = "按职业分组"
   L["Export"] = "导出"
   L["Export standings to csv."] = "导出排名到CSV文本."
   L["Import"] = "导入"
@@ -137,8 +137,8 @@ if not L then return end
   L["Account GPs for member."] = "记账 GP给成员."
   L["+EPs to Standby"] = "+EP给替补队员" -- needs update
   L["Award EPs to all active Standby."] = "奖励EP给所有在线的替补队员." -- needs update
-  L["Enable Standby"] = "激活替补成员" -- needs update
-  L["Participate in Standby Raiders List.\n|cffff0000Requires Main Character Name.|r"] = "参与在备用团队列表.\n|cffff0000要求大号名字.|r" -- needs update
+  L["Join Standby Channel"] = "激活替补成员" -- needs update
+  L["Participate in Standby Raiders Channel.\n|cffff0000Requires Main Character Name to be set.|r"] = "参与在备用团队列表.\n|cffff0000要求大号名字.|r" -- needs update
   L["AFK Check Standby"] = "替补队员AFK检查" -- needs update
   L["AFK Check Standby List"] = "检查AFK的替补成员" -- needs update
   L["Set Main"] = "设置大号"
@@ -276,7 +276,7 @@ if not L then return end
   L["|cffff7f00Shift+Alt+Click|r to toggle Favorites."] = "|cffff7f00Shift+Alt+Click|r to toggle Favorites." -- needs translation
   L["|cffff7f00Alt+Click|r to toggle Favorites."] = "|cffff7f00Alt+Click|r to toggle Favorites." -- needs translation
   L["Bid Popup"] = "Bid Popup" -- needs translation
-  L["Show a Bid Popup in addition to chat links"] = "Show a Bid Popup in addition to chat links" -- needs translation
+  L["Show a Popup for bidding on items in addition to the custom chat links"] = "Show a Popup for bidding on items in addition to the custom chat links" -- needs translation
   L["Bid Mainspec/Need"] = "Bid Mainspec/Need" -- needs translation
   L["Bid Offspec/Greed"] = "Bid Offspec/Greed" -- needs translation
   L["Bid Call for %s [%ds]"] = "Bid Call for %s [%ds]" -- needs translation
@@ -383,7 +383,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Whisper %s \`res [itemlink]\` to soft reserve."] = "Whisper %s \`res [itemlink]\` to soft reserve." -- needs translation
   L["Call"] = "Call" -- needs translation
   L["Favorite Alert"] = "Favorite Alert" -- needs translation
-  L["Alert presence of Favorite Link or Loot"] = "Alert presence of Favorite Link or Loot" -- needs translation
+  L["Alert when Favorited items show up in Bid Calls or the LootFrame"] = "Alert when Favorited items show up in Bid Calls or the LootFrame" -- needs translation
   L["BastionLoot Favorite: %s"] = "BastionLoot Favorite: %s" -- needs translation
   L["All EP and GP data has been reset."] = "All EP and GP data has been reset." -- needs translation
   L["|cffff0000Are you sure you want to wipe all EPGP data?|r"] = "|cffff0000Are you sure you want to wipe all EPGP data?|r" -- needs translation
@@ -442,6 +442,15 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Gunship Armory"] = "Gunship Armory" -- needs translation
   L["Deathbringer's Cache"] = "Deathbringer's Cache" -- needs translation
   L["Cache of the Dreamwalker"] = "Cache of the Dreamwalker" -- needs translation
+  L["Cache of the Firelord"] = "Cache of the Firelord" -- needs translation
+  L["Scarab Coffer"] = "Scarab Coffer" -- needs translation
+  L["Large Scarab Coffer"] = "Large Scarab Coffer" -- needs translation
+  L["Jinxed Hoodoo Pile"] = "Jinxed Hoodoo Pile" -- needs translation
+  L["Dust Covered Chest"] = "Dust Covered Chest" -- needs translation
+  L["Harkor's Satchel"] = "Harkor's Satchel" -- needs translation
+  L["Tanzar's Trunk"] = "Tanzar's Trunk" -- needs translation
+  L["Kraz's Package"] = "Kraz's Package" -- needs translation
+  L["Ashli's Bag"] = "Ashli's Bag" -- needs translation
   L["Delay Updates"] = "Delay Updates" -- needs translation
   L["Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)"] = "Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)" -- needs translation
   L["Extra Messages"] = "Extra Messages" -- needs translation
@@ -494,7 +503,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["|cffff0000Manually modified %s\'s note. Previous ally info %s, %d:%d"] = "|cffff0000Manually modified %s\'s note. Previous ally info %s, %d:%d" -- needs translation
   L["%s set as an Alt of %s"] = "%s set as an Alt of %s" -- needs translation
   L["%s set as the Stand-in for %s"] = "%s set as the Stand-in for %s" -- needs translation
-  L["Value must be greater than zero and smaller than %s"] = "Value must be greater than zero and smaller than %s" -- needs translation
+  L["Value must fall between 0 and %s"] = "Value must fall between 0 and %s" -- needs translation
   L["Use Fullnames"] = "Use Fullnames" -- needs translation
   L["Use Playername-Realmname where available"] = "Use Playername-Realmname where available" -- needs translation
   L[", fullnames"] = ", fullnames" -- needs translation
@@ -502,5 +511,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Share Admin Options"] = "Share Admin Options" -- needs translation
   L["Push admin-only options to guild members currently online"] = "Push admin-only options to guild members currently online" -- needs translation
   L["Pushed admin-only options to online guild members"] = "Pushed admin-only options to online guild members" -- needs translation
+  L["Minimum ItemLevel"] = "Minimum ItemLevel" -- needs translation
+  L["Set Minimum ItemLevel (0 = disabled)"] = "Set Minimum ItemLevel (0 = disabled)" -- needs translation
+  L["Only ItemLevel <N> or higher Items will prompt for awarding GP when Masterlooter."] = "Only ItemLevel <N> or higher Items will prompt for awarding GP when Masterlooter." -- needs translation
 
   bepgp.L = L

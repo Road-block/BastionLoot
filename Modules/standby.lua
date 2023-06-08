@@ -39,8 +39,8 @@ function bepgp_standby:injectOptions()
     self._standbyChannel = string.format("%s%s",sanitized_guild,L["Standby"])
     bepgp._options.args.general.args.main.args["standby"] = {
       type = "toggle",
-      name = L["Enable Standby"],
-      desc = L["Participate in Standby Raiders List.\n|cffff0000Requires Main Character Name.|r"],
+      name = L["Join Standby Channel"],
+      desc = L["Participate in Standby Raiders Channel.\n|cffff0000Requires Main Character Name to be set.|r"],
       order = 50,
       get = function()
         return not not bepgp.db.char.standby
@@ -49,7 +49,7 @@ function bepgp_standby:injectOptions()
         bepgp.db.char.standby = not bepgp.db.char.standby
         bepgp_standby:standbyToggle(bepgp.db.char.standby)
       end,
-      disabled = function() return not bepgp.db.profile.main end
+      --disabled = function() return not bepgp.db.profile.main end
     }
     if not bepgp._dda_options then bepgp._dda_options = bepgp:ddoptions() end
     bepgp._dda_options.args["ep_standby"] = {
@@ -95,6 +95,7 @@ function bepgp_standby:standbyToggle(flag)
     bepgp.db.char.standby = flag
     self._standbyID = nil
   end
+  bepgp:testMain()
   return flag
 end
 

@@ -260,9 +260,12 @@ function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemStr
   end
   local bind = bepgp:itemBinding(itemString)
   if not (bind) then return end
-  local price,tier,price2,wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
+  local price,tier,price2,wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount,item_level = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
   price2 = type(price2)=="number" and price2 or nil
   if (not (price)) or (price == 0) then
+    return
+  end
+  if not bepgp:itemLevelOptionPass(item_level) then
     return
   end
   local class,_
@@ -330,9 +333,12 @@ end
 
 function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,itemID,itemLink,tmpTrade)
   itemCache[itemID] = true
-  local price,tier,price2 = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
+  local price,tier,price2,_,_,_,_,_,item_level = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
   price2 = type(price2)=="number" and price2 or nil
   if not (price) or price == 0 then
+    return
+  end
+  if not bepgp:itemLevelOptionPass(item_level) then
     return
   end
   local bind = bepgp:itemBinding(itemString)

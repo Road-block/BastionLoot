@@ -69,20 +69,34 @@ function bepgp_rolls:StartMenuTimer()
 end
 
 function bepgp_rolls:SetBanker()
-  local name = UIDROPDOWNMENU_OPEN_MENU.name
-  if type(name)=="string" then
+  local unit = UIDROPDOWNMENU_OPEN_MENU.unit
+  local name
+  if type(unit)=="string" and strfind(unit,"raid") then
+    name = GetUnitName(unit, bepgp.db.profile.fullnames)
     bepgp_rolls.special_recipients.BANKER = name
     bepgp:Print(L["Banker"]..":"..name)
   end
+  --[[local name = UIDROPDOWNMENU_OPEN_MENU.name
+  if type(name)=="string" then
+    bepgp_rolls.special_recipients.BANKER = name
+    bepgp:Print(L["Banker"]..":"..name)
+  end]]
   CloseDropDownMenus()
 end
 
 function bepgp_rolls:SetDisenchanter()
-  local name = UIDROPDOWNMENU_OPEN_MENU.name
-  if type(name)=="string" then
+  local unit = UIDROPDOWNMENU_OPEN_MENU.unit
+  local name
+  if type(unit)=="string" and strfind(unit,"raid") then
+    name = GetUnitName(unit, bepgp.db.profile.fullnames)
     bepgp_rolls.special_recipients.DISENCHANTER = name
     bepgp:Print(L["Disenchanter"]..":"..name)
   end
+  --[[local name = UIDROPDOWNMENU_OPEN_MENU.name
+  if type(name)=="string" then
+    bepgp_rolls.special_recipients.DISENCHANTER = name
+    bepgp:Print(L["Disenchanter"]..":"..name)
+  end]]
   CloseDropDownMenus()
 end
 
@@ -167,7 +181,7 @@ function bepgp_rolls:MasterLooterFrame_UpdatePlayers()
         local id, name = frame.id, frame.Name:GetText()
         table.insert(self.eligible_recipients,{id,name})
         local banker, disenchanter = self.special_recipients.BANKER, self.special_recipients.DISENCHANTER
-        if name == bepgp._playerName then
+        if name == bepgp._playerName or UnitIsUnit("player",name) then
           self._playerFrame.id = id
           self._playerFrame.Name:SetText(L["Self"])
           self._playerFrame.tooltip = name

@@ -8,7 +8,7 @@ if not L then return end
   L["Clear"] = true
   L["Name"] = true
   L["Raid Only"] = true
-  L["Only show members in raid."] = true
+  L["Filter EPGP Standings to current raid members."] = true
   L["Restarted"] = true
   L["Progress"] = true
   L["Print Progress Multiplier."] = true
@@ -51,7 +51,7 @@ if not L then return end
   L["%s\nFailed to import:"] = true
   L["BastionLoot standings"] = true
   L["Group by class"] = true
-  L["Group members by class."] = true
+  L["Group EPGP Standings by class."] = true
   L["Export"] = true
   L["Export standings to csv."] = true
   L["Export Standings"] = true
@@ -148,8 +148,8 @@ Results will print here when done.]]
   L["Account GPs for member."] = true
   L["+EPs to Standby"] = true
   L["Award EPs to all active Standby."] = true
-  L["Enable Standby"] = true
-  L["Participate in Standby Raiders List.\n|cffff0000Requires Main Character Name.|r"] = true
+  L["Join Standby Channel"] = true
+  L["Participate in Standby Raiders Channel.\n|cffff0000Requires Main Character Name to be set.|r"] = true
   L["AFK Check Standby"] = true
   L["AFK Check Standby List"] = true
   L["Set Main"] = true
@@ -274,7 +274,7 @@ Results will print here when done.]]
   L["|cffff7f00Shift+Alt+Click|r to toggle Favorites."] = true
   L["|cffff7f00Alt+Click|r to toggle Favorites."] = true
   L["Bid Popup"] = true
-  L["Show a Bid Popup in addition to chat links"] = true
+  L["Show a Popup for bidding on items in addition to the custom chat links"] = true
   L["Bid Mainspec/Need"] = true
   L["Bid Offspec/Greed"] = true
   L["Bid Call for %s [%ds]"] = true
@@ -381,7 +381,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Whisper %s \`res [itemlink]\` to soft reserve."] = true
   L["Call"] = true
   L["Favorite Alert"] = true
-  L["Alert presence of Favorite Link or Loot"] = true
+  L["Alert when Favorited items show up in Bid Calls or the LootFrame"] = true
   L["BastionLoot Favorite: %s"] = true
   L["4.Sunwell Plateau"] = true
   L["3.Black Temple, Hyjal"] = true
@@ -444,6 +444,15 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Gunship Armory"] = true -- 201872, 201873, 201874, 201875, 202177, 202178, 202179, 202180,
   L["Deathbringer's Cache"] = true -- 202238, 202239, 202240, 202241,
   L["Cache of the Dreamwalker"] = true -- 201959, 202338, 202339, 202340,
+  L["Cache of the Firelord"] = true -- 179703
+  L["Scarab Coffer"] = true -- 180691
+  L["Large Scarab Coffer"] = true -- 180690
+  L["Jinxed Hoodoo Pile"] = true -- 180228, 180229
+  L["Dust Covered Chest"] = true -- 185119
+  L["Harkor's Satchel"] = true -- 187021
+  L["Tanzar's Trunk"] = true -- 186648
+  L["Kraz's Package"] = true -- 186667
+  L["Ashli's Bag"] = true -- 186672
   L["Gordok Tribute"] = true -- DEBUG
   L["Delay Updates"] = true
   L["Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)"] = true
@@ -497,7 +506,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["|cffff0000Manually modified %s\'s note. Previous ally info %s, %d:%d"] = true
   L["%s set as an Alt of %s"] = true
   L["%s set as the Stand-in for %s"] = true
-  L["Value must be greater than zero and smaller than %s"] = true
+  L["Value must fall between 0 and %s"] = true
   L["Use Fullnames"] = true
   L["Use Playername-Realmname where available"] = true
   L[", fullnames"] = true
@@ -505,5 +514,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Share Admin Options"] = true
   L["Push admin-only options to guild members currently online"] = true
   L["Pushed admin-only options to online guild members"] = true
+  L["Minimum ItemLevel"] = true
+  L["Set Minimum ItemLevel (0 = disabled)"] = true
+  L["Only ItemLevel <N> or higher Items will prompt for awarding GP when Masterlooter."] = true
 
 bepgp.L = L

@@ -119,7 +119,6 @@ function bepgp_plusroll_bids:Refresh()
   frame:StopMovingOrSizing() -- free the mouse if we're mid-drag
   frame:Clear()
   frame:SetMovable(true)
-  local minep = bepgp.db.profile.minep
   local line
   line = frame:AddHeader()
   frame._header = line

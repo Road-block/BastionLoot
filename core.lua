@@ -17,10 +17,7 @@ bepgp._DEBUG = false
 bepgp._classic = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC) or false
 bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) or false
 bepgp._wrath = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC) or false
---[[
-TODO: Transition to using fully qualified names to support connected realms
-  Ambiguate("name", "mail")
-]]
+
 -- Upvalue some API
 local GetGuildTabardFileNames = _G.GetGuildTabardFileNames or _G.GetGuildTabardFiles
 local GuildRoster = C_GuildInfo and C_GuildInfo.GuildRoster or _G.GuildRoster
@@ -36,6 +33,8 @@ bepgp.VARS = {
   basegp = 100,
   minep = 0,
   baseaward_ep = 100,
+  minilvl = 0,
+  maxilvl = 384,
   decay = 0.8,
   max = 1000,
   timeout = 60,
@@ -482,6 +481,16 @@ local object_names = {
   [202338] = L["Cache of the Dreamwalker"],
   [202339] = L["Cache of the Dreamwalker"],
   [202340] = L["Cache of the Dreamwalker"],
+  [179703] = L["Cache of the Firelord"],
+  [180691] = L["Scarab Coffer"],
+  [180690] = L["Large Scarab Coffer"],
+  [180228] = L["Jinxed Hoodoo Pile"],
+  [180229] = L["Jinxed Hoodoo Pile"],
+  [185119] = L["Dust Covered Chest"],
+  [187021] = L["Harkor's Satchel"],
+  [186648] = L["Tanzar's Trunk"],
+  [186667] = L["Kraz's Package"],
+  [186672] = L["Ashli's Bag"],
   [179564] = L["Gordok Tribute"], -- DEBUG
 }
 local defaults = {
@@ -520,6 +529,7 @@ local defaults = {
     mode = "epgp", -- "plusroll"
     priorank = bepgp.VARS.priorank,
     maxreserves = bepgp.VARS.maxreserves,
+    minilvl = bepgp.VARS.minilvl,
     debugchat = 4, -- 1 is default, 2 is typically combatlog, 3 is typically voicetranscript
     priorank_ms = true,
     logs = {},
@@ -855,7 +865,7 @@ function bepgp:options(force)
     self._options.args.general.args.main.args["raid_only"] = {
       type = "toggle",
       name = L["Raid Only"],
-      desc = L["Only show members in raid."],
+      desc = L["Filter EPGP Standings to current raid members."],
       order = 80,
       get = function() return not not bepgp.db.char.raidonly end,
       set = function(info, val)
@@ -870,7 +880,7 @@ function bepgp:options(force)
     self._options.args.general.args.main.args["class_grouping"] = {
       type = "toggle",
       name = L["Group by class"],
-      desc = L["Group members by class."],
+      desc = L["Group EPGP Standings by class."],
       order = 81,
       get = function() return not not bepgp.db.char.classgroup end,
       set = function(info, val)
@@ -885,18 +895,28 @@ function bepgp:options(force)
     self._options.args.general.args.main.args["bid_popup"] = {
       type = "toggle",
       name = L["Bid Popup"],
-      desc = L["Show a Bid Popup in addition to chat links"],
+      desc = L["Show a Popup for bidding on items in addition to the custom chat links"],
       order = 83,
       get = function() return not not bepgp.db.char.bidpopup end,
       set = function(info, val)
         bepgp.db.char.bidpopup = not bepgp.db.char.bidpopup
       end,
     }
+    self._options.args.general.args.main.args["favalert"] = {
+      type = "toggle",
+      name = L["Favorite Alert"],
+      desc = L["Alert when Favorited items show up in Bid Calls or the LootFrame"],
+      order = 84,
+      get = function() return not not bepgp.db.char.favalert end,
+      set = function(info, val)
+        bepgp.db.char.favalert = not bepgp.db.char.favalert
+      end,
+    }
     self._options.args.general.args.main.args["minimap"] = {
       type = "toggle",
       name = L["Hide from Minimap"],
       desc = L["Hide from Minimap"],
-      order = 84,
+      order = 85,
       get = function() return bepgp.db.profile.minimap.hide end,
       set = function(info, val)
         bepgp.db.profile.minimap.hide = val
@@ -911,22 +931,12 @@ function bepgp:options(force)
       type = "toggle",
       name = L["Hide Rolls"],
       desc = L["Hide other player rolls from the chatframe"],
-      order = 85,
+      order = 86,
       get = function() return not not bepgp.db.char.rollfilter end,
       set = function(info, val)
         bepgp.db.char.rollfilter = not bepgp.db.char.rollfilter
       end,
       --hidden = function() return bepgp.db.char.mode ~= "plusroll" end,
-    }
-    self._options.args.general.args.main.args["favalert"] = {
-      type = "toggle",
-      name = L["Favorite Alert"],
-      desc = L["Alert presence of Favorite Link or Loot"],
-      order = 86,
-      get = function() return not not bepgp.db.char.favalert end,
-      set = function(info, val)
-        bepgp.db.char.favalert = not bepgp.db.char.favalert
-      end,
     }
     self._options.args.general.args.main.args["lootannounce"] = {
       type = "toggle",
@@ -1107,8 +1117,32 @@ function bepgp:options(force)
     self._options.args.general.args.main.args["set_min_ep_header"] = {
       type = "header",
       name = string.format(L["Minimum EP: %s"],bepgp.db.profile.minep),
-      order = 117,
+      order = 116,
       hidden = function() return bepgp:admin() end,
+    }
+    self._options.args.general.args.main.args["set_min_ilvl"] = {
+      type = "input",
+      name = L["Minimum ItemLevel"],
+      desc = L["Set Minimum ItemLevel (0 = disabled)"],
+      usage = L["Only ItemLevel <N> or higher Items will prompt for awarding GP when Masterlooter."],
+      order = 117,
+      get = function() return tostring(bepgp.db.char.minilvl) end,
+      set = function(info, val)
+        bepgp.db.char.minilvl = tonumber(val)
+      end,
+      validate = function(info, val)
+        local n = tonumber(val)
+        if n and n >= 0 and n <= bepgp.VARS.maxilvl then
+          return true
+        else
+          return string.format(L["Value must fall between 0 and %s"],bepgp.VARS.maxilvl)
+        end
+      end,
+      hidden = function()
+        if not bepgp._wrath then return true end
+        if not bepgp:admin() then return true end
+        return false
+      end,
     }
     self._options.args.general.args.main.args["set_min_ep"] = {
       type = "input",
@@ -1129,7 +1163,7 @@ function bepgp:options(force)
         if n and n >= 0 and n <= bepgp.VARS.max then
           return true
         else
-          return string.format(L["Value must be greater than zero and smaller than %s"],bepgp.VARS.max) --localization
+          return string.format(L["Value must fall between 0 and %s"],bepgp.VARS.max)
         end
       end,
       hidden = function() return not bepgp:admin() end,
@@ -2012,7 +2046,7 @@ function bepgp:templateCache(id)
           local from_log = data[loot_indices.log]
           local item_id = data[loot_indices.item_id]
           local enClass = data[loot_indices.class]
-          local price,tier,price2,wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+          local price,tier,price2,wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount,item_level = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
           price2 = type(price2)=="number" and price2 or nil
           self.text:SetText(string.format(L["%s looted to %s. Mark it as.."],data[loot_indices.item],data[loot_indices.player_c]))
           local discountChkBx
@@ -2133,9 +2167,9 @@ function bepgp:templateCache(id)
                 end
               else -- new entry
                 if bepgp.db.char.plusrollepgp and (bepgp.db.char.plusrollepgp == "sr" or bepgp.db.char.plusrollepgp == "msr") then
-                  local price,tier,price2 = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+                  local price,tier,price2,_,_,_,_,_,item_level = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
                   price2 = type(price2)=="number" and price2 or nil
-                  if price and price > 0 then
+                  if price and price > 0 and bepgp:itemLevelOptionPass(item_level) then
                     if data.use_discount and price2 then
                       bepgp:givename_gp(player, price2)
                     else
@@ -2183,7 +2217,7 @@ function bepgp:templateCache(id)
                 if bepgp.db.char.plusrollepgp and bepgp.db.char.plusrollepgp == "msr" then
                   local price,tier,price2 = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
                   price2 = type(price2)=="number" and price2 or nil
-                  if price and price > 0 then
+                  if price and price > 0 and bepgp:itemLevelOptionPass(item_level) then
                     if data.use_discount and price2 then
                       bepgp:givename_gp(player, price2)
                     else
@@ -3907,6 +3941,15 @@ function bepgp:getRaidID()
   end
 end
 
+function bepgp:itemLevelOptionPass(item_level)
+  local minilvl = self.db.char.minilvl
+  item_level = tonumber(item_level)
+  if item_level and minilvl and (minilvl > 0) and (item_level < minilvl) then
+    return false
+  end
+  return true
+end
+
 -------------------------------------------
 --// UTILITY
 -------------------------------------------
@@ -4158,6 +4201,7 @@ end
 
 function bepgp:testMain()
   if not IsInGuild() then return end
+  if not self.db.char.standby then return end
   if (not self.db.profile.main) or self.db.profile.main == "" then
     if self._playerLevel and (self._playerLevel < bepgp.VARS.minlevel) then
       return

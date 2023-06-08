@@ -5000,13 +5000,14 @@ function bepgp_prices_wrath:GetPrice(item,progress)
   if not progress then progress = "T10" end
   local price1,price2,itemID,data,tier,useful
   local itemType, itemSubType, itemEquipLoc, icon, classID, subclassID
-  local wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount
+  local wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount, item_level
   itemID, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = GetItemInfoInstant(item)
   if (itemID) then
     local invType = GetItemInventoryTypeByID(itemID)
     data = prices[itemID]
     if (data) then
       local quality, ilevel, equip = unpack(data)
+      item_level = tonumber(ilevel)
       tier = calcTier(ilevel)
       price1, price2 = getStaticValues(itemID, quality, ilevel, equip)
       wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount = GetDiscountDetail(invType, classID, subclassID)
@@ -5014,7 +5015,7 @@ function bepgp_prices_wrath:GetPrice(item,progress)
       return
     end
   end
-  return price1, tier, price2, wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount
+  return price1, tier, price2, wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount, item_level
 end
 
 function bepgp_prices_wrath:OnEnable()
