@@ -480,6 +480,7 @@ function bepgp_browser:PriceListData(redo)
   if pricelist then
     if redo then
       data = table.wipe(data)
+      typesort = table.wipe(typesort)
     end
     for id,info in pairs(pricelist) do
       local itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = GetItemInfoInstant(id)
@@ -582,4 +583,10 @@ function bepgp_browser:PriceSystemUpdate()
   self._container._modpreview:SetList(modlist,modsort)
   self._container._filterslots:SetList(filter,locsorted)
   self._container._filtertype:SetList(typelist,typesort)
+  local tierfilter = progress and progressmap[progress]
+  if tierfilter then
+    for _,option in pairs(tierfilter) do
+      self._container._filtertier:SetItemValue(option,true)
+    end
+  end
 end
