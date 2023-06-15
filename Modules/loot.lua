@@ -520,16 +520,20 @@ function bepgp_loot:bidCall(frame, button, context) -- context is one of "master
   end
   if not itemLink then return end
   local itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
-  local price = bepgp:GetPrice(itemString)
+  local price,tier,price2,_,_,_,_,_,item_level = bepgp:GetPrice(itemString)
   if (not (price)) or (price == 0) then
     return
   end
-  if button == "LeftButton" then
-    bepgp:widestAudience(string.format(L["Whisper %s a + for %s (mainspec)"],bepgp._playerName,itemLink))
-  elseif button == "RightButton" then
-    bepgp:widestAudience(string.format(L["Whisper %s a - for %s (offspec)"],bepgp._playerName,itemLink))
-  elseif button == "MiddleButton" then
-    bepgp:widestAudience(string.format(L["Whisper %s a + or - for %s (mainspec or offspec)"],bepgp._playerName,itemLink))
+  if bepgp:itemLevelOptionPass(item_level) then
+    if button == "LeftButton" then
+      bepgp:widestAudience(string.format(L["Whisper %s a + for %s (mainspec)"],bepgp._playerName,itemLink))
+    elseif button == "RightButton" then
+      bepgp:widestAudience(string.format(L["Whisper %s a - for %s (offspec)"],bepgp._playerName,itemLink))
+    elseif button == "MiddleButton" then
+      bepgp:widestAudience(string.format(L["Whisper %s a + or - for %s (mainspec or offspec)"],bepgp._playerName,itemLink))
+    end
+  else
+    bepgp:widestAudience(string.format(L["'/roll' (ms) or '/roll 50' (os) for %s"],itemLink))
   end
 end
 

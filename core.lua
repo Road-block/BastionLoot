@@ -2316,20 +2316,30 @@ function bepgp:templateCache(id)
         end,
         buttons = {
           { -- MainSpec
-            text = L["Bid Mainspec/Need"],
+            text = L["Bid Mainspec"],
             on_click = function(self, button, down)
               local data = self.data
               local masterlooter = data[2]
-              SendChatMessage("+","WHISPER",nil,masterlooter)
+              local roll = data[3]
+              if roll then
+                RandomRoll("1", "100")
+              else
+                SendChatMessage("+","WHISPER",nil,masterlooter)
+              end
               LD:Dismiss(addonName.."DialogMemberBid")
             end,
           },
           { -- OffSpec
-            text = L["Bid Offspec/Greed"],
+            text = L["Bid Offspec"],
             on_click = function(self, button, down)
               local data = self.data
               local masterlooter = data[2]
-              SendChatMessage("-","WHISPER",nil,masterlooter)
+              local roll = data[3]
+              if roll then
+                RandomRoll("1", "50")
+              else
+                SendChatMessage("-","WHISPER",nil,masterlooter)
+              end
               LD:Dismiss(addonName.."DialogMemberBid")
             end,
           },
@@ -2610,6 +2620,10 @@ function bepgp:SetMode(mode)
     ACD:Open(addonName)
   end
   ACD:SetDefaultSize(addonName,w,h)
+  if self:GroupStatus()=="RAID" and self:lootMaster() then
+    local addonMsg = string.format("MODE;%s;%s",mode,self._playerName)
+    self:addonMessage("RAID",addonMsg)
+  end
 end
 
 function bepgp:guildInfoSettings()
@@ -3337,6 +3351,9 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
       if (IsGuildLeader()) then
         self:shareSettings()
       end
+    elseif who == "MODE" then
+      bepgp.db.char.mode = what
+      self:SetMode(what)
     elseif who == "SETTINGS" then
       for progress,discount,decay,minep,alts,altspct,allies,fullnames in string.gmatch(what, "([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+)") do
         discount = tonumber(discount)

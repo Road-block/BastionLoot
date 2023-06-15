@@ -268,7 +268,6 @@ end
 
 function bepgp_plusroll_bids:SetItemRef(link, text, button, chatFrame)
   if string.sub(link,1,9) == "bepgproll" then
-    --local _,_,bid,masterlooter = string.find(link,"bepgproll:(%d+):(%w+)")
     local _,_,bid,masterlooter = string.find(link,"bepgproll:(%d+):([%C%D%P%S]+)") -- capture names with special characters
     if bid == "1" then
       bid = "+"
@@ -313,6 +312,7 @@ local lootCall = {
 }
 function bepgp_plusroll_bids:captureLootCall(event, text, sender)
   if not (string.find(text, "|Hitem:", 1, true)) then return end
+  if bepgp.db.char.mode ~= "plusroll" then return end
   local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%d]+|h%[.-%]|h|r"," ; ")
   if count > 1 then return end
   local lowtext = string.lower(linkstriptext)
@@ -366,50 +366,50 @@ function bepgp_plusroll_bids:captureRoll(event, text)
       msroll = (low == 1 and high == 100) and roll
       osroll = (low == 1 and high == 50) and roll
     end -- DEBUG
-  end
-  if (msroll) or (osroll) then
-    if bids_blacklist[who] == nil then
-      local cached = bepgp:groupCache(who)
-      local color = cached and cached.color or colorUnknown
-      local _,perms = bepgp:getGuildPermissions()
-      local pr,rank
-      if perms.OFFICER then
-        local g_name, _, g_rank, g_officernote = bepgp:verifyGuildMember(who,true)
-        if g_name then
-          local ep = bepgp:get_ep(g_name,g_officernote)
-          local gp = bepgp:get_gp(g_name,g_officernote)
-          if ep and gp then
-            pr = string.format("%.03f",ep/gp)
+    if (msroll) or (osroll) then
+      if bids_blacklist[who] == nil then
+        local cached = bepgp:groupCache(who)
+        local color = cached and cached.color or colorUnknown
+        local _,perms = bepgp:getGuildPermissions()
+        local pr,rank
+        if perms.OFFICER then
+          local g_name, _, g_rank, g_officernote = bepgp:verifyGuildMember(who,true)
+          if g_name then
+            local ep = bepgp:get_ep(g_name,g_officernote)
+            local gp = bepgp:get_gp(g_name,g_officernote)
+            if ep and gp then
+              pr = string.format("%.03f",ep/gp)
+            end
+            rank = g_rank
           end
-          rank = g_rank
-        end
-        local allies = bepgp.db.profile.allies
-        if allies[who] then
-          local ep = bepgp:get_ep(who)
-          local gp = bepgp:get_gp(who)
-          if ep and gp then
-            pr = string.format("%.03f",ep/gp)
+          local allies = bepgp.db.profile.allies
+          if allies[who] then
+            local ep = bepgp:get_ep(who)
+            local gp = bepgp:get_gp(who)
+            if ep and gp then
+              pr = string.format("%.03f",ep/gp)
+            end
+            rank = L["Ally"]
           end
-          rank = L["Ally"]
         end
-      end
-      if (msroll) then
-        bids_blacklist[who] = true
-        reserves = reserves or bepgp:GetModule(addonName.."_plusroll_reserves")
-        if reserves and (reserves:IsReservedExact(bepgp_plusroll_bids.bid_item.itemid, who)) then
-          table.insert(bepgp_plusroll_bids.bids_res,{who,color,msroll,nil,pr,rank})
-        else
-          plusroll_loot = plusroll_loot or bepgp:GetModule(addonName.."_plusroll_loot")
-          local wincount = plusroll_loot and plusroll_loot:getWincount(who) or 0
-          table.insert(bepgp_plusroll_bids.bids_main,{who,color,msroll,wincount,pr,rank})
+        if (msroll) then
+          bids_blacklist[who] = true
+          reserves = reserves or bepgp:GetModule(addonName.."_plusroll_reserves")
+          if reserves and (reserves:IsReservedExact(bepgp_plusroll_bids.bid_item.itemid, who)) then
+            table.insert(bepgp_plusroll_bids.bids_res,{who,color,msroll,nil,pr,rank})
+          else
+            plusroll_loot = plusroll_loot or bepgp:GetModule(addonName.."_plusroll_loot")
+            local wincount = plusroll_loot and plusroll_loot:getWincount(who) or 0
+            table.insert(bepgp_plusroll_bids.bids_main,{who,color,msroll,wincount,pr,rank})
+          end
+        elseif (osroll) then
+          bids_blacklist[who] = true
+          table.insert(bepgp_plusroll_bids.bids_off,{who,color,osroll,nil,pr,rank})
         end
-      elseif (osroll) then
-        bids_blacklist[who] = true
-        table.insert(bepgp_plusroll_bids.bids_off,{who,color,osroll,nil,pr,rank})
+        self:updateBids()
+        self:Refresh()
+        return
       end
-      self:updateBids()
-      self:Refresh()
-      return
     end
   end
 end

@@ -68,8 +68,10 @@ if not L then return end
   L["PHYS DPS"] = "物理 DPS"
   -- BastionLoot
   L["{BEPGP}Type \"+\" if on main, or \"+<YourMainName>\" (without quotes) if on alt within %dsec."] = "{BEPGP}使用 \"+\" 如果你在大号上, 或者 \"+<YourMainName>\" (没有引号) 如果在小号 %d秒."
-  L["|cffFF3333|Hbepgpbid:1:$ML|h[Mainspec/NEED]|h|r"] = "|cffFF3333|Hbepgpbid:1:$ML|h[主天赋/需求]|h|r"
-  L["|cff009900|Hbepgpbid:2:$ML|h[Offspec/GREED]|h|r"] = "|cff009900|Hbepgpbid:2:$ML|h[副天赋/贪婪]|h|r"
+  L["|cffFF3333|Hbepgpbid:1:$ML|h[Mainspec]|h|r"] = "|cffFF3333|Hbepgpbid:1:$ML|h[主天赋/需求]|h|r"
+  L["|cff009900|Hbepgpbid:2:$ML|h[Offspec]|h|r"] = "|cff009900|Hbepgpbid:2:$ML|h[副天赋/贪婪]|h|r"
+  L["|cffFF3333|Hbepgpbid:3:$ML|h[Mainspec]|h|r"] = "|cffFF3333|Hbepgpbid:3:$ML|h[主天赋/需求]|h|r"
+  L["|cff009900|Hbepgpbid:4:$ML|h[Offspec]|h|r"] = "|cff009900|Hbepgpbid:4:$ML|h[副天赋/贪婪]|h|r"
   L["Bids"] = "竞标"
   L["Show Bids Table."] = "显示竞标表."
   L["ClearLoot"] = "清除拾取"
@@ -277,8 +279,8 @@ if not L then return end
   L["|cffff7f00Alt+Click|r to toggle Favorites."] = "|cffff7f00Alt+Click|r to toggle Favorites." -- needs translation
   L["Bid Popup"] = "Bid Popup" -- needs translation
   L["Show a Popup for bidding on items in addition to the custom chat links"] = "Show a Popup for bidding on items in addition to the custom chat links" -- needs translation
-  L["Bid Mainspec/Need"] = "Bid Mainspec/Need" -- needs translation
-  L["Bid Offspec/Greed"] = "Bid Offspec/Greed" -- needs translation
+  L["Bid Mainspec"] = "Bid Mainspec" -- needs translation
+  L["Bid Offspec"] = "Bid Offspec" -- needs translation
   L["Bid Call for %s [%ds]"] = "Bid Call for %s [%ds]" -- needs translation
   L["Autoroll"] = "Autoroll" -- needs translation
   L["Coins"] = "Coins" -- needs translation
@@ -514,5 +516,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Minimum ItemLevel"] = "Minimum ItemLevel" -- needs translation
   L["Set Minimum ItemLevel (0 = disabled)"] = "Set Minimum ItemLevel (0 = disabled)" -- needs translation
   L["Only ItemLevel <N> or higher Items will prompt for awarding GP when Masterlooter."] = "Only ItemLevel <N> or higher Items will prompt for awarding GP when Masterlooter." -- needs translation
+  L["Winning Mainspec Roll: %s (%s)"] = "Winning Mainspec Roll: %s (%s)" -- needs translation
+  L["Winning Offspec Roll: %s (%s)"] = "Winning Offspec Roll: %s (%s)" -- needs translation
+  L["'/roll' (ms) or '/roll 50' (os) for %s"] = "'/roll' (ms) or '/roll 50' (os) for %s" -- needs translation
 
   bepgp.L = L

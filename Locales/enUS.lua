@@ -80,8 +80,10 @@ Results will print here when done.]]
   L["PHYS DPS"] = true
   -- BastionLoot
   L["{BEPGP}Type \"+\" if on main, or \"+<YourMainName>\" (without quotes) if on alt within %dsec."] = true
-  L["|cffFF3333|Hbepgpbid:1:$ML|h[Mainspec/NEED]|h|r"] = true
-  L["|cff009900|Hbepgpbid:2:$ML|h[Offspec/GREED]|h|r"] = true
+  L["|cffFF3333|Hbepgpbid:1:$ML|h[Mainspec]|h|r"] = true
+  L["|cff009900|Hbepgpbid:2:$ML|h[Offspec]|h|r"] = true
+  L["|cffFF3333|Hbepgpbid:3:$ML|h[Mainspec]|h|r"] = true
+  L["|cff009900|Hbepgpbid:4:$ML|h[Offspec]|h|r"] = true
   L["Bids"] = true
   L["Show Bids Table."] = true
   L["ClearLoot"] = true
@@ -275,8 +277,8 @@ Results will print here when done.]]
   L["|cffff7f00Alt+Click|r to toggle Favorites."] = true
   L["Bid Popup"] = true
   L["Show a Popup for bidding on items in addition to the custom chat links"] = true
-  L["Bid Mainspec/Need"] = true
-  L["Bid Offspec/Greed"] = true
+  L["Bid Mainspec"] = true
+  L["Bid Offspec"] = true
   L["Bid Call for %s [%ds]"] = true
   L["Autoroll"] = true
   L["Coins"] = true
@@ -517,5 +519,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Minimum ItemLevel"] = true
   L["Set Minimum ItemLevel (0 = disabled)"] = true
   L["Only ItemLevel <N> or higher Items will prompt for awarding GP when Masterlooter."] = true
+  L["Winning Mainspec Roll: %s (%s)"] = true
+  L["Winning Offspec Roll: %s (%s)"] = true
+  L["'/roll' (ms) or '/roll 50' (os) for %s"] = true
 
 bepgp.L = L
