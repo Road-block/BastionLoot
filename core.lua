@@ -28,6 +28,7 @@ local C_TimerAfter = C_Timer.After
 local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or _G.GetAddOnMetadata
 local MAX_PLAYER_LEVEL = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT]
 local strlen = string.utf8len or string.len
+local strsub = string.utf8sub or string.sub
 
 bepgp.VARS = {
   basegp = 100,
@@ -207,7 +208,11 @@ local modes = {
   plusroll = L["PlusRoll"]
 }
 local item_swaps = {}
+local whitelist = {}
 local switch_icon = "|TInterface\\Buttons\\UI-OptionsButton:16|t"..L["Switch Mode"]
+local lootareq_icon = "|TInterface\\GROUPFRAME\\UI-Group-MasterLooter:16|t"..L["Get Loot Admin"]
+local sizereq_icon = "|TInterface\\Buttons\\UI-RefreshButton:16|t"..L["Change Raid Size"]
+local exportrost_icon = "|TInterface\\Buttons\\UI-GuildButton-PublicNote-Up:16|t"..L["Export Raid Roster"]
 do
   for i=1,MAX_RAID_MEMBERS do
     raidUnit[i] = "raid"..i
@@ -530,6 +535,7 @@ local defaults = {
     priorank = bepgp.VARS.priorank,
     maxreserves = bepgp.VARS.maxreserves,
     minilvl = bepgp.VARS.minilvl,
+    rosterthrottle = bepgp.VARS.rosterthrottle,
     debugchat = 4, -- 1 is default, 2 is typically combatlog, 3 is typically voicetranscript
     priorank_ms = true,
     logs = {},
@@ -550,8 +556,8 @@ local defaults = {
     rollfilter = false,
     favalert = true,
     lootannounce = true,
-    rosterthrottle = bepgp.VARS.rosterthrottle,
     groupcache = {},
+    whitelist = {},
   },
 }
 local admincmd, membercmd =
@@ -649,22 +655,29 @@ local admincmd, membercmd =
       sorting = {"epgp", "plusroll"},
       order = 8,
     },
+    admin = {
+      type = "execute",
+      name = L["Get Loot Admin"],
+      desc = L["Send Request for Loot Admin to Raid Leader"],
+      func = "RequestLootAdmin",
+      order = 9,
+    },
     options = {
       type = "execute",
       name = _G.OPTIONS,
       desc = L["Admin Options"],
       func = "toggleOptions",
-      order = 9
+      order = 10,
     },
     restart = {
       type = "execute",
       name = L["Restart"],
       desc = L["Restart BastionLoot if having startup problems."],
       func = function()
-        bepgp:OnEnable()
+        bepgp:OnEnable(true)
         bepgp:Print(L["Restarted"])
       end,
-      order = 10,
+      order = 11,
     },
   }},
 {type = "group", handler = bepgp, args = {
@@ -737,7 +750,7 @@ local admincmd, membercmd =
       name = L["Restart"],
       desc = L["Restart BastionLoot if having startup problems."],
       func = function()
-        bepgp:OnEnable()
+        bepgp:OnEnable(true)
         bepgp:Print(L["Restarted"])
       end,
       order = 7,
@@ -860,7 +873,12 @@ function bepgp:options(force)
       order = 70,
       usage = "Type your main name and press Enter",
       get = function() return bepgp.db.profile.main end,
-      set = function(info, val) bepgp.db.profile.main = (bepgp:verifyGuildMember(val)) end,
+      set = function(info, val)
+        local name = (bepgp:verifyGuildMember(val))
+        if name then
+          bepgp.db.profile.main = name
+        end
+      end,
     }
     self._options.args.general.args.main.args["raid_only"] = {
       type = "toggle",
@@ -1211,11 +1229,46 @@ function bepgp:options(force)
       end,
       hidden = function() return not (bepgp:admin()) end,
     }
+    self._options.args.general.args.main.args["whitelist"] = {
+      type = "input",
+      name = L["Whitelist EPGP Admin"],
+      desc = L["Auto-approve this EPGP admin's ML and Raid Size requests"],
+      order = 137,
+      usage = "Type EPGP admin name and press Enter",
+      get = false,
+      set = function(info, val)
+        local name = (bepgp:verifyGuildMember(val,true))
+        if name then
+          bepgp.db.char.whitelist[name] = true
+        end
+      end,
+      hidden = function() return not (bepgp:admin()) end,
+    }
+    self._options.args.general.args.main.args["whitelist_rem"] = {
+      type = "select",
+      name = L["Remove from Whitelist"],
+      desc = L["ML and Raid Size requests will need confirmation"],
+      get = false,
+      set = function(info, val)
+        if bepgp.db.char.whitelist[val] then
+          bepgp.db.char.whitelist[val] = nil
+        end
+      end,
+      values = function()
+        local tmpTab = {}
+        for name,_ in pairs(self.db.char.whitelist) do
+          tmpTab[name] = name
+        end
+        return tmpTab
+      end,
+      order = 138,
+      hidden = function() return not (bepgp:admin() and bepgp:table_count(bepgp.db.char.whitelist) > 0 ) end,
+    }
     self._options.args.general.args.main.args["push"] = {
       type = "execute",
       name = L["Share Admin Options"],
       desc = L["Push admin-only options to guild members currently online"],
-      order = 137,
+      order = 139,
       hidden = function() return not (IsGuildLeader()) end,
       func = function()
         bepgp:shareSettings(true)
@@ -1225,7 +1278,7 @@ function bepgp:options(force)
     self._options.args.general.args.main.args["mode_options_header"] = {
       type = "header",
       name = L["PlusRoll"].."/"..L["EPGP"],
-      order = 138,
+      order = 140,
     }
     self._options.args.general.args.main.args["mode"] = {
       type = "select",
@@ -1240,7 +1293,7 @@ function bepgp:options(force)
       end,
       values = { ["epgp"]=L["EPGP"], ["plusroll"]=L["PlusRoll"]},
       sorting = {"epgp", "plusroll"},
-      order = 140,
+      order = 143,
     }
     self._options.args.general.args.main.args["priorank"] = {
       type = "select",
@@ -1265,14 +1318,14 @@ function bepgp:options(force)
         end
         return bepgp._guildRankSorting
       end,
-      order = 142,
+      order = 144,
       hidden = function() return (bepgp.db.char.mode ~= "epgp") or (bepgp.db.char.mode == "epgp" and not bepgp:admin()) end,
     }
     self._options.args.general.args.main.args["priorank_ms"] = {
       type = "toggle",
       name = L["Rank Priority MS"],
       desc = L["Rank Priority only applies to MS bids"],
-      order = 143,
+      order = 145,
       get = function()
         return not not bepgp.db.char.priorank_ms
       end,
@@ -1288,7 +1341,7 @@ function bepgp:options(force)
       type = "execute",
       name = L["Clear Loot"],
       desc = L["Clear Loot"],
-      order = 144,
+      order = 146,
       func = function()
         local loot = bepgp:GetModule(addonName.."_loot")
         if loot then
@@ -1302,7 +1355,7 @@ function bepgp:options(force)
       type = "execute",
       name = L["Clear Wincount"],
       desc = L["Clear Wincount"],
-      order = 145,
+      order = 147,
       func = function()
         local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot")
         if plusroll_loot then
@@ -1318,7 +1371,7 @@ function bepgp:options(force)
       type = "execute",
       name = L["Clear reserves"],
       desc = L["Clear reserves"],
-      order = 146,
+      order = 148,
       func = function()
         local plusroll_reserves = bepgp:GetModule(addonName.."_plusroll_reserves")
         if plusroll_reserves then
@@ -1474,9 +1527,30 @@ function bepgp:ddoptions(refresh)
       order = 50,
       args = { },
     }
+    self._dda_options.args["loot_admin"] = {
+      type = "execute",
+      name = lootareq_icon,
+      desc = L["Send Request for Loot Admin to Raid Leader"],
+      order = 52,
+      --hidden = function() return bepgp.db.char.mode ~= "epgp" end,
+      func = function(info)
+        bepgp:RequestLootAdmin()
+      end,
+    }
+    if bepgp._wrath then
+      self._dda_options.args["size_toggle"] = {
+        type = "execute",
+        name = sizereq_icon,
+        desc = L["Send Request for Raid Size change to Raid Leader"],
+        order = 53,
+        func = function(info)
+          bepgp:RequestSizeToggle()
+        end,
+      }
+    end
     self._dda_options.args["roster"] = {
       type = "execute",
-      name = L["Export Raid Roster"],
+      name = exportrost_icon,
       desc = L["Export Raid Roster"],
       order = 55,
       func = function(info)
@@ -1513,7 +1587,7 @@ function bepgp:ddoptions(refresh)
     }
     self._ddm_options.args["roster"] = {
       type = "execute",
-      name = L["Export Raid Roster"],
+      name = exportrost_icon,
       desc = L["Export Raid Roster"],
       order = 10,
       func = function(info)
@@ -1649,7 +1723,7 @@ end
 function bepgp:optionSize()
   local mode = self.db.char.mode
   local is_admin = bepgp:admin()
-  local default_w, default_h = 800, 600
+  local default_w, default_h = 800, 640
   local w, h = default_w, default_h
   if not is_admin then
     h = h - 90
@@ -2440,6 +2514,71 @@ function bepgp:templateCache(id)
           },
         },
       }
+    elseif id == "DialogWhitelist" then
+      self._dialogTemplates[key] = {
+        hide_on_escape = true,
+        show_while_dead = true,
+        is_exclusive = true,
+        text = L["%s wants to %s."],
+        on_show = function(self)
+          local data = self.data
+          local func = data[1]
+          local grant
+          if func == "GrantLootAdmin" then
+            grant = L["Get Loot Admin"]
+          elseif func == "GrantSizeToggle" then
+            grant = L["Change Raid Size"]
+          end
+          local name = data[2]
+          local arg1 = data[3]
+          self.text:SetText(L["%s wants to %s."]:format(name,grant))
+        end,
+        buttons = {
+          {
+            text = _G.ACCEPT,
+            on_click = function(self, button, down)
+              local data = self.data
+              local name = data[2]
+              local arg1 = data[3]
+              local func = bepgp[data[1]]
+              if data.save then
+                bepgp.db.char.whitelist[name] = true
+              else
+                whitelist[name] = true
+              end
+              func(bepgp,name,arg1)
+              LD:Dismiss(addonName.."DialogWhitelist")
+            end,
+          },
+          {
+            text = _G.CANCEL,
+            on_click = function(self, button, down)
+              local data = self.data
+              LD:Dismiss(addonName.."DialogWhitelist")
+            end
+          },
+        },
+        checkboxes = {
+          {
+            label = L["Auto-approve\nin the future"],
+            get_value = function(self)
+              local dialog = self:GetParent():GetParent()
+              local data = dialog.data
+              local name = data[2]
+              if data.save or bepgp.db.char.whitelist[name] then
+                return true
+              else
+                return false
+              end
+            end,
+            set_value = function(self, button, down)
+              local dialog = self:GetParent():GetParent()
+              local data = dialog.data
+              data.save = not data.save
+            end,
+          },
+        },
+      }
     elseif id == "DialogClearLoot" then
       self._dialogTemplates[key] = {
         hide_on_escape = true,
@@ -2569,7 +2708,7 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
   LDI:Register(addonName, LDBO, bepgp.db.profile.minimap)
 end
 
-function bepgp:OnEnable() -- 2. PLAYER_LOGIN
+function bepgp:OnEnable(reset) -- 2. PLAYER_LOGIN
   local _
   _, self._playerRealm = UnitFullName("player")
   self._playerFullName = string.format("%s-%s", self._playerName, self._playerRealm)
@@ -2577,6 +2716,7 @@ function bepgp:OnEnable() -- 2. PLAYER_LOGIN
   if GetMaxPlayerLevel and bepgp.VARS.minlevel > GetMaxPlayerLevel() then
     bepgp.VARS.minlevel = GetMaxPlayerLevel()
   end
+  if reset then self._initdone = nil end
   if IsInGuild() then
     local guildname = GetGuildInfo("player")
     if not guildname then
@@ -2622,7 +2762,7 @@ function bepgp:SetMode(mode)
   ACD:SetDefaultSize(addonName,w,h)
   if self:GroupStatus()=="RAID" and self:lootMaster() then
     local addonMsg = string.format("MODE;%s;%s",mode,self._playerName)
-    self:addonMessage("RAID",addonMsg)
+    self:addonMessage(addonMsg,"RAID")
   end
 end
 
@@ -2660,13 +2800,16 @@ function bepgp:deferredInit(guildname)
     LD:Register(addonName.."DialogMemberPoints", self:templateCache("DialogMemberPoints"))
     LD:Register(addonName.."DialogGroupPoints", self:templateCache("DialogGroupPoints"))
     LD:Register(addonName.."DialogSetMain", self:templateCache("DialogSetMain"))
+    LD:Register(addonName.."DialogWhitelist", self:templateCache("DialogWhitelist"))
     LD:Register(addonName.."DialogClearLoot", self:templateCache("DialogClearLoot"))
     LD:Register(addonName.."DialogResetPoints", self:templateCache("DialogResetPoints"))
     self:tooltipHook()
     -- handle unnamed frames Esc
-    self:RawHook("CloseSpecialWindows",true)
+    if not self:IsHooked("CloseSpecialWindows") then
+      self:RawHook("CloseSpecialWindows",true)
+    end
     -- comms
-    self:RegisterComm(bepgp.VARS.prefix)
+    bepgp:RegisterComm(bepgp.VARS.prefix)
     -- monitor officernote changes
     if self:admin() then
       if not self:IsHooked("GuildRosterSetOfficerNote") then
@@ -3013,7 +3156,6 @@ local function epgpResponder(frame, event, text, sender, ...)
   if event == "CHAT_MSG_WHISPER" then
     local query, name = text:match("^[%c%s]*(![pP][rR])[%c%s%p]*([^%c%d%p%s]*)")
     local sender_stripped = bepgp:Ambiguate(sender)
-    local guild_name, _, _, guild_officernote = bepgp:verifyGuildMember(sender_stripped,true,true) -- ignore level req
     local allies = bepgp.db.profile.allies
     local _,perms = bepgp:getGuildPermissions()
     if perms.OFFICER then
@@ -3354,6 +3496,10 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
     elseif who == "MODE" then
       bepgp.db.char.mode = what
       self:SetMode(what)
+    elseif who == "ADMIN" then
+      self:GrantLootAdmin(what,amount)
+    elseif who == "SIZE" then
+      self:GrantSizeToggle(what)
     elseif who == "SETTINGS" then
       for progress,discount,decay,minep,alts,altspct,allies,fullnames in string.gmatch(what, "([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+)") do
         discount = tonumber(discount)
@@ -3664,6 +3810,116 @@ function bepgp:make_escable(object,operation)
   end
 end
 
+function bepgp:RequestLootAdmin()
+  if bepgp:admin() and bepgp:GroupStatus() == "RAID" then
+    bepgp:Print(L["Sending request for Loot Admin"])
+    local addonMsg = string.format("ADMIN;%s;%s",bepgp._playerName,LE_ITEM_QUALITY_RARE) -- rare
+    bepgp:addonMessage(addonMsg,"RAID")
+  end
+end
+
+function bepgp:GrantLootAdmin(name, threshold)
+  if not name or name == "" then return end
+  local threshold = threshold or LE_ITEM_QUALITY_RARE
+  if not IsInRaid() then return end
+  if not UnitIsGroupLeader("player") then return end
+  if whitelist[name] or bepgp.db.char.whitelist[name] then
+    whitelist[name] = nil
+    local g_name = bepgp:verifyGuildMember(name, true)
+    if g_name then
+      SetLootMethod("master",g_name,threshold)
+      bepgp:Print(string.format(L["Granting Loot Admin to %s."],name))
+      if not (UnitIsGroupAssistant(g_name) or IsEveryoneAssistant()) then
+        PromoteToAssistant(g_name, true)
+      end
+      return
+    end
+  else
+    LD:Spawn(addonName.."DialogWhitelist",{"GrantLootAdmin",name,threshold})
+    return
+  end
+end
+
+function bepgp:RequestSizeToggle()
+  if not bepgp._wrath then return end
+  if bepgp:admin() and bepgp:GroupStatus() == "RAID" then
+    bepgp:Print(L["Sending request for raid size change"])
+    local addonMsg = string.format("SIZE;%s;%s",bepgp._playerName,1)
+    bepgp:addonMessage(addonMsg,"RAID")
+  end
+end
+
+function bepgp:GrantSizeToggle(name)
+  if not bepgp._wrath then return end
+  if not name or name == "" then return end
+  if not IsInRaid() then return end
+  if not UnitIsGroupLeader("player") then return end
+  if whitelist[name] or bepgp.db.char.whitelist[name] then
+    whitelist[name] = nil
+    local g_name = bepgp:verifyGuildMember(name, true)
+    if g_name then
+      local toDiff
+      local diffID = GetRaidDifficultyID()
+      if diffID == DIFFICULTY_RAID10_NORMAL then
+        toDiff = DIFFICULTY_RAID25_NORMAL
+      elseif diffID == DIFFICULTY_RAID25_NORMAL then
+        toDiff = DIFFICULTY_RAID10_NORMAL
+      elseif diffID == DIFFICULTY_RAID10_HEROIC then
+        toDiff = DIFFICULTY_RAID25_HEROIC
+      elseif diffID == DIFFICULTY_RAID25_HEROIC then
+        toDiff = DIFFICULTY_RAID10_HEROIC
+      end
+      if toDiff then
+        SetRaidDifficultyID(toDiff, true)
+        bepgp:Print(string.format(L["Granting raid size change to %s."],name))
+      end
+      return
+    end
+  else
+    LD:Spawn(addonName.."DialogWhitelist",{"GrantSizeToggle",name})
+    return
+  end
+end
+
+function bepgp:RequestDiffToggle()
+  if not bepgp._wrath then return end
+  if bepgp:admin() and bepgp.db.char.mode == "epgp" and bepgp:GroupStatus() == "RAID" then
+    local addonMsg = string.format("DIFF;%s;%s",1,1)
+    bepgp:addonMessage(addonMsg,"RAID")
+  end
+end
+
+function bepgp:GrantDiffToggle(name)
+  if not bepgp._wrath then return end
+  if not name or name == "" then return end
+  if not IsInRaid() then return end
+  if not UnitIsGroupLeader("player") then return end
+  if whitelist[name] or bepgp.db.char.whitelist[name] then
+    whitelist[name] = nil
+    local g_name = bepgp:verifyGuildMember(name, true)
+    if g_name then
+      local toDiff
+      local diffID = GetRaidDifficultyID()
+      if diffID == DIFFICULTY_RAID10_NORMAL then
+        toDiff = DIFFICULTY_RAID10_HEROIC
+      elseif diffID == DIFFICULTY_RAID10_HEROIC then
+        toDiff = DIFFICULTY_RAID10_NORMAL
+      elseif diffID == DIFFICULTY_RAID25_NORMAL then
+        toDiff = DIFFICULTY_RAID25_HEROIC
+      elseif diffID == DIFFICULTY_RAID25_HEROIC then
+        toDiff = DIFFICULTY_RAID25_NORMAL
+      end
+      if toDiff then
+        SetRaidDifficultyID(toDiff, true)
+      end
+      return
+    end
+  else
+    LD:Spawn(addonName.."DialogWhitelist",{"GrantDiffToggle",name})
+    return
+  end
+end
+
 function bepgp:OpenAdminActions(obj)
   local is_admin = self:admin()
   if is_admin then
@@ -3696,7 +3952,7 @@ function bepgp:PLAYER_GUILD_UPDATE(...)
   local unitid = ...
   if unitid and UnitIsUnit(unitid,"player") then
     if IsInGuild() then
-      self:OnEnable()
+      self:OnEnable(true)
     end
   end
 end
@@ -4376,7 +4632,7 @@ function bepgp:removeAlt(alt)
   if alt_name and roster_index then
     alt_ofnote = alt_ofnote or ""
     local newnote
-    local datatype = self:parseNote(alt_ofnote, roster_index)
+    local datatype,_,_,_,main = self:parseNote(alt_ofnote, roster_index)
     if datatype == "alt" then
       newnote = alt_ofnote:gsub("{"," ")
       newnote = newnote:gsub("}"," ")
@@ -4385,6 +4641,7 @@ function bepgp:removeAlt(alt)
     end
     if newnote then
       GuildRosterSetOfficerNote(roster_index,newnote,true)
+      self:Print(string.format(L["%s removed as an Alt of %s"],alt,main))
       self:safeGuildRoster()
     end
   end
@@ -4396,7 +4653,7 @@ function bepgp:removeStandin(standin)
   if std_name and roster_index then
     std_ofnote = std_ofnote or ""
     local newnote
-    local datatype = self:parseNote(std_ofnote, roster_index)
+    local datatype,_,_,_,ally = self:parseNote(std_ofnote, roster_index)
     if datatype == "standin" then
       newnote = std_ofnote:gsub("{"," ")
       newnote = newnote:gsub("}"," ")
@@ -4405,6 +4662,7 @@ function bepgp:removeStandin(standin)
     end
     if newnote then
       GuildRosterSetOfficerNote(roster_index,newnote,true)
+      self:Print(string.format(L["%s removed as a Stand-in for %s"],standin,ally))
       self:safeGuildRoster()
     end
   end
@@ -4546,7 +4804,7 @@ function bepgp:buildClassMemberTable(roster,epgp)
     end
     if (key) then
       if key == "ALTS" then
-        local initial = name:sub(1,1)
+        local initial = strsub(name,1,1)
         if c[key].args[initial] == nil then
           c[key].args[initial] = { }
           c[key].args[initial].type = "group"

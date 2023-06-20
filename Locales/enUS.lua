@@ -522,5 +522,21 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Winning Mainspec Roll: %s (%s)"] = true
   L["Winning Offspec Roll: %s (%s)"] = true
   L["'/roll' (ms) or '/roll 50' (os) for %s"] = true
+  L["%s removed as an Alt of %s"] = true
+  L["%s removed as a Stand-in for %s"] = true
+  L["Send Request for Loot Admin to Raid Leader"] = true
+  L["Send Request for Raid Size change to Raid Leader"] = true
+  L["Get Loot Admin"] = true
+  L["Change Raid Size"] = true
+  L["Auto-approve\nin the future"] = true
+  L["%s wants to %s."] = true
+  L["Whitelist EPGP Admin"] = true
+  L["Auto-approve this EPGP admin's ML and Raid Size requests"] = true
+  L["Remove from Whitelist"] = true
+  L["ML and Raid Size requests will need confirmation"] = true
+  L["Sending request for Loot Admin"] = true
+  L["Sending request for raid size change"] = true
+  L["Granting Loot Admin to %s."] = true
+  L["Granting raid size change to %s."] = true
 
 bepgp.L = L

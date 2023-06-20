@@ -158,8 +158,7 @@ function bepgp_alts:injectOptions() -- .general.args.main.args
   alts_manager["add_alt"] = {
     type = "select",
     name = L["Add Alt"],
-    get = function(info)
-    end,
+    get = false,
     set = function(info, val)
       bepgp:linkAlt(volatile.main, val)
     end,
@@ -188,8 +187,6 @@ function bepgp_alts:injectOptions() -- .general.args.main.args
     type = "select",
     name = L["Remove Alt"],
     get = false,
-    get = function(info)
-    end,
     set = function(info, val)
       bepgp:removeAlt(val)
     end,

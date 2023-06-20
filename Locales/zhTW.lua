@@ -519,5 +519,21 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Winning Mainspec Roll: %s (%s)"] = "Winning Mainspec Roll: %s (%s)" -- needs translation
   L["Winning Offspec Roll: %s (%s)"] = "Winning Offspec Roll: %s (%s)" -- needs translation
   L["'/roll' (ms) or '/roll 50' (os) for %s"] = "'/roll' (ms) or '/roll 50' (os) for %s" -- needs translation
+  L["%s removed as an Alt of %s"] = "%s removed as an Alt of %s" -- needs translation
+  L["%s removed as a Stand-in for %s"] = "%s removed as a Stand-in for %s" -- needs translation
+  L["Send Request for Loot Admin to Raid Leader"] = "Send Request for Loot Admin to Raid Leader" -- needs translation
+  L["Send Request for Raid Size change to Raid Leader"] = "Send Request for Raid Size change to Raid Leader" -- needs translation
+  L["Get Loot Admin"] = "Get Loot Admin" -- needs translation
+  L["Change Raid Size"] = "Change Raid Size" -- needs translation
+  L["Auto-approve\nin the future"] = "Auto-approve\nin the future" -- needs translation
+  L["%s wants to %s."] = "%s wants to %s." -- needs translation
+  L["Whitelist EPGP Admin"] = "Whitelist EPGP Admin" -- needs translation
+  L["Auto-approve this EPGP admin's ML and Raid Size requests"] = "Auto-approve this EPGP admin's ML and Raid Size requests" -- needs translation
+  L["Remove from Whitelist"] = "Remove from Whitelist" -- needs translation
+  L["ML and Raid Size requests will need confirmation"] = "ML and Raid Size requests will need confirmation" -- needs translation
+  L["Sending request for Loot Admin"] = "Sending request for Loot Admin" -- needs translation
+  L["Sending request for raid size change"] = "Sending request for raid size change" -- needs translation
+  L["Granting Loot Admin to %s."] = "Granting Loot Admin to %s." -- needs translation
+  L["Granting raid size change to %s."] = "Granting raid size change to %s." -- needs translation
 
   bepgp.L = L
