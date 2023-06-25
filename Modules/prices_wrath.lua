@@ -213,6 +213,8 @@ local CUSTOM_ITEM_DATA = {
 
   -- T9.245 (10M heroic/25M)
   [47242] = { 4, 245, "INVTYPE_CUSTOM_MULTISLOT_TIER" },
+  [49643] = { 4, 245, "INVTYPE_FINGER" }, -- Head of Onyxia (H)
+  [49644] = { 4, 245, "INVTYPE_FINGER" }, -- Head of Onyxia (A)
 
   -- T9.258 (25M heroic)
   [47557] = { 4, 258, "INVTYPE_CUSTOM_MULTISLOT_TIER" },

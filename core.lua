@@ -84,6 +84,7 @@ bepgp.VARS = {
     [43662] = "PlundererAxe",
     [48418] = "SoulFragment",
     [202269] = "BountyAlpha",
+    [208157] = "BountyBeta",
     [45788] = "FreyaSigil",
     [45786] = "HodirSigil",
     [45787] = "MimironSigil",
