@@ -535,5 +535,10 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Sending request for raid size change"] = "Sending request for raid size change" -- needs translation
   L["Granting Loot Admin to %s."] = "Granting Loot Admin to %s." -- needs translation
   L["Granting raid size change to %s."] = "Granting raid size change to %s." -- needs translation
+  L["Change Raid Difficulty"] = "Change Raid Difficulty" -- needs translation
+  L["Send Request for Raid Difficulty change to Raid Leader"] = "Send Request for Raid Difficulty change to Raid Leader" -- needs translation
+  L["Sending request for raid difficulty change"] = "Sending request for raid difficulty change" -- needs translation
+  L["Granting raid difficulty change to %s."] = "Granting raid difficulty change to %s." -- needs translation
+  L["|cff33ff99Pending Loot:|r"] = "|cff33ff99Pending Loot:|r" -- needs translation
 
   bepgp.L = L

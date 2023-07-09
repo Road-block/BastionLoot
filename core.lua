@@ -26,6 +26,11 @@ local CanSpeakInGuildChat = C_GuildInfo and C_GuildInfo.CanSpeakInGuildChat or _
 local GuildControlGetRankFlags = C_GuildInfo and C_GuildInfo.GuildControlGetRankFlags or _G.GuildControlGetRankFlags
 local C_TimerAfter = C_Timer.After
 local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or _G.GetAddOnMetadata
+local CanLootUnit = _G.CanLootUnit -- local hasLoot, canLoot = CanLootUnit(guid)
+local CombatLogGetCurrentEventInfo = _G.CombatLogGetCurrentEventInfo
+local CombatLog_Object_IsA = _G.CombatLog_Object_IsA
+local UnitInBattleground = _G.UnitInBattleground
+local IsInActiveWorldPVP = _G.IsInActiveWorldPVP
 local MAX_PLAYER_LEVEL = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT]
 local strlen = string.utf8len or string.len
 local strsub = string.utf8sub or string.sub
@@ -198,6 +203,7 @@ local hexClassColor, classToEnClass, classToClassID, classidToClass = {}, {}, {}
 local hexColorQuality = {}
 local price_systems = {}
 local special_frames = {}
+local pendingLoot, pendingLooters = {}, {}
 local label = string.format("|cff33ff99%s|r",addonName)
 local out_chat = string.format("%s: %%s",addonName)
 local icons = {
@@ -213,6 +219,7 @@ local whitelist = {}
 local switch_icon = "|TInterface\\Buttons\\UI-OptionsButton:16|t"..L["Switch Mode"]
 local lootareq_icon = "|TInterface\\GROUPFRAME\\UI-Group-MasterLooter:16|t"..L["Get Loot Admin"]
 local sizereq_icon = "|TInterface\\Buttons\\UI-RefreshButton:16|t"..L["Change Raid Size"]
+local diffreq_icon = "|TInterface\\PVPFrame\\Icon-Combat:16|t"..L["Change Raid Difficulty"]
 local exportrost_icon = "|TInterface\\Buttons\\UI-GuildButton-PublicNote-Up:16|t"..L["Export Raid Roster"]
 do
   for i=1,MAX_RAID_MEMBERS do
@@ -335,14 +342,14 @@ do
       },
       progress_sorting = {"T10.5", "T10", "T9", "T8", "T7"},
       progressmap = {
-        ["T10.5"] = {"T10.5", "T10","T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
-        ["T10"]   = {"T10","T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
-        ["T9.5"]  = {"T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
-        ["T9"]    = {"T9.5", "T9", "T8.5", "T8", "T7.5", "T7"},
-        ["T8.5"]  = {"T8.5", "T8", "T7.5", "T7"},
-        ["T8"]    = {"T8.5", "T8", "T7.5", "T7"},
-        ["T7.5"]  = {"T7.5","T7"},
-        ["T7"]    = {"T7.5","T7"},
+        ["T10.5"] = {"T10.5", "T10","T9.5", "T9", "T8.5"},
+        ["T10"]   = {"T10.5", "T10","T9.5", "T9", "T8.5", "T8"},
+        ["T9.5"]  = {"T10", "T9.5", "T9", "T8.5", "T8", "T7.5"},
+        ["T9"]    = {"T10", "T9.5", "T9", "T8.5", "T8", "T7.5"},
+        ["T8.5"]  = {"T9", "T8.5", "T8", "T7.5", "T7"},
+        ["T8"]    = {"T9", "T8.5", "T8", "T7.5", "T7"},
+        ["T7.5"]  = {"T8", "T7.5", "T7"},
+        ["T7"]    = {"T8", "T7.5", "T7"},
       },
       tierlist = {["T10.5"]="270+",["T10"]="260-269",["T9.5"]="250-259",["T9"]="240-249",["T8.5"]="230-239",["T8"]="220-229",["T7.5"]="210-219",["T7"]="200-209"},
       tiersort = {"T10.5","T10","T9.5","T9","T8.5","T8","T7.5","T7"},
@@ -1548,6 +1555,15 @@ function bepgp:ddoptions(refresh)
           bepgp:RequestSizeToggle()
         end,
       }
+      self._dda_options.args["diff_toggle"] = {
+        type = "execute",
+        name = diffreq_icon,
+        desc = L["Send Request for Raid Difficulty change to Raid Leader"],
+        order = 54,
+        func = function(info)
+          bepgp:RequestDiffToggle()
+        end,
+      }
     end
     self._dda_options.args["roster"] = {
       type = "execute",
@@ -2529,6 +2545,8 @@ function bepgp:templateCache(id)
             grant = L["Get Loot Admin"]
           elseif func == "GrantSizeToggle" then
             grant = L["Change Raid Size"]
+          elseif func == "GrantDiffToggle" then
+            grant = L["Change Raid Difficulty"]
           end
           local name = data[2]
           local arg1 = data[3]
@@ -2740,6 +2758,15 @@ function bepgp:OnEnable(reset) -- 2. PLAYER_LOGIN
   if bepgp.db.char.lootannounce or bepgp.db.char.favalert then
     bepgp:RegisterEvent("LOOT_OPENED", "lootAnnounce")
   end
+  if not bepgp.cleuParser then -- re-use if someone did /disable /enable
+    bepgp.cleuParser = CreateFrame("Frame")
+    bepgp.cleuParser.OnEvent = function(frame, event, ...)
+      bepgp.COMBAT_LOG_EVENT_UNFILTERED(bepgp, event, ...) -- make sure we get a proper 'self'
+    end
+    bepgp.cleuParser:SetScript("OnEvent", bepgp.cleuParser.OnEvent)
+  end
+  bepgp.cleuParser:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+  bepgp:RegisterEvent("LOOT_SLOT_CLEARED", "checkPendingLoot")
 end
 
 function bepgp:OnDisable() -- ADHOC
@@ -2894,6 +2921,9 @@ function bepgp:tooltipHook()
   else
     self:UnregisterEvent("MODIFIER_STATE_CHANGED")
   end
+  if not self:IsHooked(GameTooltip, "OnTooltipSetUnit") then
+    self:HookScript(GameTooltip, "OnTooltipSetUnit", "AddTipLootInfo")
+  end
 end
 
 function bepgp:TipItemSwap(event,button,state)
@@ -2918,6 +2948,29 @@ function bepgp:TipItemSwap(event,button,state)
         ItemRefTooltip:SetHyperlink(item_swaps[itemid])
       end
     end
+  end
+end
+
+function bepgp:AddTipLootInfo(tooltip,...)
+  local name, unitid = tooltip:GetUnit()
+  local guid
+  if name and unitid then
+    guid = UnitGUID(unitid)
+  end
+  if not guid then return end
+  local looters
+  if pendingLoot[guid] then
+    looters = bepgp._playerName
+  end
+  if pendingLooters[guid] and bepgp:table_count(pendingLooters[guid])>0 then
+    for looter,hasLoot in pairs(pendingLooters[guid]) do
+      if hasLoot then
+        looters = looters and (looters..", "..looter) or looter
+      end
+    end
+  end
+  if looters then
+    tooltip:AddDoubleLine(L["|cff33ff99Pending Loot:|r"], looters)
   end
 end
 
@@ -3444,27 +3497,34 @@ function bepgp:GuildRosterSetOfficerNote(index,note,fromAddon)
   end
 end
 
-function bepgp:addonMessage(msg, distro, target)
-  local prio = "BULK"
+function bepgp:addonMessage(msg, distro, target, prio)
+  local prio = prio or "BULK"
   if distro == "WHISPER" then
     prio = "NORMAL"
   end
   self:SendCommMessage(bepgp.VARS.prefix,msg,distro,target,prio)
 end
 
+local guildComms = {
+  ["ALL"] = true,
+  ["ADMIN"] = true,
+  ["SIZE"] = true,
+  ["DIFF"] = true,
+  ["SETTINGS"] = true,
+}
 function bepgp:OnCommReceived(prefix, msg, distro, sender)
   if not prefix == bepgp.VARS.prefix then return end -- not our message
   local sender = bepgp:Ambiguate(sender)
   if sender == self._playerName then return end -- don't care for our own message
   local name, class, rank = self:verifyGuildMember(sender, true)
-  if not (name and class) then return end -- only messages from guild
-  local is_admin = self:admin()
   local who,what,amount
   for name,epgp,change in string.gmatch(msg,"([^;]+);([^;]+);([^;]+)") do
     who = name
     what = epgp
     amount = tonumber(change)
   end
+  if guildComms[who] and not (name and class) then return end -- filter by guild context
+  local is_admin = self:admin()
   if (who) and (what) and (amount) then
     local out
     local for_main = (self.db.profile.main and (who == self.db.profile.main))
@@ -3501,6 +3561,10 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
       self:GrantLootAdmin(what,amount)
     elseif who == "SIZE" then
       self:GrantSizeToggle(what)
+    elseif who == "DIFF" then
+      self:GrantDiffToggle(what)
+    elseif who == "LOOT" then
+      self:UpdatePendingLooters(sender,what,amount)
     elseif who == "SETTINGS" then
       for progress,discount,decay,minep,alts,altspct,allies,fullnames in string.gmatch(what, "([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+)") do
         discount = tonumber(discount)
@@ -3885,7 +3949,8 @@ end
 function bepgp:RequestDiffToggle()
   if not bepgp._wrath then return end
   if bepgp:admin() and bepgp.db.char.mode == "epgp" and bepgp:GroupStatus() == "RAID" then
-    local addonMsg = string.format("DIFF;%s;%s",1,1)
+    bepgp:Print(L["Sending request for raid difficulty change"])
+    local addonMsg = string.format("DIFF;%s;%s",bepgp._playerName,1)
     bepgp:addonMessage(addonMsg,"RAID")
   end
 end
@@ -3912,12 +3977,27 @@ function bepgp:GrantDiffToggle(name)
       end
       if toDiff then
         SetRaidDifficultyID(toDiff, true)
+        bepgp:Print(string.format(L["Granting raid difficulty change to %s."],name))
       end
       return
     end
   else
     LD:Spawn(addonName.."DialogWhitelist",{"GrantDiffToggle",name})
     return
+  end
+end
+
+function bepgp:UpdatePendingLooters(looter, guid, action)
+  print("looter:"..looter..",action:"..action)
+  if bepgp:lootMaster() or bepgp:raidLeader() then
+    if action == 1 then
+      pendingLooters[guid] = pendingLooters[guid] or {}
+      pendingLooters[guid][looter] = true
+    elseif action == 0 then
+      if pendingLooters[guid] and pendingLooters[guid][looter] then
+        pendingLooters[guid][looter] = nil
+      end
+    end
   end
 end
 
@@ -3972,6 +4052,56 @@ end
 function bepgp:PLAYER_REGEN_ENABLED()
   self:UnregisterEvent("PLAYER_REGEN_ENABLED")
   self:GUILD_ROSTER_UPDATE("PLAYER_REGEN_ENABLED")
+end
+
+local COMBATLOG_FILTER_HOSTILE_NPC = bit.bor(
+  COMBATLOG_OBJECT_AFFILIATION_OUTSIDER,
+  COMBATLOG_OBJECT_REACTION_HOSTILE,
+  COMBATLOG_OBJECT_CONTROL_NPC,
+  COMBATLOG_OBJECT_TYPE_NPC
+)
+local DEATH_EVENTS = {
+  ["UNIT_DIED"] = true,
+  ["UNIT_DESTROYED"] = true,
+  ["UNIT_DISSIPATES"] = true,
+  ["PARTY_KILL"] = true,
+}
+local pendingLootUpdater = function(guid, name)
+  if not guid or (guid == "") then return end
+  C_TimerAfter(2, function()
+    local hasLoot, canLoot = CanLootUnit(guid)
+    if pendingLoot[guid] then
+      if not hasLoot then
+        pendingLoot[guid] = nil
+        local addonMsg = string.format("LOOT;%s;0",guid)
+        bepgp:addonMessage(addonMsg,"RAID",nil,"NORMAL")
+      end
+    else
+      if hasLoot and canLoot then
+        pendingLoot[guid] = name
+        local addonMsg = string.format("LOOT;%s;1",guid)
+        bepgp:addonMessage(addonMsg,"RAID",nil,"NORMAL")
+      end
+    end
+  end)
+end
+function bepgp:COMBAT_LOG_EVENT_UNFILTERED(event,...)
+  if not IsInRaid() then return end -- DEBUG
+  if UnitInBattleground("player") or IsInActiveWorldPVP("player") then return end -- DEBUG
+  local _, subevent, _, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags = CombatLogGetCurrentEventInfo()
+  if not DEATH_EVENTS[subevent] then return end
+  if not CombatLog_Object_IsA(destFlags,COMBATLOG_FILTER_HOSTILE_NPC) then return end
+  pendingLootUpdater(destGUID,destName)
+end
+
+function bepgp:checkPendingLoot(event, lootSlot)
+  if not IsInRaid() then return end -- DEBUG
+  if UnitInBattleground("player") or IsInActiveWorldPVP("player") then return end -- DEBUG
+  local lootsourceGUID = GetLootSourceInfo(lootSlot)
+  local sourceName = pendingLoot[lootsourceGUID]
+  if sourceName then
+    pendingLootUpdater(lootsourceGUID,sourceName)
+  end
 end
 
 function bepgp:GUILD_ROSTER_UPDATE(event)
