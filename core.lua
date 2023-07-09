@@ -3988,7 +3988,6 @@ function bepgp:GrantDiffToggle(name)
 end
 
 function bepgp:UpdatePendingLooters(looter, guid, action)
-  print("looter:"..looter..",action:"..action)
   if bepgp:lootMaster() or bepgp:raidLeader() then
     if action == 1 then
       pendingLooters[guid] = pendingLooters[guid] or {}
