@@ -442,7 +442,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Cache of Living Stone"] = true -- 195046, 195047, 281372,
   L["Gift of the Observer"] = true -- 194821, 194822,
   L["Champions' Cache"] = true -- 195631, 195632, 195633, 195635,
-  L["Argent Crusade Tribute Chest"] = true -- 195665
+  L["Argent Crusade Tribute Chest"] = true -- 195665, 195666, 195667, 195668, 195669, 195670, 195671, 195672
   L["Gunship Armory"] = true -- 201872, 201873, 201874, 201875, 202177, 202178, 202179, 202180,
   L["Deathbringer's Cache"] = true -- 202238, 202239, 202240, 202241,
   L["Cache of the Dreamwalker"] = true -- 201959, 202338, 202339, 202340,

@@ -342,12 +342,12 @@ do
       },
       progress_sorting = {"T10.5", "T10", "T9", "T8", "T7"},
       progressmap = {
-        ["T10.5"] = {"T10.5", "T10","T9.5", "T9", "T8.5"},
-        ["T10"]   = {"T10.5", "T10","T9.5", "T9", "T8.5", "T8"},
-        ["T9.5"]  = {"T10", "T9.5", "T9", "T8.5", "T8", "T7.5"},
-        ["T9"]    = {"T10", "T9.5", "T9", "T8.5", "T8", "T7.5"},
-        ["T8.5"]  = {"T9", "T8.5", "T8", "T7.5", "T7"},
-        ["T8"]    = {"T9", "T8.5", "T8", "T7.5", "T7"},
+        ["T10.5"] = {"T10.5", "T10","T9.5"},
+        ["T10"]   = {"T10.5", "T10","T9.5"},
+        ["T9.5"]  = {"T10", "T9.5", "T9"},
+        ["T9"]    = {"T10", "T9.5", "T9"},
+        ["T8.5"]  = {"T9", "T8.5", "T8"},
+        ["T8"]    = {"T9", "T8.5", "T8"},
         ["T7.5"]  = {"T8", "T7.5", "T7"},
         ["T7"]    = {"T8", "T7.5", "T7"},
       },
@@ -478,6 +478,13 @@ local object_names = {
   [195633] = L["Champions' Cache"],
   [195635] = L["Champions' Cache"],
   [195665] = L["Argent Crusade Tribute Chest"],
+  [195666] = L["Argent Crusade Tribute Chest"],
+  [195667] = L["Argent Crusade Tribute Chest"],
+  [195668] = L["Argent Crusade Tribute Chest"],
+  [195669] = L["Argent Crusade Tribute Chest"],
+  [195670] = L["Argent Crusade Tribute Chest"],
+  [195671] = L["Argent Crusade Tribute Chest"],
+  [195672] = L["Argent Crusade Tribute Chest"],
   [201872] = L["Gunship Armory"],
   [201873] = L["Gunship Armory"],
   [201874] = L["Gunship Armory"],
@@ -2608,7 +2615,7 @@ function bepgp:templateCache(id)
         end,
         on_cancel = function(self)
           local data = self.data
-          bepgp:Print(L["Loot info can be cleared at any time from the loot window button or '/bastionloot clearloot' command"])
+          bepgp:Print(L["Loot info can be cleared at any time from the loot window or '/bastionloot clearloot' command"])
         end,
         buttons = {
           {
