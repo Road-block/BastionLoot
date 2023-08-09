@@ -364,7 +364,7 @@ function bepgp_plusroll_bids:captureRoll(event, text)
     inraid = bepgp:inRaid(who)
     if inraid then -- DEBUG
       msroll = (low == 1 and high == 100) and roll
-      osroll = (low == 1 and high == 50) and roll
+      osroll = (low == 1 and high < 100) and roll -- let's accomodate other offspec rolls in our tracker
     end -- DEBUG
     if (msroll) or (osroll) then
       if bids_blacklist[who] == nil then
@@ -454,13 +454,15 @@ function bepgp_plusroll_bids:bidPrint(link,masterlooter,bid)
     end
     chatframe = DEFAULT_CHAT_FRAME
   end
-  if (chatframe) then
-    chatframe:AddMessage(" ")
-    chatframe:AddMessage(string.format(out,msg),NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b)
+  if not bepgp._SUSPEND then
+    if (chatframe) then
+      chatframe:AddMessage(" ")
+      chatframe:AddMessage(string.format(out,msg),NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b)
+    end
     if bepgp.db.char.bidpopup then
       LD:Spawn(addonName.."DialogMemberRoll", link)
     end
-    self:updateBids()
-    self:Refresh()
   end
+  self:updateBids()
+  self:Refresh()
 end

@@ -14,6 +14,7 @@ local G = LibStub("LibGratuity-3.0")
 local T = LibStub("LibQTip-1.0")
 
 bepgp._DEBUG = false
+bepgp._SUSPEND = false
 bepgp._classic = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC) or false
 bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) or false
 bepgp._wrath = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC) or false
@@ -208,15 +209,19 @@ local label = string.format("|cff33ff99%s|r",addonName)
 local out_chat = string.format("%s: %%s",addonName)
 local icons = {
   epgp = "Interface\\PetitionFrame\\GuildCharter-Icon",
-  plusroll = "Interface\\Buttons\\UI-GroupLoot-Dice-Up"
+  plusroll = "Interface\\Buttons\\UI-GroupLoot-Dice-Up",
+  suspend = "Interface\\Buttons\\UI-GroupLoot-Pass-Down",
 }
 local modes = {
   epgp = L["EPGP"],
-  plusroll = L["PlusRoll"]
+  plusroll = L["PlusRoll"],
+  suspend = C:Red(L["Suspend"])
 }
 local item_swaps = {}
 local whitelist = {}
 local switch_icon = "|TInterface\\Buttons\\UI-OptionsButton:16|t"..L["Switch Mode"]
+local stop_icon = "|TInterface\\Buttons\\UI-GroupLoot-Pass-Down:16|t"..L["Suspend"]
+local resume_icon = "|TInterface\\Buttons\\UI-CheckBox-Check:16|t"..L["Resume"]
 local lootareq_icon = "|TInterface\\GROUPFRAME\\UI-Group-MasterLooter:16|t"..L["Get Loot Admin"]
 local sizereq_icon = "|TInterface\\Buttons\\UI-RefreshButton:16|t"..L["Change Raid Size"]
 local diffreq_icon = "|TInterface\\PVPFrame\\Icon-Combat:16|t"..L["Change Raid Difficulty"]
@@ -694,6 +699,15 @@ local admincmd, membercmd =
       end,
       order = 11,
     },
+    stop = {
+      type = "execute",
+      name = L["Suspend"],
+      desc = L["Suspend bid monitoring for this session.(does not persist relog)"],
+      func = function()
+        bepgp:Suspend()
+      end,
+      order = 12,
+    },
   }},
 {type = "group", handler = bepgp, args = {
     show = {
@@ -769,6 +783,15 @@ local admincmd, membercmd =
         bepgp:Print(L["Restarted"])
       end,
       order = 7,
+    },
+    stop = {
+      type = "execute",
+      name = L["Suspend"],
+      desc = L["Suspend bid monitoring for this session.(does not persist relog)"],
+      func = function()
+        bepgp:Suspend()
+      end,
+      order = 8,
     },
   }}
 bepgp.cmdtable = function()
@@ -1584,6 +1607,15 @@ function bepgp:ddoptions(refresh)
         end
       end,
     }
+    self._dda_options.args["stop"] = {
+      type = "execute",
+      name = stop_icon,
+      desc = L["Suspend bid monitoring for this session.(does not persist relog)"],
+      order = 60,
+      func = function(info)
+        bepgp:Suspend()
+      end,
+    }
   end
   if not self._ddm_options then
     self._ddm_options = {
@@ -1624,6 +1656,15 @@ function bepgp:ddoptions(refresh)
         local wrong_mode = (bepgp.db.char.mode ~= "plusroll")
         local not_ml = not (bepgp:lootMaster())
         return (wrong_mode or not_ml)
+      end,
+    }
+    self._ddm_options.args["stop"] = {
+      type = "execute",
+      name = stop_icon,
+      desc = L["Suspend bid monitoring for this session.(does not persist relog)"],
+      order = 60,
+      func = function(info)
+        bepgp:Suspend()
       end,
     }
   end
@@ -1776,6 +1817,9 @@ function bepgp.OnLDBTooltipShow(tooltip)
   local is_admin = bepgp:admin()
   local mode = bepgp.db.char.mode
   local title = string.format("%s [%s]",label,modes[mode])
+  if bepgp._SUSPEND then
+    title = string.format("%s [%s]",label,modes.suspend)
+  end
   local rollloot = bepgp:GetModule(addonName.."_plusroll_loot")
   local roll_admin = rollloot and rollloot:raidLootAdmin() or false
   tooltip:SetText(title)
@@ -2785,6 +2829,13 @@ function bepgp:RefreshConfig()
 end
 
 function bepgp:SetMode(mode)
+  if bepgp._SUSPEND then
+    bepgp._SUSPEND = false
+    bepgp._dda_options.args.stop.name = stop_icon
+    bepgp._dda_options.args.stop.desc = L["Suspend"]
+    bepgp._ddm_options.args.stop.name = stop_icon
+    bepgp._ddm_options.args.stop.desc = L["Suspend"]
+  end
   self:Print(string.format(L["Mode set to %s."],modes[mode]))
   LDBO.icon = icons[mode]
   LDBO.text = string.format("%s [%s]",label,modes[mode])
@@ -2798,6 +2849,28 @@ function bepgp:SetMode(mode)
   if self:GroupStatus()=="RAID" and self:lootMaster() then
     local addonMsg = string.format("MODE;%s;%s",mode,self._playerName)
     self:addonMessage(addonMsg,"RAID")
+  end
+end
+
+function bepgp:Suspend(flag)
+  bepgp._SUSPEND = not bepgp._SUSPEND
+  if bepgp._SUSPEND then
+    bepgp:Print(L["Bid processing suspended. (session only)"])
+    LDBO.icon = icons.suspend
+    LDBO.text = string.format("%s [%s]",label,modes.suspend)
+    bepgp._dda_options.args.stop.name = resume_icon
+    bepgp._dda_options.args.stop.desc = L["Resume"]
+    bepgp._ddm_options.args.stop.name = resume_icon
+    bepgp._ddm_options.args.stop.desc = L["Resume"]
+  else
+    bepgp:Print(L["Bid processing resumed."])
+    local mode = bepgp.db.char.mode
+    LDBO.icon = icons[mode]
+    LDBO.text = string.format("%s [%s]",label,modes[mode])
+    bepgp._dda_options.args.stop.name = stop_icon
+    bepgp._dda_options.args.stop.desc = L["Suspend"]
+    bepgp._ddm_options.args.stop.name = stop_icon
+    bepgp._ddm_options.args.stop.desc = L["Suspend"]
   end
 end
 

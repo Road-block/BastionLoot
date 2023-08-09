@@ -655,12 +655,14 @@ function bepgp_bids:bidPrint(link,masterlooter,need,greed,bid,roll)
     end
     chatframe = DEFAULT_CHAT_FRAME
   end
-  if (chatframe) then
-    chatframe:AddMessage(" ")
-    chatframe:AddMessage(string.format(out,msg),NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b)
-  end
-  if bepgp.db.char.bidpopup then
-    LD:Spawn(addonName.."DialogMemberBid", {link,masterlooter,roll})
+  if not bepgp._SUSPEND then
+    if (chatframe) then
+      chatframe:AddMessage(" ")
+      chatframe:AddMessage(string.format(out,msg),NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b)
+    end
+    if bepgp.db.char.bidpopup then
+      LD:Spawn(addonName.."DialogMemberBid", {link,masterlooter,roll})
+    end
   end
   self:updateBids((roll and "roll" or nil))
   self:Refresh((roll and "roll" or nil))

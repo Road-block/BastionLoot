@@ -298,7 +298,9 @@ function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemStr
     if onehand_discount and onehand_discount:match(enClass) then data.use_discount = true end
     if twohand_discount and twohand_discount:match(enClass) then data.use_discount = true end
   end
-  LD:Spawn(addonName.."DialogItemPoints", data)
+  if not bepgp._SUSPEND then
+    LD:Spawn(addonName.."DialogItemPoints", data)
+  end
 end
 
 function bepgp_loot:processLoot(player,itemLink,source)
@@ -363,7 +365,9 @@ function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,
     data[loot_indices.player_c] = target_color
     data.loot_indices = loot_indices
     data[loot_indices.update] = 1
-    LD:Spawn(addonName.."DialogItemPoints", data)
+    if not bepgp._SUSPEND then
+      LD:Spawn(addonName.."DialogItemPoints", data)
+    end
   end
 end
 

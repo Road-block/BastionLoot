@@ -540,5 +540,11 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Sending request for raid difficulty change"] = "Sending request for raid difficulty change" -- needs translation
   L["Granting raid difficulty change to %s."] = "Granting raid difficulty change to %s." -- needs translation
   L["|cff33ff99Pending Loot:|r"] = "|cff33ff99Pending Loot:|r" -- needs translation
+  L["Suspend"] = "Suspend" -- needs translation
+  L["Suspend bid monitoring for this session.(does not persist relog)"] = "Suspend bid monitoring for this session.(does not persist relog)" -- needs translation
+  L["Bid processing suspended. (session only)"] = "Bid processing suspended. (session only)" -- needs translation
+  L["Bid processing resumed."] = "Bid processing resumed." -- needs translation
+  L["Resume bid processing."] = "Resume bid processing." -- needs translation
+  L["Resume"] = "Resume" -- needs translation
 
   bepgp.L = L

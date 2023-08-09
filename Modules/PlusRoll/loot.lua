@@ -371,7 +371,9 @@ function bepgp_plusroll_loot:processLootCallback(player,itemLink,source,itemColo
   local player_color = C:Colorize(hexClass,player)
   local epoch, timestamp = bepgp:getServerTime()
   local data = {[loot_indices.time]=epoch,[loot_indices.player]=player,[loot_indices.player_c]=player_color,[loot_indices.item]=itemLink,[loot_indices.item_id]=itemID,[loot_indices.class]=enClass,loot_indices=loot_indices}
-  LD:Spawn(addonName.."DialogItemPlusPoints", data)
+  if not bepgp._SUSPEND then
+    LD:Spawn(addonName.."DialogItemPlusPoints", data)
+  end
 end
 
 function bepgp_plusroll_loot:processLoot(player,itemLink,source)

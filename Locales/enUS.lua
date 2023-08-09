@@ -543,5 +543,11 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Sending request for raid difficulty change"] = true
   L["Granting raid difficulty change to %s."] = true
   L["|cff33ff99Pending Loot:|r"] = true
+  L["Suspend"] = true
+  L["Suspend bid monitoring for this session.(does not persist relog)"] = true
+  L["Bid processing suspended. (session only)"] = true
+  L["Bid processing resumed."] = true
+  L["Resume bid processing."] = true
+  L["Resume"] = true
 
 bepgp.L = L
