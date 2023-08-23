@@ -3577,12 +3577,45 @@ function bepgp:GuildRosterSetOfficerNote(index,note,fromAddon)
   end
 end
 
+local player_not_found_capture = _G.ERR_CHAT_PLAYER_NOT_FOUND_S:gsub("%%s","(.+)")
+local function playerNotFoundFilter(self,event,msg,sender,...)
+  local noPlayerMsg = msg:match(player_not_found_capture)
+    if noPlayerMsg then
+      return true
+    else -- other system message just let it pass through
+      return false, msg, sender, ...
+    end
+end
+
+function bepgp:AddPlayerNotFoundFilter()
+  if not bepgp._playerNotFoundfilterActive then
+    ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", playerNotFoundFilter)
+    bepgp._playerNotFoundfilterActive = true
+  end
+end
+
+function bepgp:RemovePlayerNotFoundFilter()
+  if bepgp._playerNotFoundfilterActive then
+    ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", playerNotFoundFilter)
+    bepgp._playerNotFoundfilterActive = nil
+  end
+end
+
+function bepgp.commProgress(id, bytesSent, bytesTotal)
+  if bytesSent >= bytesTotal then
+    C_TimerAfter(1,bepgp.RemovePlayerNotFoundFilter)
+  end
+end
+
 function bepgp:addonMessage(msg, distro, target, prio)
   local prio = prio or "BULK"
+  local callbackFn
   if distro == "WHISPER" then
     prio = "NORMAL"
+    callbackFn = bepgp.commProgress
+    bepgp:AddPlayerNotFoundFilter()
   end
-  self:SendCommMessage(bepgp.VARS.prefix,msg,distro,target,prio)
+  self:SendCommMessage(bepgp.VARS.prefix,msg,distro,target,prio,callbackFn)
 end
 
 local guildComms = {
@@ -5435,6 +5468,7 @@ function bepgp:givename_ep(getname,ep,single) -- awards ep to a single character
   local newep = ep + (self:get_ep(getname) or 0)
   self:update_ep(getname,newep)
   local msg = string.format(L["Giving %d ep to %s%s."],ep,getname,postfix)
+  local addonMsg = string.format("%s;%s;%s",getname,"EP",ep)
   if ep < 0 then -- inform member of penalty
     msg = string.format(L["%s EP Penalty to %s%s."],ep,getname,postfix)
     self:debugPrint(msg)
@@ -5442,7 +5476,6 @@ function bepgp:givename_ep(getname,ep,single) -- awards ep to a single character
     if logs then
       logs:addToLog(msg)
     end
-    local addonMsg = string.format("%s;%s;%s",getname,"EP",ep)
     self:addonMessage(addonMsg,"WHISPER",getname)
   else
     self:debugPrint(msg)
@@ -5451,6 +5484,7 @@ function bepgp:givename_ep(getname,ep,single) -- awards ep to a single character
       if logs then
         logs:addToLog(msg)
       end
+      self:addonMessage(addonMsg,"WHISPER",getname)
     end
   end
 end
