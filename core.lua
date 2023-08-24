@@ -3603,7 +3603,9 @@ end
 
 function bepgp.commProgress(id, bytesSent, bytesTotal)
   if bytesSent >= bytesTotal then
-    C_TimerAfter(1,bepgp.RemovePlayerNotFoundFilter)
+    C_TimerAfter(1, function()
+      bepgp:RemovePlayerNotFoundFilter()
+    end)
   end
 end
 
