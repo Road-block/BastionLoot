@@ -54,7 +54,8 @@ function bepgp_alts:injectOptions() -- .general.args.main.args
     name = L["Alts EP %"],
     desc = L["Set the % EP Alts can earn."],
     order = 10,
-    hidden = function() return (not bepgp.db.profile.altspool) or (not IsGuildLeader()) end,
+    hidden = function() return (not bepgp.db.profile.altspool) or (not bepgp:admin()) end,
+    disabled = function() return not (IsGuildLeader()) end,
     get = function() return bepgp.db.profile.altpercent end,
     set = function(info, val) 
       bepgp.db.profile.altpercent = val

@@ -552,6 +552,7 @@ local bag_addons = {
   ["Inventorian"] = false,
   ["tdBag2"] = false,
   ["Tukui"] = false,
+  ["Baganator"] = false,
 }
 function bepgp_loot:hookBagAddons()
   local hook_install = false
@@ -586,6 +587,15 @@ function bepgp_loot:bagginsHook()
   for i=1,numbuttons do
     local itemButton = _G["BagginsPooledItemButton"..i]
     bepgp_loot:hookContainerButton(itemButton)
+  end
+end
+
+function bepgp_loot:baganatorHook()
+  if Baganator_MainViewFrame and Baganator_MainViewFrame.BagLive then
+    local buttons = Baganator_MainViewFrame.BagLive.buttons or {}
+    for _,itemButton in pairs(buttons) do
+      bepgp_loot:hookContainerButton(itemButton)
+    end
   end
 end
 
@@ -661,6 +671,12 @@ function bepgp_loot:clickHandlerBags(id)
           self:hookContainerButton(itemButton)
         end
       end
+      bag_addons[addon] = true
+    elseif addon == "Baganator" then
+      if Baganator_MainViewFrame and Baganator_MainViewFrame.BagLive and Baganator_MainViewFrame.BagLive.RebuildLayout then
+        self:SecureHook(Baganator_MainViewFrame.BagLive, "RebuildLayout", "baganatorHook")
+      end
+      self:baganatorHook()
       bag_addons[addon] = true
     end
   end
