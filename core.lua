@@ -106,6 +106,7 @@ bepgp.VARS = {
     [51026] = "Sindragosa1",
     [51027] = "Sindragosa2",
     [52006] = "FrostySack",
+    [52676] = "LeyCache",
     -- bcc
     [29434] = "Badge",
     [42] = "currency",
@@ -4853,7 +4854,7 @@ function bepgp:linkStandin(ally, standin, ally_classid)
   local std_name,std_class,std_rank,std_ofnote,std_rnkIdx,roster_index = self:verifyGuildMember(standin,true,true)
   if std_name and roster_index then -- intended standin exists and is in the guild
     std_ofnote = std_ofnote or ""
-    local newnote
+    local newnote,count
     local epgpinfo = std_ofnote:match("%b{}")
     if epgpinfo then -- already holds some kind of epgp data (pr, main or ally)
     else
@@ -5118,7 +5119,7 @@ function bepgp:groupCache(member,update)
           local colortab = RAID_CLASS_COLORS[eclass]
           groupcache[member]["level"] = level
           groupcache[member]["class"] = lclass
-          groupcache[member]["eclass"] = eClass
+          groupcache[member]["eclass"] = eclass
           groupcache[member]["hex"] = hexColor
           groupcache[member]["color"] = colortab
           break
@@ -5156,7 +5157,7 @@ function bepgp:refreshUnitCaches(force)
         groupcache[name] = groupcache[name] or {}
         groupcache[name]["level"] = level
         groupcache[name]["class"] = lclass
-        groupcache[name]["eclass"] = eClass
+        groupcache[name]["eclass"] = eclass
         groupcache[name]["hex"] = hexColor
         groupcache[name]["color"] = colortab
       end
