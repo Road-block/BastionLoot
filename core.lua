@@ -546,6 +546,7 @@ local defaults = {
     guildcache = {},
     alts = {},
     allies = {},
+    patches = {},
   },
   char = {
     raidonly = false,
@@ -586,6 +587,7 @@ local defaults = {
     lootannounce = true,
     groupcache = {},
     whitelist = {},
+    patches = {},
   },
 }
 local admincmd, membercmd =
@@ -2233,10 +2235,12 @@ function bepgp:templateCache(id)
               discountChkBx:Hide()
             else
               if wand_discount then data.use_discount = true end
-              if ranged_discount and ranged_discount:match(enClass) then data.use_discount = true end
-              if shield_discount and shield_discount:match(enClass) then data.use_discount = true end
-              if onehand_discount and onehand_discount:match(enClass) then data.use_discount = true end
-              if twohand_discount and twohand_discount:match(enClass) then data.use_discount = true end
+              if enClass then -- not available when we're coming from logs
+                if ranged_discount and ranged_discount:match(enClass) then data.use_discount = true end
+                if shield_discount and shield_discount:match(enClass) then data.use_discount = true end
+                if onehand_discount and onehand_discount:match(enClass) then data.use_discount = true end
+                if twohand_discount and twohand_discount:match(enClass) then data.use_discount = true end
+              end
             end
           end          
         end,
@@ -2784,6 +2788,10 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
   LDBO.OnClick = bepgp.OnLDBClick
   LDBO.OnTooltipShow = bepgp.OnLDBTooltipShow
   LDI:Register(addonName, LDBO, bepgp.db.profile.minimap)
+
+  -- upgrade patches
+  self:applyUpgradePatch("3.4.2-groupcache")
+
 end
 
 function bepgp:OnEnable(reset) -- 2. PLAYER_LOGIN
@@ -2826,6 +2834,7 @@ function bepgp:OnEnable(reset) -- 2. PLAYER_LOGIN
   end
   bepgp.cleuParser:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
   bepgp:RegisterEvent("LOOT_SLOT_CLEARED", "checkPendingLoot")
+
 end
 
 function bepgp:OnDisable() -- ADHOC
@@ -2834,6 +2843,34 @@ end
 
 function bepgp:RefreshConfig()
 
+end
+
+local patches = {
+  ["3.4.2-groupcache"] = {
+    storage="char",
+    code=[[
+    local groupcache = BastionLoot.db.char.groupcache
+    if type(groupcache)=="table" then
+      for name, nameinfo in pairs(groupcache) do
+        if not nameinfo["eclass"] then
+          groupcache[name] = nil
+        end
+      end
+    end
+    ]],},
+}
+function bepgp:applyUpgradePatch(patchname)
+  local storage, code = patches[patchname].storage, patches[patchname].code
+  if not self.db[storage].patches[patchname] then
+    local func, errorMsg = loadstring(code, patchname)
+    if func then
+      func()
+      self.db[storage].patches[patchname] = true
+      self:debugPrint(format("Applied %s patch",patchname))
+    else
+      self:debugPrint(errorMsg)
+    end
+  end
 end
 
 function bepgp:SetMode(mode)
@@ -4285,8 +4322,9 @@ function bepgp:inRaid(name)
         local colortab = RAID_CLASS_COLORS[eclass]
         groupcache[member]["level"] = level
         groupcache[member]["class"] = lclass
+        groupcache[member]["eclass"] = eclass
         groupcache[member]["hex"] = hexColor
-        groupcache[member]["color"] = colortab
+        groupcache[member]["color"] = {r=colortab.r, g=colortab.g, b=colortab.b, a=1.0}
       end
     end
   end
@@ -5106,7 +5144,7 @@ end
 
 function bepgp:groupCache(member,update)
   local groupcache = self.db.char.groupcache
-  if groupcache[member] and (not update) then
+  if (groupcache[member] and groupcache[member]["class"]) and (not update) then
     return groupcache[member]
   else
     if self:GroupStatus()=="RAID" then
@@ -5121,7 +5159,7 @@ function bepgp:groupCache(member,update)
           groupcache[member]["class"] = lclass
           groupcache[member]["eclass"] = eclass
           groupcache[member]["hex"] = hexColor
-          groupcache[member]["color"] = colortab
+          groupcache[member]["color"] = {r=colortab.r, g=colortab.g, b=colortab.b, a=1.0}
           break
         end
       end
@@ -5159,7 +5197,7 @@ function bepgp:refreshUnitCaches(force)
         groupcache[name]["class"] = lclass
         groupcache[name]["eclass"] = eclass
         groupcache[name]["hex"] = hexColor
-        groupcache[name]["color"] = colortab
+        groupcache[name]["color"] = {r=colortab.r, g=colortab.g, b=colortab.b, a=1.0}
       end
     end
   end
