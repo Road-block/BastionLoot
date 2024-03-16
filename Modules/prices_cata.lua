@@ -2569,9 +2569,11 @@ function bepgp_prices_cata:ADDON_LOADED(event,...)
   end
 end
 
+local cacheTimer
 function bepgp_prices_cata:Recalculate()
   BastionLootDB._CACHE_ITEM_DATA = BastionLootDB._CACHE_ITEM_DATA or {}
   local stats = {}
+  local count = 0
   for i=50000,80000 do
     local itemID, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = GetItemInfoInstant(i)
     if itemID and EQUIPSLOT_MULTIPLIER_1[itemEquipLoc] then
@@ -2580,14 +2582,15 @@ function bepgp_prices_cata:Recalculate()
       elseif BastionLootDB._CACHE_ITEM_DATA[itemID][1]==-1 then
         local itemAsync = Item:CreateFromItemID(itemID)
         itemAsync:ContinueOnItemLoad(function()
+          count = count + 1
           local quality = itemAsync:GetItemQuality()
           local iLevel = itemAsync:GetCurrentItemLevel()
-          local iID = itemAsync:GetItemID()
           if quality == 4 and iLevel >= 359 then
             local iLink = itemAsync:GetItemLink()
             stats.ITEM_MOD_RESILIENCE_RATING = nil
             GetItemStats(iLink,stats)
             if not stats.ITEM_MOD_RESILIENCE_RATING then
+              local iID = itemAsync:GetItemID()
               local iName = itemAsync:GetItemName()
               BastionLootDB._CACHE_ITEM_DATA[iID][1] = quality
               BastionLootDB._CACHE_ITEM_DATA[iID][2] = iLevel
@@ -2598,6 +2601,18 @@ function bepgp_prices_cata:Recalculate()
       end
     end
   end
+  if cacheTimer then
+    cacheTimer:Cancel()
+  end
+  cacheTimer = C_Timer.NewTicker(1,function(self)
+    if self._lastCount == count and count > 0 then
+      bepgp:debugPrint(string.format("Recalc Caching Loop Finished: %d items",count))
+      self:Cancel()
+    end
+    self._lastCount = count
+  end)
+  cacheTimer._lastCount = count
+  bepgp:debugPrint("Recalc Static Loop Finished")
 end
 
 function bepgp_prices_cata:Clean(wipe)
