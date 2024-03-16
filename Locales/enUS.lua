@@ -455,6 +455,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Tanzar's Trunk"] = true -- 186648
   L["Kraz's Package"] = true -- 186667
   L["Ashli's Bag"] = true -- 186672
+  L["Cache of the Broodmother"] = true -- 208044, 208045
+  L["Heart of Wind"] = true -- 207891, 207892, 207894
   L["Gordok Tribute"] = true -- DEBUG
   L["Delay Updates"] = true
   L["Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)"] = true
@@ -549,5 +551,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Bid processing resumed."] = true
   L["Resume bid processing."] = true
   L["Resume"] = true
+  L["3.Deathwing"] = true
+  L["2.Firelands"] = true
+  L["1.BD, BoT, TfW"] = true
 
 bepgp.L = L

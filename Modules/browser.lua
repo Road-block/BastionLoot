@@ -14,7 +14,7 @@ local progress, pricelist
 local favorites, tokens
 local tiervalues = { }
 local filter = {["_FAV"]=C:Yellow(L["Favorites"])}
-local locsorted = {"_FAV", "INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CHEST", "INVTYPE_ROBE", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_WRIST", "INVTYPE_HAND", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_CLOAK", "INVTYPE_WEAPON", "INVTYPE_SHIELD", "INVTYPE_2HWEAPON", "INVTYPE_WEAPONMAINHAND", "INVTYPE_WEAPONOFFHAND", "INVTYPE_HOLDABLE", "INVTYPE_RANGED", "INVTYPE_THROWN", "INVTYPE_RANGEDRIGHT", "INVTYPE_RELIC", "INVTYPE_NON_EQUIP"}
+local locsorted = {"_FAV", "INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CHEST", "INVTYPE_ROBE", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_WRIST", "INVTYPE_HAND", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_CLOAK", "INVTYPE_WEAPON", "INVTYPE_SHIELD", "INVTYPE_2HWEAPON", "INVTYPE_WEAPONMAINHAND", "INVTYPE_WEAPONOFFHAND", "INVTYPE_HOLDABLE", "INVTYPE_RANGED", "INVTYPE_THROWN", "INVTYPE_RANGEDRIGHT", "INVTYPE_RELIC", "INVTYPE_NON_EQUIP", "INVTYPE_NON_EQUIP_IGNORE"}
 local progressmap
 local tierlist,tiersort
 local typelist,typesort = {["_ALL"]=C:Green(_G.ALL)}, { }
@@ -489,6 +489,7 @@ function bepgp_browser:PriceListData(redo)
       --local tier = info[2]
       price = price or 0
       local equipLocDesc
+      if itemEquipLoc == "INVTYPE_NON_EQUIP_IGNORE" then itemEquipLoc = _G["INVTYPE_NON_EQUIP_IGNORE"] or "" end
       if itemEquipLoc and itemEquipLoc ~= "" then
         if itemEquipLoc == "INVTYPE_ROBE" then itemEquipLoc = "INVTYPE_CHEST" end
         data[itemEquipLoc] = data[itemEquipLoc] or {}
@@ -519,7 +520,7 @@ function bepgp_browser:PriceListData(redo)
   end
 end
 
-local priceModLookup = {_classic={"_prices","_tokens"},_bcc={"_prices_bc","_tokens_bc"},_wrath={"_prices_wrath","_tokens_lk"}}
+local priceModLookup = {_classic={"_prices","_tokens"},_bcc={"_prices_bc","_tokens_bc"},_wrath={"_prices_wrath","_tokens_lk"},_cata={"_prices_cata","tokens_cata"}}
 function bepgp_browser:PriceListLookups()
   local system = bepgp:GetPriceSystem(bepgp.db.profile.system)
   local flavor = system and system.flavor
@@ -535,6 +536,10 @@ function bepgp_browser:PriceListLookups()
   if bepgp._wrath then
     bepgp_prices = bepgp:GetModule(addonName..priceModLookup._wrath[1])
     tokens = bepgp:GetModule(addonName..priceModLookup._wrath[2],true) or {}
+  end
+  if bepgp._cata then
+    bepgp_prices = bepgp:GetModule(addonName..priceModLookup._cata[1])
+    tokens = bepgp:GetModule(addonName..priceModLookup._cata[2],true) or {}
   end
   if flavor then
     bepgp_prices = bepgp:GetModule(addonName..priceModLookup[flavor][1])
@@ -556,6 +561,12 @@ function bepgp_browser:PriceSystemUpdate()
     tiersort = bepgp._progsets[flavor].tiersort
     modlist = bepgp._progsets[flavor].modlist
     modsort = bepgp._progsets[flavor].modsort
+  elseif bepgp._cata then
+    progressmap = bepgp._progsets._cata.progressmap
+    tierlist = bepgp._progsets._cata.tierlist
+    tiersort = bepgp._progsets._cata.tiersort
+    modlist = bepgp._progsets._cata.modlist
+    modsort = bepgp._progsets._cata.modsort
   elseif bepgp._wrath then
     progressmap = bepgp._progsets._wrath.progressmap
     tierlist = bepgp._progsets._wrath.tierlist

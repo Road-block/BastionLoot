@@ -452,6 +452,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Harkor's Satchel"] = "Harkor's Satchel" -- needs translation
   L["Tanzar's Trunk"] = "Tanzar's Trunk" -- needs translation
   L["Kraz's Package"] = "Kraz's Package" -- needs translation
+  L["Cache of the Broodmother"] = "Cache of the Broodmother" -- needs translation
+  L["Heart of Wind"] = "Heart of Wind" -- needs translation
   L["Ashli's Bag"] = "Ashli's Bag" -- needs translation
   L["Delay Updates"] = "Delay Updates" -- needs translation
   L["Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)"] = "Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)" -- needs translation
@@ -546,5 +548,8 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Bid processing resumed."] = "Bid processing resumed." -- needs translation
   L["Resume bid processing."] = "Resume bid processing." -- needs translation
   L["Resume"] = "Resume" -- needs translation
+  L["3.Deathwing"] = "3.Deathwing" -- needs translation
+  L["2.Firelands"] = "2.Firelands" -- needs translation
+  L["1.BD, BoT, TfW"] = "1.BD, BoT, TfW" -- needs translation
 
   bepgp.L = L

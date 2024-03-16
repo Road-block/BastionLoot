@@ -13,11 +13,16 @@ local DF = LibStub("LibDeformat-3.0")
 local G = LibStub("LibGratuity-3.0")
 local T = LibStub("LibQTip-1.0")
 
+local wowver, wowbuild, wowbuildate, wowtocver = GetBuildInfo()
 bepgp._DEBUG = false
 bepgp._SUSPEND = false
-bepgp._classic = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC) or false
-bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) or false
-bepgp._wrath = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC) or false
+bepgp._cata = wowtocver > 40000 and wowtocver < 50000
+if not bepgp._cata then -- cata beta workaround build 53750, wow_project_id not updated yet
+  bepgp._classic = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC) or false
+  bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) or false
+  bepgp._wrath = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC) or false
+end
+
 
 -- Upvalue some API
 local GetGuildTabardFileNames = _G.GetGuildTabardFileNames or _G.GetGuildTabardFiles
@@ -41,19 +46,19 @@ bepgp.VARS = {
   minep = 0,
   baseaward_ep = 100,
   minilvl = 0,
-  maxilvl = 384,
+  maxilvl = 416,
   decay = 0.8,
   max = 1000,
   timeout = 60,
   rosterthrottle = 10,
-  minlevel = 80,
+  minlevel = 85,
   maxloglines = 500,
   priorank = 100,
   standinrank = 100,
   maxreserves = 1,
   prefix = "BASTIONLOOT_PFX",
-  pricesystem = "BastionEPGP_LK-1.0",
-  progress = "T7",
+  pricesystem = "BastionEPGP_CC-1.0",
+  progress = "T11",
   bop = C:Red(L["BoP"]),
   boe = C:Yellow(L["BoE"]),
   nobind = C:White(L["NoBind"]),
@@ -149,6 +154,99 @@ bepgp.VARS = {
     [22708] = "Ramaladni",    
   },
 }
+if bepgp._wrath then
+  bepgp.VARS.maxilvl = 384
+  bepgp.VARS.minlevel = 80
+  bepgp.VARS.pricesystem = "BastionEPGP_LK-1.0"
+  bepgp.VARS.progress = "T7"
+  bepgp.VARS.autoloot = {
+    [40752] = "BadgeHero",
+    [101] = "currency",
+    [40753] = "BadgeValor",
+    [102] = "currency",
+    [45624] = "BadgeConquest",
+    [221] = "currency",
+    [47241] = "BadgeTriumph",
+    [301] = "currency",
+    [49426] = "BadgeFrost",
+    [341] = "currency",
+    [241] = "currency",
+    [2589] = "currency", -- sidereal essence
+    [2711] = "currency", -- defiler's scourgestone
+    [22484] = "Necrotic",
+    [43494] = "Watcher",
+    [43670] = "Tiki",
+    [43697] = "Nathrezim",
+    [43726] = "Crown",
+    [43693] = "Mojo",
+    [43668] = "Tuner",
+    [43665] = "Heart",
+    [43669] = "Locket",
+    [43823] = "Cyanigosa",
+    [43724] = "CelestialRuby",
+    [43699] = "FleshDisc",
+    [43821] = "Withered",
+    [43662] = "PlundererAxe",
+    [48418] = "SoulFragment",
+    [202269] = "BountyAlpha",
+    [208157] = "BountyBeta",
+    [211206] = "DefilerMedallion",
+    [211207] = "MysteriousArtifact",
+    --[0] = "BountyGamma", -- unknown yet
+    [45788] = "FreyaSigil",
+    [45786] = "HodirSigil",
+    [45787] = "MimironSigil",
+    [45784] = "ThorimSigil",
+    [45814] = "FreyaSigilH",
+    [45815] = "HodirSigilH",
+    [45816] = "MimironSigilH",
+    [45817] = "ThorimSigilH",
+    [51026] = "Sindragosa1",
+    [51027] = "Sindragosa2",
+    [52006] = "FrostySack",
+    [52676] = "LeyCache",
+    -- bcc
+    [29434] = "Badge",
+    [42] = "currency",
+    [28558] = "SpiritShard",
+    [29425] = "MarkKJ",
+    [30809] = "MarkSG",
+    [29426] = "SignetFW",
+    [30810] = "SignetSF",
+    [24368] = "Coilfang",
+    [25433] = "Warbead",
+    [29209] = "Zaxxis",
+    [25463] = "IvoryTusk",
+    [26042] = "OshuPowder",
+    [32569] = "ApexisShard",
+    [32572] = "ApexisCrystal",
+    [32388] = "ShadowDust",
+    [32620] = "TimeLostScroll",
+    [30436] = "MechBlue",
+    [30437] = "MechRed",
+    [24514] = "Karafrag1",
+    [24487] = "Karafrag2",
+    [24488] = "Karafrag3",
+    [31239] = "Shhkeymold",
+    [31750] = "Gruulsignet",
+    [23933] = "Medivjournal",
+    [25461] = "Sythbook",
+    [25462] = "KurseTome",
+    [31751] = "NightBsignet",
+    [31716] = "ShhAxe",
+    [31721] = "SVtrident",
+    [31722] = "SLessence",
+    [29906] = "VashVial",
+    [29905] = "KaelVial",
+    [31307] = "HeartFury",
+    [32459] = "Timephylactery",
+    -- classic
+    [21229] = "Insignia",
+    [21230] = "Artifact",
+    [23055] = "Thawing",
+    [22708] = "Ramaladni",
+  }
+end
 if bepgp._bcc then
   bepgp.VARS.minlevel = 68
   bepgp.VARS.progress = "T4"
@@ -187,6 +285,11 @@ if bepgp._bcc then
     [29905] = "KaelVial",
     [31307] = "HeartFury",
     [32459] = "Timephylactery",
+    -- classic
+    [21229] = "Insignia",
+    [21230] = "Artifact",
+    [23055] = "Thawing",
+    [22708] = "Ramaladni",
   }
 end
 if bepgp._classic then
@@ -345,6 +448,33 @@ do
 end
 do
   bepgp._progsets = {
+    _cata = {
+      progress_values = {
+        ["T13"]  = L["3.Deathwing"],
+        ["T12"]  = L["2.Firelands"],
+        ["T11"]  = L["1.BD, BoT, TfW"],
+      },
+      progress_sorting = {"T13", "T12", "T11"},
+      progressmap = {
+        ["T13.5"] = {"T13.5","T13","T12.5"},
+        ["T13"]   = {"T13.5","T13"},
+        ["T12.5"] = {"T12.5","T12","T11.5"},
+        ["T12"]   = {"T12.5", "T12"},
+        ["T11.5"] = {"T11.5","T11"},
+        ["T11"]   = {"T11.5","T11"},
+      },
+      tierlist = {["T13.5"]="410+",["T13"]="397-403",["T12.5"]="391",["T12"]="378-390",["T11.5"]="372-379",["T11"]="359-371"},
+      tiersort = {"T13.5","T13","T12.5","T12","T11.5","T11"},
+      modlist = {["T13"]="T13",["T12"]="T12",["T11"]="T11"},
+      modsort = {"T13","T12","T11"},
+      bench_values = {["T13"]=L["3.Deathwing"], ["T12"]=L["2.Firelands"], ["T13"]=L["3.Deathwing"]},
+      bench_sorting = {"T11", "T12", "T13"},
+      raidLimits = {
+        ["T11"] = {total = 25,[_G.TANK] = 2,[_G.HEALER] = 5,},
+        ["T12"] = {total = 25,[_G.TANK] = 2,[_G.HEALER] = 5,},
+        ["T13"] = {total = 25,[_G.TANK] = 3,[_G.HEALER] = 6,},
+      },
+    },
     _wrath = {
       progress_values = {
         ["T10.5"]=L["5.RS"],
@@ -524,6 +654,11 @@ local object_names = {
   [186648] = L["Tanzar's Trunk"],
   [186667] = L["Kraz's Package"],
   [186672] = L["Ashli's Bag"],
+  [208044] = L["Cache of the Broodmother"],
+  [208045] = L["Cache of the Broodmother"],
+  [207891] = L["Heart of Wind"],
+  [207892] = L["Heart of Wind"],
+  [207894] = L["Heart of Wind"],
   [179564] = L["Gordok Tribute"], -- DEBUG
 }
 local defaults = {
@@ -1087,7 +1222,9 @@ function bepgp:options(force)
             return bepgp._progsets[flavor].progress_values
           end
         end
-        if bepgp._wrath then 
+        if bepgp._cata then
+          return bepgp._progsets._cata.progress_values
+        elseif bepgp._wrath then
           return bepgp._progsets._wrath.progress_values
         elseif bepgp._bcc then
           return bepgp._progsets._bcc.progress_values
@@ -1102,8 +1239,10 @@ function bepgp:options(force)
           if flavor and bepgp._progsets[flavor] then
             return bepgp._progsets[flavor].progress_sorting
           end
-        end        
-        if bepgp._wrath then 
+        end
+        if bepgp._cata then
+          return bepgp._progsets._cata.progress_sorting
+        elseif bepgp._wrath then
           return bepgp._progsets._wrath.progress_sorting
         elseif bepgp._bcc then
           return bepgp._progsets._bcc.progress_sorting
@@ -1205,7 +1344,7 @@ function bepgp:options(force)
         end
       end,
       hidden = function()
-        if not bepgp._wrath then return true end
+        if not (bepgp._cata or bepgp._wrath) then return true end
         if not bepgp:admin() then return true end
         return false
       end,
@@ -1585,7 +1724,7 @@ function bepgp:ddoptions(refresh)
         bepgp:RequestLootAdmin()
       end,
     }
-    if bepgp._wrath then
+    if (bepgp._cata or bepgp._wrath) then
       self._dda_options.args["size_toggle"] = {
         type = "execute",
         name = sizereq_icon,
@@ -2765,7 +2904,7 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
   self._versionString = GetAddOnMetadata(addonName,"Version")
   self._websiteString = GetAddOnMetadata(addonName,"X-Website")
   self._labelfull = string.format("%s %s",label,self._versionString)
-  if self._bcc or self._wrath then
+  if self._cata or self._wrath or self._bcc then
     self.db = LibStub("AceDB-3.0"):New("BastionLootDB", defaults)
   elseif self._classic then
     self.db = LibStub("AceDB-3.0"):New("BastionEPGPDB", defaults)
@@ -4066,7 +4205,7 @@ function bepgp:GrantLootAdmin(name, threshold)
 end
 
 function bepgp:RequestSizeToggle()
-  if not bepgp._wrath then return end
+  if not (bepgp._cata or bepgp._wrath) then return end
   if bepgp:admin() and bepgp:GroupStatus() == "RAID" then
     bepgp:Print(L["Sending request for raid size change"])
     local addonMsg = string.format("SIZE;%s;%s",bepgp._playerName,1)
@@ -4075,7 +4214,7 @@ function bepgp:RequestSizeToggle()
 end
 
 function bepgp:GrantSizeToggle(name)
-  if not bepgp._wrath then return end
+  if not (bepgp._cata or bepgp._wrath) then return end
   if not name or name == "" then return end
   if not IsInRaid() then return end
   if not UnitIsGroupLeader("player") then return end
@@ -4107,7 +4246,7 @@ function bepgp:GrantSizeToggle(name)
 end
 
 function bepgp:RequestDiffToggle()
-  if not bepgp._wrath then return end
+  if not (bepgp._cata or bepgp._wrath) then return end
   if bepgp:admin() and bepgp.db.char.mode == "epgp" and bepgp:GroupStatus() == "RAID" then
     bepgp:Print(L["Sending request for raid difficulty change"])
     local addonMsg = string.format("DIFF;%s;%s",bepgp._playerName,1)
@@ -4116,7 +4255,7 @@ function bepgp:RequestDiffToggle()
 end
 
 function bepgp:GrantDiffToggle(name)
-  if not bepgp._wrath then return end
+  if not (bepgp._cata or bepgp._wrath) then return end
   if not name or name == "" then return end
   if not IsInRaid() then return end
   if not UnitIsGroupLeader("player") then return end
@@ -4342,6 +4481,22 @@ function bepgp:GroupStatus()
 end
 
 local raidZones, mapZones, tier_multipliers
+if bepgp._cata then
+  raidZones = {
+    [(GetRealZoneText(669))] = "T11", -- Blackwing Descent
+    [(GetRealZoneText(671))] = "T11", -- The Bastion of Twilight
+    [(GetRealZoneText(754))] = "T11", -- Throne of Four Winds
+    [(GetRealZoneText(757))] = "T11", -- Baradin Hold
+    [(GetRealZoneText(720))] = "T12", -- Firelands
+    [(GetRealZoneText(967))] = "T13", -- Dragon Soul
+  }
+  mapZones = {}
+  tier_multipliers = {
+    ["T13"]  = {["T13"]=1,["T12"]=0.75,["T11"]=0.4},
+    ["T12"]  = {["T13"]=1,["T12"]=1,["T11"]=0.5},
+    ["T11"]  = {["T13"]=1,["T12"]=1,["T11"]=1},
+  }
+end
 if bepgp._wrath then
   raidZones = {
     [(GetRealZoneText(533))] = "T7", -- Naxxramas

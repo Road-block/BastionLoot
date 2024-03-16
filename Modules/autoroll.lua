@@ -74,16 +74,21 @@ local autoroll = {
     [22376] = true, --Cloth
   },
 }
-if bepgp._bcc or bepgp._wrath then
+if bepgp._bcc or bepgp._wrath or bepgp._cata then
   autoroll["dark_heart"] = {[32428] = true} -- Heart of Darkness
   autoroll["illi_mark"]  = {[32897] = true} -- Mark of the Illidari
   autoroll["sunmote"]    = {[34664] = true} -- Sunmote
 end
-if bepgp._wrath then
+if bepgp._wrath or bepgp._cata then
   autoroll["frozen_orb"]          = {[43102] = true} -- Frozen Orb
   autoroll["runed_orb"]           = {[45087] = true} -- Runed Orb
   autoroll["crusader_orb"]        = {[47556] = true} -- Crusader Orb
   autoroll["primordial_saronite"] = {[49908] = true} -- Primordial Saronite
+end
+if bepgp._cata then
+  autoroll["chaos_orb"]              = {[52078] = true} -- Chaos Orb
+  autoroll["living_ember"]           = {[69237] = true} -- Living Ember
+  autoroll["essence_of_destruction"] = {[71998] = true} -- Essence of Destruction
 end
 
 function bepgp_autoroll:getAction(itemID)
@@ -157,11 +162,16 @@ local options = {
   desc = L["Autoroll"],
   handler = bepgp_autoroll,
   args = {
+    ["vanilla"] = {
+      type = "header",
+      name = "Vanilla",
+      order = 105,
+    },
     ["zg_coin"] = {
       type = "select",
       name = string.format(zg_label,L["Coins"]),
       desc = string.format(zg_label,L["Coins"]),
-      order = 10,
+      order = 110,
       get = function() return bepgp.db.char.autoroll.zg_coin end,
       set = function(info, val) bepgp.db.char.autoroll.zg_coin = val end,
       values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
@@ -171,7 +181,7 @@ local options = {
       type = "select",
       name = string.format(zg_label,L["Bijous"]),
       desc = string.format(zg_label,L["Bijous"]),
-      order = 20,
+      order = 120,
       get = function() return bepgp.db.char.autoroll.zg_bijou end,
       set = function(info, val) bepgp.db.char.autoroll.zg_bijou = val end,
       values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
@@ -181,7 +191,7 @@ local options = {
       type = "select",
       name = string.format(aq_label,L["Scarabs"]),
       desc = string.format(aq_label,L["Scarabs"]),
-      order = 30,
+      order = 130,
       get = function() return bepgp.db.char.autoroll.aq_scarab end,
       set = function(info, val) bepgp.db.char.autoroll.aq_scarab = val end,
       values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
@@ -191,7 +201,7 @@ local options = {
       type = "group",
       name = string.format(aq20_label,L["Idols"]),
       desc = string.format(aq20_label,L["Idols"]),
-      order = 40,
+      order = 140,
       args = {
         ["aq_20_class"] = {
           type = "select",
@@ -219,7 +229,7 @@ local options = {
       type = "group",
       name = string.format(aq40_label,L["Idols"]),
       desc = string.format(aq40_label,L["Idols"]),
-      order = 50,
+      order = 150,
       args = {
         ["aq_40_class"] = {
           type = "select",
@@ -247,7 +257,7 @@ local options = {
       type = "select",
       name = string.format(nx_label,L["Scraps"]),
       desc = string.format(nx_label,L["Scraps"]),
-      order = 60,
+      order = 160,
       get = function() return bepgp.db.char.autoroll.nx_scrap end,
       set = function(info,val) bepgp.db.char.autoroll.nx_scrap = val end,
       values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
@@ -255,12 +265,17 @@ local options = {
     },
   }
 }
-if bepgp._bcc or bepgp._wrath then
+if bepgp._bcc or bepgp._wrath or bepgp._cata then
+  options.args["tbc"] = {
+    type = "header",
+    name = "Burning Crusade",
+    order = 75,
+  }
   options.args["dark_heart"] = {
     type = "select",
     name = "Heart of Darkness", -- we'll delay load updates
     desc = "Heart of Darkness", -- we'll delay load updates
-    order = 70,
+    order = 80,
     get = function() return bepgp.db.char.autoroll.dark_heart end,
     set = function(info,val) bepgp.db.char.autoroll.dark_heart = val end,
     values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
@@ -270,7 +285,7 @@ if bepgp._bcc or bepgp._wrath then
     type = "select",
     name = "Mark of the Illidari", -- delay loading localized versions
     desc = "Mark of the Illidari", -- delay load updates
-    order = 80,
+    order = 90,
     get = function() return bepgp.db.char.autoroll.illi_mark end,
     set = function(info,val) bepgp.db.char.autoroll.illi_mark = val end,
     values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
@@ -280,19 +295,24 @@ if bepgp._bcc or bepgp._wrath then
     type = "select",
     name = "Sunmote", -- delay loading localized versions
     desc = "Sunmote", -- delay load updates
-    order = 90,
+    order = 100,
     get = function() return bepgp.db.char.autoroll.sunmote end,
     set = function(info,val) bepgp.db.char.autoroll.sunmote = val end,
     values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
     sorting = {-1, 1, 2, 0}
   }
 end
-if bepgp._wrath then
-    options.args["frozen_orb"] = {
+if bepgp._wrath or bepgp._cata then
+  options.args["wrath"] = {
+    type = "header",
+    name = "Wrath",
+    order = 35,
+  }
+  options.args["frozen_orb"] = {
     type = "select",
     name = "Frozen Orb", -- we'll delay load updates
     desc = "Frozen Orb", -- we'll delay load updates
-    order = 100,
+    order = 40,
     get = function() return bepgp.db.char.autoroll.frozen_orb end,
     set = function(info,val) bepgp.db.char.autoroll.frozen_orb = val end,
     values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
@@ -302,7 +322,7 @@ if bepgp._wrath then
     type = "select",
     name = "Frozen Orb", -- delay loading localized versions
     desc = "Frozen Orb", -- delay load updates
-    order = 110,
+    order = 50,
     get = function() return bepgp.db.char.autoroll.runed_orb end,
     set = function(info,val) bepgp.db.char.autoroll.runed_orb = val end,
     values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
@@ -312,7 +332,7 @@ if bepgp._wrath then
     type = "select",
     name = "Crusader Orb", -- delay loading localized versions
     desc = "Crusader Orb", -- delay load updates
-    order = 120,
+    order = 60,
     get = function() return bepgp.db.char.autoroll.crusader_orb end,
     set = function(info,val) bepgp.db.char.autoroll.crusader_orb = val end,
     values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
@@ -322,9 +342,46 @@ if bepgp._wrath then
     type = "select",
     name = "Primordial Saronite", -- delay loading localized versions
     desc = "Primordial Saronite", -- delay load updates
-    order = 130,
+    order = 70,
     get = function() return bepgp.db.char.autoroll.primordial_saronite end,
     set = function(info,val) bepgp.db.char.autoroll.primordial_saronite = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0}
+  }
+end
+if bepgp._cata then
+  options.args["cata"] = {
+    type = "header",
+    name = "Cataclysm",
+    order = 5,
+  }
+  options.args["chaos_orb"] = {
+    type = "select",
+    name = "Chaos Orb", -- delay loading localized versions
+    desc = "Chaos Orb", -- delay load updates
+    order = 10,
+    get = function() return bepgp.db.char.autoroll.chaos_orb end,
+    set = function(info,val) bepgp.db.char.autoroll.chaos_orb = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0}
+  }
+  options.args["living_ember"] = {
+    type = "select",
+    name = "Living Ember", -- delay loading localized versions
+    desc = "Living Ember", -- delay load updates
+    order = 20,
+    get = function() return bepgp.db.char.autoroll.living_ember end,
+    set = function(info,val) bepgp.db.char.autoroll.living_ember = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0}
+  }
+  options.args["essence_of_destruction"] = {
+    type = "select",
+    name = "Essence of Destruction", -- delay loading localized versions
+    desc = "Essence of Destruction", -- delay load updates
+    order = 30,
+    get = function() return bepgp.db.char.autoroll.essence_of_destruction end,
+    set = function(info,val) bepgp.db.char.autoroll.essence_of_destruction = val end,
     values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
     sorting = {-1, 1, 2, 0}
   }
@@ -347,7 +404,7 @@ function bepgp_autoroll:injectOptions() -- .general.args.main.args
     ["class"] = 1,
     ["other"] = 2,
   }
-  if bepgp._bcc or bepgp._wrath then
+  if bepgp._bcc or bepgp._wrath or bepgp._cata then
     self:ScheduleTimer("cacheItemOptions",20)
     if bepgp.db.char.autoroll.dark_heart == nil then
       bepgp.db.char.autoroll.dark_heart = -1
@@ -359,7 +416,7 @@ function bepgp_autoroll:injectOptions() -- .general.args.main.args
       bepgp.db.char.autoroll.sunmote = 1
     end
   end
-  if bepgp._wrath then
+  if bepgp._wrath or bepgp._cata then
     if bepgp.db.char.autoroll.frozen_orb == nil then
       bepgp.db.char.autoroll.frozen_orb = -1
     end
@@ -372,19 +429,31 @@ function bepgp_autoroll:injectOptions() -- .general.args.main.args
     if bepgp.db.char.autoroll.primordial_saronite == nil then
       bepgp.db.char.autoroll.primordial_saronite = -1
     end
+    if bepgp.db.char.autoroll.chaos_orb == nil then
+      bepgp.db.char.autoroll.chaos_orb = -1
+    end
+    if bepgp.db.char.autoroll.living_ember == nil then
+      bepgp.db.char.autoroll.living_ember = -1
+    end
+    if bepgp.db.char.autoroll.essence_of_destruction == nil then
+      bepgp.db.char.autoroll.essence_of_destruction = -1
+    end
   end
   bepgp._options.args.general.args.autoroll = options
   bepgp._options.args.general.args.autoroll.cmdHidden = true
 end
 
 local items_to_cache = {
-  dark_heart          = 32428,
-  illi_mark           = 32897,
-  sunmote             = 34664,
-  frozen_orb          = 43102,
-  runed_orb           = 45087,
-  crusader_orb        = 47556,
-  primordial_saronite = 49908,
+  dark_heart             = 32428,
+  illi_mark              = 32897,
+  sunmote                = 34664,
+  frozen_orb             = 43102,
+  runed_orb              = 45087,
+  crusader_orb           = 47556,
+  primordial_saronite    = 49908,
+  chaos_orb              = 52078,
+  living_ember           = 69237,
+  essence_of_destruction = 71998,
 }
 function bepgp_autoroll:cacheItemOptions()
   for option, itemid in pairs(items_to_cache) do
