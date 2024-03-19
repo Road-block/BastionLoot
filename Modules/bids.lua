@@ -7,15 +7,15 @@ local DF = LibStub("LibDeformat-3.0")
 local T = LibStub("LibQTip-1.0")
 local LD = LibStub("LibDialog-1.0")
 
---/run BastionLoot:GetModule("BastionEPGP_bids"):bidPrint("\124cff0070dd\124Hitem:19915:0:0:0:0:0:0:0:0\124h[Zulian Defender]\124h\124r","Tankßoy",true,true)
+--/run BastionLoot:GetModule("BastionLoot_bids"):bidPrint("\124cff0070dd\124Hitem:19915:0:0:0:0:0:0:0:0\124h[Zulian Defender]\124h\124r","Tankßoy",true,true)
 local colorUnknown = {r=.75, g=.75, b=.75, a=.9}
 bepgp_bids.bids_main,bepgp_bids.bids_off,bepgp_bids.bid_item = {},{},{}
 local bids_blacklist = {}
 local bidlink = {
-  ["ms"]      = L["|cffFF3333|Hbepgpbid:1:$ML|h[Mainspec]|h|r"],
-  ["os"]      = L["|cff009900|Hbepgpbid:2:$ML|h[Offspec]|h|r"],
-  ["msroll"]  = L["|cffFF3333|Hbepgpbid:3:$ML|h[Mainspec]|h|r"],
-  ["osroll"]  = L["|cff009900|Hbepgpbid:4:$ML|h[Offspec]|h|r"],
+  ["ms"]      = "|cffFF3333|Haddon:"..addonName..":1:$ML|h["..L["Mainspec"].."]|h|r",
+  ["os"]      = "|cff009900|Haddon:"..addonName..":2:$ML|h["..L["Offspec"].."]|h|r",
+  ["msroll"]  = "|cffFF3333|Haddon:"..addonName..":3:$ML|h["..L["Mainspec"].."]|h|r",
+  ["osroll"]  = "|cff009900|Haddon:"..addonName..":4:$ML|h["..L["Offspec"].."]|h|r",
 }
 local out = "|cff9664c8"..addonName..":|r %s"
 local running_bid
@@ -111,7 +111,7 @@ function bepgp_bids:OnEnable()
   self:RegisterEvent("CHAT_MSG_RAID_LEADER", "captureLootCall")
   self:RegisterEvent("CHAT_MSG_RAID_WARNING", "captureLootCall")
   self:SecureHook("SetItemRef")
-  self:RawHook(ItemRefTooltip,"SetHyperlink",true)
+  --self:RawHook(ItemRefTooltip,"SetHyperlink",true)
 
   self.qtip = T:Acquire(addonName.."bidsTablet") -- Name, ep, gp, pr, rank, Main
   self.qtip:SetColumnLayout(6, "LEFT", "CENTER", "CENTER", "CENTER", "RIGHT", "RIGHT")
@@ -349,8 +349,8 @@ function bepgp_bids:Toggle(anchor)
 end
 
 function bepgp_bids:SetItemRef(link, text, button, chatFrame)
-  if string.sub(link,1,8) == "bepgpbid" then
-    local _,_,bid,masterlooter = string.find(link,"bepgpbid:(%d+):([%C%D%P%S]+)") -- capture names with special characters
+  local linktype, addon, bid, masterlooter = strsplit(":",link)
+  if linktype == "addon" and addon == addonName then
     if bid == "1" then
       bid = "+"
     elseif bid == "2" then
@@ -377,13 +377,6 @@ function bepgp_bids:SetItemRef(link, text, button, chatFrame)
     end
     return false
   end
-end
-
-function bepgp_bids:SetHyperlink(frame, link, ...)
-  if string.sub(link,1,8) == "bepgpbid" then
-    return false
-  end
-  self.hooks[ItemRefTooltip].SetHyperlink(frame, link, ...)
 end
 
 local lootCall = {

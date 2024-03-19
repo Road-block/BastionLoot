@@ -551,5 +551,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["3.Deathwing"] = "3.Deathwing" -- needs translation
   L["2.Firelands"] = "2.Firelands" -- needs translation
   L["1.BD, BoT, TfW"] = "1.BD, BoT, TfW" -- needs translation
+  L["Reserve/Mainspec"] = "Reserve/Mainspec" -- needs translation
+  L["Offspec/Sidegrade"] = "Offspec/Sidegrade" -- needs translation
 
   bepgp.L = L

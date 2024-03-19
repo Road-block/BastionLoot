@@ -15,8 +15,8 @@ local colorUnknown = {r=.75, g=.75, b=.75, a=.9}
 bepgp_plusroll_bids.bids_res,bepgp_plusroll_bids.bids_main,bepgp_plusroll_bids.bids_off,bepgp_plusroll_bids.bid_item = {},{},{},{}
 local bids_blacklist = {}
 local bidlink = {
-  ["ms"]=L["|cffFF3333|Hbepgproll:1:$ML|h[Reserve/Mainspec]|h|r"],
-  ["os"]=L["|cff009900|Hbepgproll:2:$ML|h[Offspec/Sidegrade]|h|r"]
+  ["ms"] = "|cffFF3333|Haddon:"..addonName..":1:$ML|h["..L["Reserve/Mainspec"].."]|h|r",
+  ["os"] = "|cff009900|Haddon:"..addonName..":2:$ML|h["..L["Offspec/Sidegrade"].."]|h|r",
 }
 local out = "|cff9664c8"..addonName..":|r %s"
 bepgp_plusroll_bids.running_bid = false
@@ -61,7 +61,7 @@ function bepgp_plusroll_bids:OnEnable()
   self:RegisterEvent("CHAT_MSG_RAID_LEADER", "captureLootCall")
   self:RegisterEvent("CHAT_MSG_RAID_WARNING", "captureLootCall")
   self:SecureHook("SetItemRef")
-  self:RawHook(ItemRefTooltip,"SetHyperlink",true)
+  --self:RawHook(ItemRefTooltip,"SetHyperlink",true)
 
   self.qtip = T:Acquire(addonName.."rollsTablet") -- Name, roll, wincount, reserve, pr, rank
   self.qtip:SetColumnLayout(5, "LEFT", "CENTER", "CENTER", "CENTER", "RIGHT")
@@ -267,8 +267,8 @@ function bepgp_plusroll_bids:Toggle(anchor)
 end
 
 function bepgp_plusroll_bids:SetItemRef(link, text, button, chatFrame)
-  if string.sub(link,1,9) == "bepgproll" then
-    local _,_,bid,masterlooter = string.find(link,"bepgproll:(%d+):([%C%D%P%S]+)") -- capture names with special characters
+  local linktype, addon, bid, masterlooter = strsplit(":",link)
+  if linktype == "addon" and addon == addonName then
     if bid == "1" then
       bid = "+"
     elseif bid == "2" then
@@ -291,13 +291,6 @@ function bepgp_plusroll_bids:SetItemRef(link, text, button, chatFrame)
     end
     return false
   end
-end
-
-function bepgp_plusroll_bids:SetHyperlink(frame, link, ...)
-  if string.sub(link,1,9) == "bepgproll" then
-    return false
-  end
-  self.hooks[ItemRefTooltip].SetHyperlink(frame, link, ...)
 end
 
 local lootCall = {
