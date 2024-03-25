@@ -493,8 +493,8 @@ function bepgp_plusroll_loot:bagginsHook()
 end
 
 function bepgp_plusroll_loot:baganatorHook()
-  if Baganator_MainViewFrame and Baganator_MainViewFrame.BagLive then
-    local buttons = Baganator_MainViewFrame.BagLive.buttons or {}
+  if Baganator_BackpackViewFrame and Baganator_BackpackViewFrame.BagLive then
+    local buttons = Baganator_BackpackViewFrame.BagLive.buttons or {}
     for _,itemButton in pairs(buttons) do
       bepgp_plusroll_loot:hookContainerButton(itemButton)
     end
@@ -574,8 +574,8 @@ function bepgp_plusroll_loot:clickHandlerBags(id)
       end
       bag_addons[addon] = true
     elseif addon == "Baganator" then
-      if Baganator_MainViewFrame and Baganator_MainViewFrame.BagLive and Baganator_MainViewFrame.BagLive.RebuildLayout then
-        self:SecureHook(Baganator_MainViewFrame.BagLive, "RebuildLayout", "baganatorHook")
+      if Baganator_BackpackViewFrame and Baganator_BackpackViewFrame.BagLive and Baganator_BackpackViewFrame.BagLive.RebuildLayout then
+        self:SecureHook(Baganator_BackpackViewFrame.BagLive, "RebuildLayout", "baganatorHook")
       end
       self:baganatorHook()
       bag_addons[addon] = true

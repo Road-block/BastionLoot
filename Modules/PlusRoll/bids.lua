@@ -15,8 +15,8 @@ local colorUnknown = {r=.75, g=.75, b=.75, a=.9}
 bepgp_plusroll_bids.bids_res,bepgp_plusroll_bids.bids_main,bepgp_plusroll_bids.bids_off,bepgp_plusroll_bids.bid_item = {},{},{},{}
 local bids_blacklist = {}
 local bidlink = {
-  ["ms"] = "|cffFF3333|Haddon:"..addonName..":1:$ML|h["..L["Reserve/Mainspec"].."]|h|r",
-  ["os"] = "|cff009900|Haddon:"..addonName..":2:$ML|h["..L["Offspec/Sidegrade"].."]|h|r",
+  ["ms"] = "|cff4DA6FF|Haddon:"..addonName..":1:$ML|h["..L["Reserve/Mainspec"].."]|h|r",
+  ["os"] = "|cffB6FFA7|Haddon:"..addonName..":2:$ML|h["..L["Offspec/Sidegrade"].."]|h|r",
 }
 local out = "|cff9664c8"..addonName..":|r %s"
 bepgp_plusroll_bids.running_bid = false

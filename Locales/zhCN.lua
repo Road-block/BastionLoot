@@ -93,9 +93,9 @@ if not L then return end
   L["|cff00ff00%02d|r|cffffffffsec|r"] = "|cff00ff00%02d|r|cffffffff秒|r"
   L["Manually modified %s\'s note. EPGP was %s"] = "手动修改 %s\'s 记录. EPGP 是 %s"
   L["|cffff0000Manually modified %s\'s note. EPGP was %s|r"] = "|cffff0000手动修改 %s\'s 记录. EPGP 是 %s|r"
-  L["Whisper %s a + for %s (mainspec)"] = "私聊 %s + 为 %s (主天赋)"
-  L["Whisper %s a - for %s (offspec)"] = "私聊 %s - 为 %s (副天赋)"
-  L["Whisper %s a + or - for %s (mainspec or offspec)"] = "私聊 %s + 或 - 为 %s (主天赋或副天赋)"
+  L["Whisper %s a + for %s (MS)"] = "私聊 %s + 为 %s (主天赋)"
+  L["Whisper %s a - for %s (OS)"] = "私聊 %s - 为 %s (副天赋)"
+  L["Whisper %s a + or - for %s (MS or OS)"] = "私聊 %s + 或 - 为 %s (主天赋或副天赋)"
   L["Click $MS or $OS for %s"] = "点击 $MS 或 $OS 为: %s"
   L["or $OS "] = "或 $OS "
   L["$MS or "] = "$MS 或 "
@@ -318,8 +318,8 @@ if not L then return end
   L["Capturing Rolls for 2min."] = "Capturing Rolls for 2min." -- needs translation
   L["|cffFF3333|Hbepgproll:1:$ML|h[Reserve/Mainspec]|h|r"] = "|cffFF3333|Hbepgproll:1:$ML|h[Reserve/Mainspec]|h|r" -- needs translation (only the `Mainspec/NEED` phrase)
   L["|cff009900|Hbepgproll:2:$ML|h[Offspec/Sidegrade]|h|r"] = "|cff009900|Hbepgproll:2:$ML|h[Offspec/Sidegrade]|h|r" -- needs translation (only the `Offspec/GREED` phrase)
-  L["Roll Mainspec/Reserve"] = "Roll Mainspec/Reserve" -- needs translation
-  L["Roll Offspec/Sidegrade"] = "Roll Offspec/Sidegrade" -- needs translation
+  L["Roll MS/Reserve"] = "Roll MS/Reserve" -- needs translation
+  L["Roll OS/Sidegrade"] = "Roll OS/Sidegrade" -- needs translation
   L["Clearing old Rolls"] = "Clearing old Rolls" -- needs translation
   L["Reserve"] = "Reserve" -- needs translation
   L["Reserves"] = "Reserves" -- needs translation
@@ -520,7 +520,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Only ItemLevel <N> or higher Items will prompt for awarding GP when Masterlooter."] = "Only ItemLevel <N> or higher Items will prompt for awarding GP when Masterlooter." -- needs translation
   L["Winning Mainspec Roll: %s (%s)"] = "Winning Mainspec Roll: %s (%s)" -- needs translation
   L["Winning Offspec Roll: %s (%s)"] = "Winning Offspec Roll: %s (%s)" -- needs translation
-  L["'/roll' (ms) or '/roll 50' (os) for %s"] = "'/roll' (ms) or '/roll 50' (os) for %s" -- needs translation
+  L["'/roll' (MS) or '/roll 50' (OS) for %s"] = "'/roll' (MS) or '/roll 50' (OS) for %s" -- needs translation
   L["%s removed as an Alt of %s"] = "%s removed as an Alt of %s" -- needs translation
   L["%s removed as a Stand-in for %s"] = "%s removed as a Stand-in for %s" -- needs translation
   L["Send Request for Loot Admin to Raid Leader"] = "Send Request for Loot Admin to Raid Leader" -- needs translation
@@ -553,5 +553,14 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["1.BD, BoT, TfW"] = "1.BD, BoT, TfW" -- needs translation
   L["Reserve/Mainspec"] = "Reserve/Mainspec" -- needs translation
   L["Offspec/Sidegrade"] = "Offspec/Sidegrade" -- needs translation
+  L["Allow PR veto"] = "Allow PR veto" -- needs translation
+  L["Allow players to spend PR for roll items"] = "Allow players to spend PR for roll items" -- needs translation
+  L["'/roll' (MS) or '/roll 50' (OS). You can also whisper %s a + to use PR for %s"] = "'/roll' (MS) or '/roll 50' (OS). You can also whisper %s a + to use PR for %s" -- needs translation
+  L["Use PR"] = "Use PR" -- needs translation
+  L["Click $MS, $OS or $PR for %s"] = "Click $MS, $OS or $PR for %s" -- needs translation
+  L[", $OS"] = ", $OS" -- needs translation
+  L["|cffFFF0A7Use PR|r"] = "Use PR" -- needs translation
+  L["|cff4DA6FFMainspec|r"] = "Mainspec" -- needs translation
+  L["|cffB6FFA7Offspec|r"] = "Offspec" -- needs translation
 
   bepgp.L = L

@@ -262,10 +262,11 @@ function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemStr
   if not (bind) then return end
   local price,tier,price2,wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount,item_level = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
   price2 = type(price2)=="number" and price2 or nil
+  local prvetoOpt = bepgp.db.char.prveto
   if (not (price)) or (price == 0) then
     return
   end
-  if not bepgp:itemLevelOptionPass(item_level) then
+  if not (bepgp:itemLevelOptionPass(item_level) or prvetoOpt) then
     return
   end
   local class,_
@@ -337,10 +338,11 @@ function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,
   itemCache[itemID] = true
   local price,tier,price2,_,_,_,_,_,item_level = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
   price2 = type(price2)=="number" and price2 or nil
+  local prvetoOpt = bepgp.db.char.prveto
   if not (price) or price == 0 then
     return
   end
-  if not bepgp:itemLevelOptionPass(item_level) then
+  if not (bepgp:itemLevelOptionPass(item_level) or prvetoOpt) then
     return
   end
   local bind = bepgp:itemBinding(itemString)
@@ -484,6 +486,7 @@ function bepgp_loot:bidCall(frame, button, context) -- context is one of "master
   if not IsAltKeyDown() then return end
   if not self:raidLootAdmin() then return end
   if not context then return end
+  local prvetoOpt = bepgp.db.char.prveto
   local itemLink,slot,hasItem,bagID,slotID
   if context == "lootframe" or context == "masterloot" then
     slot = frame.slot
@@ -530,14 +533,18 @@ function bepgp_loot:bidCall(frame, button, context) -- context is one of "master
   end
   if bepgp:itemLevelOptionPass(item_level) then
     if button == "LeftButton" then
-      bepgp:widestAudience(string.format(L["Whisper %s a + for %s (mainspec)"],bepgp._playerName,itemLink))
+      bepgp:widestAudience(string.format(L["Whisper %s a + for %s (MS)"],bepgp._playerName,itemLink))
     elseif button == "RightButton" then
-      bepgp:widestAudience(string.format(L["Whisper %s a - for %s (offspec)"],bepgp._playerName,itemLink))
+      bepgp:widestAudience(string.format(L["Whisper %s a - for %s (OS)"],bepgp._playerName,itemLink))
     elseif button == "MiddleButton" then
-      bepgp:widestAudience(string.format(L["Whisper %s a + or - for %s (mainspec or offspec)"],bepgp._playerName,itemLink))
+      bepgp:widestAudience(string.format(L["Whisper %s a + or - for %s (MS or OS)"],bepgp._playerName,itemLink))
     end
   else
-    bepgp:widestAudience(string.format(L["'/roll' (ms) or '/roll 50' (os) for %s"],itemLink))
+    if prvetoOpt then
+      bepgp:widestAudience(string.format(L["'/roll' (MS) or '/roll 50' (OS). You can also whisper %s a + to use PR for %s"],bepgp._playerName,itemLink))
+    else
+      bepgp:widestAudience(string.format(L["'/roll' (MS) or '/roll 50' (OS) for %s"],itemLink))
+    end
   end
 end
 
@@ -591,8 +598,8 @@ function bepgp_loot:bagginsHook()
 end
 
 function bepgp_loot:baganatorHook()
-  if Baganator_MainViewFrame and Baganator_MainViewFrame.BagLive then
-    local buttons = Baganator_MainViewFrame.BagLive.buttons or {}
+  if Baganator_BackpackViewFrame and Baganator_BackpackViewFrame.BagLive then
+    local buttons = Baganator_BackpackViewFrame.BagLive.buttons or {}
     for _,itemButton in pairs(buttons) do
       bepgp_loot:hookContainerButton(itemButton)
     end
@@ -673,8 +680,8 @@ function bepgp_loot:clickHandlerBags(id)
       end
       bag_addons[addon] = true
     elseif addon == "Baganator" then
-      if Baganator_MainViewFrame and Baganator_MainViewFrame.BagLive and Baganator_MainViewFrame.BagLive.RebuildLayout then
-        self:SecureHook(Baganator_MainViewFrame.BagLive, "RebuildLayout", "baganatorHook")
+      if Baganator_BackpackViewFrame and Baganator_BackpackViewFrame.BagLive and Baganator_BackpackViewFrame.BagLive.RebuildLayout then
+        self:SecureHook(Baganator_BackpackViewFrame.BagLive, "RebuildLayout", "baganatorHook")
       end
       self:baganatorHook()
       bag_addons[addon] = true

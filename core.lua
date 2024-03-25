@@ -22,7 +22,7 @@ if not bepgp._cata then -- cata beta workaround build 53750, wow_project_id not 
   bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) or false
   bepgp._wrath = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC) or false
 end
-
+local RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
 
 -- Upvalue some API
 local GetGuildTabardFileNames = _G.GetGuildTabardFileNames or _G.GetGuildTabardFiles
@@ -47,6 +47,7 @@ bepgp.VARS = {
   baseaward_ep = 100,
   minilvl = 0,
   maxilvl = 416,
+  prveto = false,
   decay = 0.8,
   max = 1000,
   timeout = 60,
@@ -155,7 +156,7 @@ bepgp.VARS = {
   },
 }
 if bepgp._wrath then
-  bepgp.VARS.maxilvl = 384
+  bepgp.VARS.maxilvl = 284
   bepgp.VARS.minlevel = 80
   bepgp.VARS.pricesystem = "BastionEPGP_LK-1.0"
   bepgp.VARS.progress = "T7"
@@ -337,6 +338,9 @@ local lootareq_icon = "|TInterface\\GROUPFRAME\\UI-Group-MasterLooter:16|t"..L["
 local sizereq_icon = "|TInterface\\Buttons\\UI-RefreshButton:16|t"..L["Change Raid Size"]
 local diffreq_icon = "|TInterface\\PVPFrame\\Icon-Combat:16|t"..L["Change Raid Difficulty"]
 local exportrost_icon = "|TInterface\\Buttons\\UI-GuildButton-PublicNote-Up:16|t"..L["Export Raid Roster"]
+local prveto_icon =  "|TInterface\\ICONS\\Spell_ChargePositive:16|t"..L["|cffFFF0A7Use PR|r"]
+local msbid_icon =  "|TInterface\\Buttons\\UI-GroupLoot-Dice-Up:16|t"..L["|cff4DA6FFMainspec|r"]
+local osbid_icon =  "|TInterface\\Buttons\\UI-GroupLoot-Coin-Up:16|t"..L["|cffB6FFA7Offspec|r"]
 do
   for i=1,MAX_RAID_MEMBERS do
     raidUnit[i] = "raid"..i
@@ -699,6 +703,7 @@ local defaults = {
     priorank = bepgp.VARS.priorank,
     maxreserves = bepgp.VARS.maxreserves,
     minilvl = bepgp.VARS.minilvl,
+    prveto = bepgp.VARS.prveto,
     rosterthrottle = bepgp.VARS.rosterthrottle,
     debugchat = 4, -- 1 is default, 2 is typically combatlog, 3 is typically voicetranscript
     priorank_ms = true,
@@ -1333,7 +1338,11 @@ function bepgp:options(force)
       order = 117,
       get = function() return tostring(bepgp.db.char.minilvl) end,
       set = function(info, val)
-        bepgp.db.char.minilvl = tonumber(val)
+        local minilvlopt = tonumber(val)
+        bepgp.db.char.minilvl = minilvlopt
+        if minilvlopt and minilvlopt == 0 then
+          bepgp.db.char.prveto = false
+        end
       end,
       validate = function(info, val)
         local n = tonumber(val)
@@ -1349,12 +1358,28 @@ function bepgp:options(force)
         return false
       end,
     }
+    self._options.args.general.args.main.args["set_pr_veto"] = {
+      type = "toggle",
+      name = L["Allow PR veto"],
+      desc = L["Allow players to spend PR for roll items"],
+      order = 118,
+      get = function() return not not bepgp.db.char.prveto end,
+      set = function(info, val)
+        bepgp.db.char.prveto = not bepgp.db.char.prveto
+      end,
+      hidden = function()
+        if not (bepgp._cata or bepgp._wrath) then return true end
+        if not bepgp:admin() then return true end
+        local minilvlopt = tonumber(bepgp.db.char.minilvl)
+        if not (minilvlopt and minilvlopt > 0) then return true end
+      end,
+    }
     self._options.args.general.args.main.args["set_min_ep"] = {
       type = "input",
       name = L["Minimum EP"],
       desc = L["Set Minimum EP"],
       usage = "<minep>",
-      order = 118,
+      order = 119,
       get = function() return tostring(bepgp.db.profile.minep) end,
       set = function(info, val)
         bepgp.db.profile.minep = tonumber(val)
@@ -2601,6 +2626,13 @@ function bepgp:templateCache(id)
               end
             end)
           end
+          local prveto = data[4]
+          if not prveto then
+            self.buttons[3]:Hide()
+            self.buttons[3]=nil
+            self.buttons[1]:SetPoint("BOTTOMRIGHT", self, "BOTTOM", -6, 16)
+            self:Resize()
+          end
         end,
         on_update = function(self,elapsed)
           local remain = self.time_remaining
@@ -2609,7 +2641,7 @@ function bepgp:templateCache(id)
         end,
         buttons = {
           { -- MainSpec
-            text = L["Bid Mainspec"],
+            text = msbid_icon,--L["Bid Mainspec"],
             on_click = function(self, button, down)
               local data = self.data
               local masterlooter = data[2]
@@ -2623,7 +2655,7 @@ function bepgp:templateCache(id)
             end,
           },
           { -- OffSpec
-            text = L["Bid Offspec"],
+            text = osbid_icon,--L["Bid Offspec"],
             on_click = function(self, button, down)
               local data = self.data
               local masterlooter = data[2]
@@ -2632,6 +2664,18 @@ function bepgp:templateCache(id)
                 RandomRoll("1", "50")
               else
                 SendChatMessage("-","WHISPER",nil,masterlooter)
+              end
+              LD:Dismiss(addonName.."DialogMemberBid")
+            end,
+          },
+          { -- PR Veto
+            text = prveto_icon,--L["Use PR"],
+            on_click = function(self, button, down)
+              local data = self.data
+              local masterlooter = data[2]
+              local prveto = data[4]
+              if prveto then
+                SendChatMessage("+","WHISPER",nil,masterlooter)
               end
               LD:Dismiss(addonName.."DialogMemberBid")
             end,
@@ -2674,14 +2718,14 @@ function bepgp:templateCache(id)
         end,
         buttons = {
           { -- MainSpec
-            text = L["Roll Mainspec/Reserve"],
+            text = L["Roll MS/Reserve"],
             on_click = function(self, button, down)
               RandomRoll("1", "100")
               LD:Dismiss(addonName.."DialogMemberRoll")
             end,
           },
           { -- OffSpec
-            text = L["Roll Offspec/Sidegrade"],
+            text = L["Roll OS/Sidegrade"],
             on_click = function(self, button, down)
               RandomRoll("1", "50")
               LD:Dismiss(addonName.."DialogMemberRoll")

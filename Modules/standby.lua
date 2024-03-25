@@ -6,6 +6,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local LD = LibStub("LibDialog-1.0")
 local DF = LibStub("LibDeformat-3.0")
 local T = LibStub("LibQTip-1.0")
+local RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
 
 bepgp_standby.roster = {}
 bepgp_standby.blacklist = {}

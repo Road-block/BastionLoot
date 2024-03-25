@@ -9,6 +9,7 @@ local GUI = LibStub("AceGUI-3.0")
 local roster, data = { }, { }
 local colorHighlight = {r=0, g=0, b=0, a=.9}
 local colorSilver = {r=199/255, g=199/255, b=207/255, a=1.0}
+local RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
 
 --/run BastionLoot:GetModule("BastionEPGP_roster"):Toggle()
 function bepgp_roster:OnEnable()

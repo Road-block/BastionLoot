@@ -104,9 +104,9 @@ Results will print here when done.]]
   L["|cff00ff00%02d|r|cffffffffsec|r"] = true
   L["Manually modified %s\'s note. EPGP was %s"] = true
   L["|cffff0000Manually modified %s\'s note. EPGP was %s|r"] = true
-  L["Whisper %s a + for %s (mainspec)"] = true
-  L["Whisper %s a - for %s (offspec)"] = true
-  L["Whisper %s a + or - for %s (mainspec or offspec)"] = true
+  L["Whisper %s a + for %s (MS)"] = true
+  L["Whisper %s a - for %s (OS)"] = true
+  L["Whisper %s a + or - for %s (MS or OS)"] = true
   L["Click $MS or $OS for %s"] = true
   L["or $OS "] = true
   L["$MS or "] = true
@@ -316,8 +316,8 @@ Results will print here when done.]]
   L["Capturing Rolls for 2min."] = true
   L["|cffFF3333|Hbepgproll:1:$ML|h[Reserve/Mainspec]|h|r"] = true
   L["|cff009900|Hbepgproll:2:$ML|h[Offspec/Sidegrade]|h|r"] = true
-  L["Roll Mainspec/Reserve"] = true
-  L["Roll Offspec/Sidegrade"] = true
+  L["Roll MS/Reserve"] = true
+  L["Roll OS/Sidegrade"] = true
   L["Clearing old Rolls"] = true
   L["Reserve"] = true
   L["Reserves"] = true
@@ -523,7 +523,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Only ItemLevel <N> or higher Items will prompt for awarding GP when Masterlooter."] = true
   L["Winning Mainspec Roll: %s (%s)"] = true
   L["Winning Offspec Roll: %s (%s)"] = true
-  L["'/roll' (ms) or '/roll 50' (os) for %s"] = true
+  L["'/roll' (MS) or '/roll 50' (OS) for %s"] = true
   L["%s removed as an Alt of %s"] = true
   L["%s removed as a Stand-in for %s"] = true
   L["Send Request for Loot Admin to Raid Leader"] = true
@@ -556,5 +556,14 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["1.BD, BoT, TfW"] = true
   L["Reserve/Mainspec"] = true
   L["Offspec/Sidegrade"] = true
+  L["Allow PR veto"] = true
+  L["Allow players to spend PR for roll items"] = true
+  L["'/roll' (MS) or '/roll 50' (OS). You can also whisper %s a + to use PR for %s"] = true
+  L["Use PR"] = true
+  L["Click $MS, $OS or $PR for %s"] = true
+  L[", $OS"] = true
+  L["|cffFFF0A7Use PR|r"] = true
+  L["|cff4DA6FFMainspec|r"] = true
+  L["|cffB6FFA7Offspec|r"] = true
 
 bepgp.L = L

@@ -6,36 +6,45 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local DF = LibStub("LibDeformat-3.0")
 local T = LibStub("LibQTip-1.0")
 local LD = LibStub("LibDialog-1.0")
-
---/run BastionLoot:GetModule("BastionLoot_bids"):bidPrint("\124cff0070dd\124Hitem:19915:0:0:0:0:0:0:0:0\124h[Zulian Defender]\124h\124r","Tankßoy",true,true)
+local RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
+--/run BastionLoot:GetModule("BastionLoot_bids"):bidPrint("\124cff0070dd\124Hitem:19915:0:0:0:0:0:0:0:0\124h[Zulian Defender]\124h\124r","Gotwood","need","greed","bid","roll")
 local colorUnknown = {r=.75, g=.75, b=.75, a=.9}
+local colorPRcell = {r=1.0, g=240/255, b=167/255, a=1.0}
 bepgp_bids.bids_main,bepgp_bids.bids_off,bepgp_bids.bid_item = {},{},{}
 local bids_blacklist = {}
 local bidlink = {
-  ["ms"]      = "|cffFF3333|Haddon:"..addonName..":1:$ML|h["..L["Mainspec"].."]|h|r",
-  ["os"]      = "|cff009900|Haddon:"..addonName..":2:$ML|h["..L["Offspec"].."]|h|r",
-  ["msroll"]  = "|cffFF3333|Haddon:"..addonName..":3:$ML|h["..L["Mainspec"].."]|h|r",
-  ["osroll"]  = "|cff009900|Haddon:"..addonName..":4:$ML|h["..L["Offspec"].."]|h|r",
+  ["ms"]      = "|cff4DA6FF|Haddon:"..addonName..":1:$ML|h["..L["Mainspec"].."]|h|r",
+  ["os"]      = "|cffB6FFA7|Haddon:"..addonName..":2:$ML|h["..L["Offspec"].."]|h|r",
+  ["msroll"]  = "|cff4DA6FF|Haddon:"..addonName..":3:$ML|h["..L["Mainspec"].."]|h|r",
+  ["osroll"]  = "|cffB6FFA7|Haddon:"..addonName..":4:$ML|h["..L["Offspec"].."]|h|r",
+  ["prveto"]  = "|cffFFF0A7|Haddon:"..addonName..":5:$ML|h["..L["Use PR"].."]|h|r",
 }
 local out = "|cff9664c8"..addonName..":|r %s"
 local running_bid
-local color_msgp, color_osgp = "32cd32", "20b2aa"
+local color_msgp, color_osgp = "4DA6FF", "B6FFA7"
+-- name(1), class(2), ep(3), gp(4), pr or roll(5), priotype(6), rank(7), rankid(8), main(9)
+local DATAID = {NAME=1,CLASS=2,VAL1=3,VAL2=4,PRIO=5,PRIOTYPE=6,RANK=7,RANKID=8,MAIN=9}
+local prioRoll, prioEpgp = 1,2
 
 local pr_sorter_bids_rank = function(a,b)
-  -- name(1), class(2), ep(3), gp(4), pr(5), rank(6), rankidx(7), main(8)
   local minep = bepgp.db.profile.minep
   local priorank = bepgp.db.char.priorank
-  local a_rank_pass = a[7] <= priorank
-  local b_rank_pass = b[7] <= priorank
+  local prvetoOpt = bepgp.db.char.prveto
+  local a_rank_pass = a[8] <= priorank
+  local b_rank_pass = b[8] <= priorank
   if minep > 0 then
     local a_over = a[3]-minep >= 0
     local b_over = b[3]-minep >= 0
     if a_over and b_over or (not a_over and not b_over) then
       if a_rank_pass and b_rank_pass or (not a_rank_pass and not b_rank_pass) then
-        if a[5] ~= b[5] then
-          return tonumber(a[5]) > tonumber(b[5])
+        if a[6] ~= b[6] then
+          return tonumber(a[6]) > tonumber(b[6])
         else
-          return tonumber(a[3]) > tonumber(b[3])
+          if a[5] ~= b[5] then
+            return tonumber(a[5]) > tonumber(b[5])
+          else
+            return tonumber(a[3]) > tonumber(b[3])
+          end
         end
       elseif a_rank_pass and (not b_rank_pass) then
         return true
@@ -49,10 +58,14 @@ local pr_sorter_bids_rank = function(a,b)
     end
   else
     if a_rank_pass and b_rank_pass or (not a_rank_pass and not b_rank_pass) then
-      if a[5] ~= b[5] then
-        return tonumber(a[5]) > tonumber(b[5])
+      if a[6] ~= b[6] then
+        return tonumber(a[6]) > tonumber(b[6])
       else
-        return tonumber(a[3]) > tonumber(b[3])
+        if a[5] ~= b[5] then
+          return tonumber(a[5]) > tonumber(b[5])
+        else
+          return tonumber(a[3]) > tonumber(b[3])
+        end
       end
     elseif a_rank_pass and (not b_rank_pass) then
       return true
@@ -63,16 +76,20 @@ local pr_sorter_bids_rank = function(a,b)
 end
 
 local pr_sorter_bids = function(a,b)
-  -- name(1), class(2), ep(3), gp(4), pr(5), rank(6), rankidx(7), main(8)
   local minep = bepgp.db.profile.minep
+  local prvetoOpt = bepgp.db.char.prveto
   if minep > 0 then
     local a_over = a[3]-minep >= 0
     local b_over = b[3]-minep >= 0
     if a_over and b_over or (not a_over and not b_over) then
-      if a[5] ~= b[5] then
-        return tonumber(a[5]) > tonumber(b[5])
+      if a[6] ~= b[6] then
+        return tonumber(a[6]) > tonumber(b[6])
       else
-        return tonumber(a[3]) > tonumber(b[3])
+        if a[5] ~= b[5] then
+          return tonumber(a[5]) > tonumber(b[5])
+        else
+          return tonumber(a[3]) > tonumber(b[3])
+        end
       end
     elseif a_over and (not b_over) then
       return true
@@ -80,10 +97,14 @@ local pr_sorter_bids = function(a,b)
       return false
     end
   else
-    if a[5] ~= b[5] then
-      return tonumber(a[5]) > tonumber(b[5])
+    if a[6] ~= b[6] then
+      return tonumber(a[6]) > tonumber(b[6])
     else
-      return tonumber(a[3]) > tonumber(b[3])
+      if a[5] ~= b[5] then
+        return tonumber(a[5]) > tonumber(b[5])
+      else
+        return tonumber(a[3]) > tonumber(b[3])
+      end
     end
   end
 end
@@ -128,7 +149,7 @@ function bepgp_bids:announceWinner(data)
   local rankos_applies = rank_applies and not bepgp.db.char.priorank_ms
   local name, pr, msos, mode = data[1], data[2], data[3], data[4]
   local out
-  if mode == "roll" then
+  if mode == prioRoll then
     if msos == "ms" then
       out = L["Winning Mainspec Roll: %s (%s)"]
       if rank_applies then
@@ -183,7 +204,8 @@ function bepgp_bids:shuffleOffbids(off_bids)
   bepgp:Print(L["Offspec Bids Shuffled"])
 end
 
-function bepgp_bids:updateBids(mode)
+function bepgp_bids:updateBids()
+  if bepgp._SUSPEND then return end
   -- {name,class,ep,gp,ep/gp,rank,rankid[,main]}
   if bepgp.db.char.priorank ~= bepgp.VARS.priorank then
     table.sort(self.bids_main, pr_sorter_bids_rank)
@@ -198,14 +220,17 @@ function bepgp_bids:updateBids(mode)
   end
 end
 
-function bepgp_bids:Refresh(mode)
+function bepgp_bids:Refresh()
   local frame = self.qtip
   if not frame then return end
+  if bepgp._SUSPEND then return end
   local discount = bepgp.db.profile.discount
   frame:StopMovingOrSizing() -- free the mouse if we're mid-drag
   frame:Clear()
   frame:SetMovable(true)
   local minep = bepgp.db.profile.minep
+  local prvetoOpt = bepgp.db.char.prveto
+  local minilvlOpt = bepgp.db.char.minilvl and bepgp.db.char.minilvl > 0
   local line
   line = frame:AddHeader()
   frame:SetCell(line,1,L["BastionLoot bids"],nil,"CENTER",5)
@@ -242,8 +267,8 @@ function bepgp_bids:Refresh(mode)
       frame:SetCell(line,1,C:Orange(L["Name"]),nil,"LEFT")
       frame:SetCell(line,2,C:Orange(L["ep"]),nil,"CENTER")
       frame:SetCell(line,3,C:Orange(L["gp"]),nil,"CENTER")
-      if mode and mode == "roll" then
-        frame:SetCell(line,4,C:Orange(ROLL),nil,"CENTER")
+      if minilvlOpt then
+        frame:SetCell(line,4,C:Orange(L["pr"].."/"..ROLL),nil,"CENTER")
       else
         frame:SetCell(line,4,C:Orange(L["pr"]),nil,"CENTER")
       end
@@ -251,7 +276,7 @@ function bepgp_bids:Refresh(mode)
       frame:SetCell(line,6,C:Orange(L["Main"]),nil,"RIGHT")
       line = frame:AddSeparator(1)
       for i,data in ipairs(self.bids_main) do
-        local name, class, ep, gp, pr, rank, rankidx, main = unpack(data)
+        local name, class, ep, gp, pr, prtype, rank, rankidx, main = unpack(data,1,9)
         local eclass,_,hexclass = bepgp:getClassData(class)
         local r,g,b = RAID_CLASS_COLORS[eclass].r, RAID_CLASS_COLORS[eclass].g, RAID_CLASS_COLORS[eclass].b
         --local name_c = C:Colorize(hexclass,name)
@@ -269,17 +294,22 @@ function bepgp_bids:Refresh(mode)
         frame:SetCellTextColor(line,1,r,g,b)
         frame:SetCell(line,2,text2,nil,"CENTER")
         frame:SetCell(line,3,text3,nil,"CENTER")
-        frame:SetCell(line,4,text4,nil,"CENTER")
+        if prtype == prioEpgp then
+          frame:SetCell(line,4,text4,nil,"CENTER")
+          frame:SetCellColor(line,4,colorPRcell.r, colorPRcell.g, colorPRcell.b)
+        else
+          frame:SetCell(line,4,text4,nil,"RIGHT")
+        end
         frame:SetCell(line,5,rank,nil,"RIGHT")
         frame:SetCell(line,6,text6,nil,"RIGHT")
-        frame:SetLineScript(line, "OnMouseUp", bepgp_bids.announceWinner, {name, pr, "ms", mode})
+        frame:SetLineScript(line, "OnMouseUp", bepgp_bids.announceWinner, {name, pr, "ms", prtype})
       end
     end
     if #(self.bids_off) > 0 then
       line = frame:AddLine(" ")
       line = frame:AddHeader()
       frame:SetCell(line,1,C:Silver(L["Offspec Bids"]),nil,"LEFT",5)
-      if discount == 0 and not mode then
+      if discount == 0 then
         frame:SetCell(line,6,"|TInterface\\Buttons\\UI-GroupLoot-Dice-Up:18:18:-1:1:32:32:2:30:2:30|t",nil,"RIGHT")
         frame:SetCellScript(line,6,"OnMouseUp", bepgp_bids.shuffleOffbids, bepgp_bids.bids_off)
         frame:SetCellScript(line,6,"OnEnter", cell_tooltip_show, "OSBID_SHUFFLE_TIP_HINT")
@@ -289,8 +319,8 @@ function bepgp_bids:Refresh(mode)
       frame:SetCell(line,1,C:Orange(L["Name"]),nil,"LEFT")
       frame:SetCell(line,2,C:Orange(L["ep"]),nil,"CENTER")
       frame:SetCell(line,3,C:Orange(L["gp"]),nil,"CENTER")
-      if mode and mode == "roll" then
-        frame:SetCell(line,4,C:Orange(ROLL),nil,"CENTER")
+      if minilvlOpt then
+        frame:SetCell(line,4,C:Orange(L["pr"].."/"..ROLL),nil,"CENTER")
       else
         frame:SetCell(line,4,C:Orange(L["pr"]),nil,"CENTER")
       end
@@ -298,7 +328,7 @@ function bepgp_bids:Refresh(mode)
       frame:SetCell(line,6,C:Orange(L["Main"]),nil,"RIGHT")
       line = frame:AddSeparator(1)
       for i,data in ipairs(self.bids_off) do
-        local name, class, ep, gp, pr, rank, rankidx, main = unpack(data)
+        local name, class, ep, gp, pr, prtype, rank, rankidx, main = unpack(data,1,9)
         local eclass,_,hexclass = bepgp:getClassData(class)
         local r,g,b = RAID_CLASS_COLORS[eclass].r, RAID_CLASS_COLORS[eclass].g, RAID_CLASS_COLORS[eclass].b
         --local name_c = C:Colorize(hexclass,name)
@@ -319,7 +349,7 @@ function bepgp_bids:Refresh(mode)
         frame:SetCell(line,4,text4,nil,"CENTER")
         frame:SetCell(line,5,rank,nil,"RIGHT")
         frame:SetCell(line,6,text6,nil,"RIGHT")
-        frame:SetLineScript(line,"OnMouseUp", bepgp_bids.announceWinner, {name, pr, "os", mode})
+        frame:SetLineScript(line,"OnMouseUp", bepgp_bids.announceWinner, {name, pr, "os", prtype})
       end
     end
   end
@@ -351,7 +381,7 @@ end
 function bepgp_bids:SetItemRef(link, text, button, chatFrame)
   local linktype, addon, bid, masterlooter = strsplit(":",link)
   if linktype == "addon" and addon == addonName then
-    if bid == "1" then
+    if bid == "1" or bid == "5" then
       bid = "+"
     elseif bid == "2" then
       bid = "-"
@@ -409,6 +439,7 @@ function bepgp_bids:captureLootCall(event, text, sender)
   if bepgp.db.char.mode ~= "epgp" then return end
   local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%d]+|h%[.-%]|h|r"," ; ")
   if count > 1 then return end
+  local prvetoOpt = bepgp.db.char.prveto
   local lowtext = string.lower(linkstriptext)
   local whisperkw_found, mskw_found, oskw_found, link_found, rollkw_found
   sender = bepgp:Ambiguate(sender)
@@ -429,6 +460,7 @@ function bepgp_bids:captureLootCall(event, text, sender)
     oskw_found = string.find(lowtext,f)
     if (oskw_found) then break end
   end
+  local prveto = (mskw_found or whisperkw_found) and rollkw_found
   if (whisperkw_found) or (mskw_found) or (oskw_found) then
     _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%d]+|h%[.-%]|h|r)")
     if (itemLink) and (itemLink ~= "") then
@@ -448,7 +480,11 @@ function bepgp_bids:captureLootCall(event, text, sender)
           if bepgp:itemLevelOptionPass(item_level) then
             running_bid = "bid"
           else
-            running_bid = "roll"
+            if prvetoOpt and prveto then
+              running_bid = "roll:bid"
+            else
+              running_bid = "roll"
+            end
           end
           bepgp:debugPrint(L["Capturing Bids for 5min."])
           self.qtip:Show()
@@ -470,7 +506,7 @@ local lootBid = {
 }
 function bepgp_bids:captureBid(event, text, sender)
   if bepgp.db.char.mode ~= "epgp" then return end
-  if not (running_bid and running_bid == "bid") then return end
+  if not (running_bid and running_bid:find("bid")) then return end
   if not (bepgp:raidLeader() or bepgp:lootMaster()) then return end
   if not bepgp_bids.bid_item.itemstring then return end
   sender = bepgp:Ambiguate(sender)
@@ -513,16 +549,16 @@ function bepgp_bids:captureBid(event, text, sender)
           if (mskw_found) then
             bids_blacklist[sender] = true
             if (bepgp.db.profile.altspool) and (main_name) then
-              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,ep/gp,rank,rankIdx,main_name})
+              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,ep/gp,prioEpgp,rank,rankIdx,main_name})
             else
-              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,ep/gp,rank,rankIdx})
+              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,ep/gp,prioEpgp,rank,rankIdx})
             end
           elseif (oskw_found) then
             bids_blacklist[sender] = true
             if (bepgp.db.profile.altspool) and (main_name) then
-              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,ep/gp,rank,rankIdx,main_name})
+              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,ep/gp,prioEpgp,rank,rankIdx,main_name})
             else
-              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,ep/gp,rank,rankIdx})
+              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,ep/gp,prioEpgp,rank,rankIdx})
             end
           end
           self:updateBids()
@@ -535,7 +571,7 @@ end
 
 function bepgp_bids:captureBidRoll(event, text)
   if bepgp.db.char.mode ~= "epgp" then return end
-  if not (running_bid and running_bid == "roll") then return end -- DEBUG
+  if not (running_bid and running_bid:find("roll")) then return end -- DEBUG
   if not (bepgp:raidLeader() or bepgp:lootMaster()) then return end
   if not bepgp_bids.bid_item.itemstring then return end
   local who, roll, low, high = DF.Deformat(text, RANDOM_ROLL_RESULT)
@@ -577,20 +613,20 @@ function bepgp_bids:captureBidRoll(event, text)
           if msroll then
             bids_blacklist[who] = true
             if (bepgp.db.profile.altspool) and (main_name) then
-              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,rank,rankIdx,main_name})
+              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,rank,prioRoll,rankIdx,main_name})
             else
-              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,rank,rankIdx})
+              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,rank,prioRoll,rankIdx})
             end
           elseif osroll then
             bids_blacklist[who] = true
             if (bepgp.db.profile.altspool) and (main_name) then
-              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,osroll,rank,rankIdx,main_name})
+              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,osroll,rank,prioRoll,rankIdx,main_name})
             else
-              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,osroll,rank,rankIdx})
+              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,osroll,rank,prioRoll,rankIdx})
             end
           end
-          self:updateBids("roll")
-          self:Refresh("roll")
+          self:updateBids()
+          self:Refresh()
         end
       end
     end
@@ -621,20 +657,33 @@ function bepgp_bids:bidPrint(link,masterlooter,need,greed,bid,roll)
   local oslink = string.gsub(bidlink["os"],"$ML",masterlooter)
   local msrollink = string.gsub(bidlink["msroll"],"$ML",masterlooter)
   local osrollink = string.gsub(bidlink["osroll"],"$ML",masterlooter)
+  local prvetolink = string.gsub(bidlink["prveto"],"$ML",masterlooter)
   local msg = string.format(L["Click $MS or $OS for %s"],link)
-  if (roll) then
+  local prveto = (need or bid) and roll
+  if (prveto) then
+    msg = string.format(L["Click $MS, $OS or $PR for %s"],link)
     msg = string.gsub(msg,"$MS",msrollink)
-    msg = string.gsub(msg,"$OS",osrollink)
+    msg = string.gsub(msg,"$PR",prvetolink)
+    if greed then
+      msg = string.gsub(msg,"$OS",osrollink)
+    else
+      msg = string.gsub(msg,L[", $OS"],"")
+    end
   else
-    if (need and greed) or bid then
-      msg = string.gsub(msg,"$MS",mslink)
-      msg = string.gsub(msg,"$OS",oslink)
-    elseif (need) then
-      msg = string.gsub(msg,"$MS",mslink)
-      msg = string.gsub(msg,L["or $OS "],"")
-    elseif (greed) then
-      msg = string.gsub(msg,"$OS",oslink)
-      msg = string.gsub(msg,L["$MS or "],"")
+    if (roll) then
+      msg = string.gsub(msg,"$MS",msrollink)
+      msg = string.gsub(msg,"$OS",osrollink)
+    else
+      if (need and greed) or bid then
+        msg = string.gsub(msg,"$MS",mslink)
+        msg = string.gsub(msg,"$OS",oslink)
+      elseif (need) then
+        msg = string.gsub(msg,"$MS",mslink)
+        msg = string.gsub(msg,L["or $OS "],"")
+      elseif (greed) then
+        msg = string.gsub(msg,"$OS",oslink)
+        msg = string.gsub(msg,L["$MS or "],"")
+      end
     end
   end
   local _, count = string.gsub(msg,"%$","%$")
@@ -654,10 +703,10 @@ function bepgp_bids:bidPrint(link,masterlooter,need,greed,bid,roll)
       chatframe:AddMessage(string.format(out,msg),NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b)
     end
     if bepgp.db.char.bidpopup then
-      LD:Spawn(addonName.."DialogMemberBid", {link,masterlooter,roll})
+      LD:Spawn(addonName.."DialogMemberBid", {link,masterlooter,roll,prveto})
     end
   end
-  self:updateBids((roll and "roll" or nil))
-  self:Refresh((roll and "roll" or nil))
+  self:updateBids()
+  self:Refresh()
 end
-
+-- /run LibStub("LibDialog-1.0"):Spawn("BastionLootDialogMemberBid", {"\124cff0070dd\124Hitem:19915:0:0:0:0:0:0:0:0\124h[Zulian Defender]\124h\124r","Gotwood",true,true})
