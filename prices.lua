@@ -29,7 +29,7 @@ function plugin:OnEnable()
     -- a table with
     -- a "func" key which will hold the reference
     --- to this plugin's GetPrice function
-    -- and "flavor" which should hold "_classic" or "_bcc" or "_wrath"
+    -- and "flavor" which should hold "_classic" or "_bcc" or "_wrath" or "_cata"
     -- in addition to the pricelist name
     local system = {func=plugin.GetPrice,flavor="_classic"}
 
