@@ -1,5 +1,5 @@
 local MAJOR = "LibDropdown-1.0"
-local MINOR = 3
+local MINOR = 4
 
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -105,6 +105,9 @@ local function InitializeFrame(frame)
 		end
 	end
 	frame:SetScale(GameTooltip:GetScale())
+	if (frame:GetEffectiveScale() ~= GameTooltip:GetEffectiveScale()) then -- consider applied SetIgnoreParentScale() on GameTooltip regarding scaling of the frame
+		frame:SetScale(frame:GetScale() * GameTooltip:GetEffectiveScale() / frame:GetEffectiveScale())
+	end
 end
 
 local editBoxCount = 1
@@ -376,7 +379,9 @@ do
 		if self.OnClick and self.clickable then
 			self.OnClick(self)
 			PlaySound(856)
-			self:GetParent():GetRoot():Refresh()
+			if self:IsShown() then
+				self:GetParent():GetRoot():Refresh()
+			end
 		end
 	end
 
@@ -769,7 +774,9 @@ do
 		b.OnClick = function(self)
 			initInfo('execute')
 			runHandler(self, "func")
-			self:GetRoot():Refresh()
+			if self:IsShown() then
+				self:GetRoot():Refresh()
+			end
 		end
 	end
 
@@ -783,7 +790,9 @@ do
 		local function inputValueChanged(self, val)
 			initInfo('input')
 			runHandler(self:GetParent():GetParent(), "set", val)
-			self:GetParent():GetRoot():Refresh()
+			if self:IsShown() then
+				self:GetParent():GetRoot():Refresh()
+			end
 		end
 
 		function Ace3.input(k, v, parent)
@@ -839,7 +848,10 @@ do
 				local val = not runHandler(self, "get")
 				runHandler(self, "set", val)
 			end
-			self:GetRoot():Refresh()
+
+			if self:IsShown() then
+				self:GetRoot():Refresh()
+			end
 		end
 
 		function Ace3.toggle(k, v, parent)
@@ -1182,8 +1194,24 @@ local t = {
 	LibStub("LibDropdown-1.0"):OpenAce3Menu(t)
 end]]
 
-WorldFrame:HookScript("OnMouseDown", function()
-	if openMenu then
-		openMenu = openMenu:Release()
-	end
-end)
+if UIDropDownMenu_HandleGlobalMouseEvent then
+	hooksecurefunc("UIDropDownMenu_HandleGlobalMouseEvent", function(button, event)
+		if openMenu and event == "GLOBAL_MOUSE_DOWN" and (button == "LeftButton" or button == "RightButton") then
+			for i = 0, frameCount - 1 do
+				if _G["LibDropdownFrame" .. i]:IsMouseOver() then return end
+			end
+
+			openMenu:Release()
+		end
+	end)
+else
+	lib.mousecallback = EventRegistry:RegisterFrameEventAndCallback("GLOBAL_MOUSE_DOWN",function(ownerID,button)
+		if openMenu and (button == "LeftButton" or button == "RightButton") then
+			for i = 0, frameCount - 1 do
+				if _G["LibDropdownFrame" .. i]:IsMouseOver() then return end
+			end
+
+			openMenu:Release()
+		end
+	end)
+end

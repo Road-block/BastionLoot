@@ -1,6 +1,6 @@
 local addonName, bepgp = ...
 local moduleName = addonName.."_browser"
-local bepgp_browser = bepgp:NewModule(moduleName, "AceEvent-3.0")
+local bepgp_browser = bepgp:NewModule(moduleName, "AceEvent-3.0", "AceBucket-3.0")
 local ST = LibStub("ScrollingTable")
 local LDD = LibStub("LibDropdown-1.0")
 local C = LibStub("LibCrayon-3.0")
@@ -22,6 +22,7 @@ local modlist,modsort
 local bulletpoint = "•"
 
 local questionblue = CreateAtlasMarkup("QuestRepeatableTurnin")
+local chatballon = CreateAtlasMarkup("ChatBallon")
 
 local function itemtype_sort(a, b)
   if a == "_ALL" then return true end
@@ -123,7 +124,7 @@ local favorite_options = {
     },
     ["0"] = {
       type = "execute",
-      name = L["Remove Favorite"],
+      name = C:Red(L["Remove Favorite"]),
       order = 6,
       func = function(info)
         bepgp_browser:favoriteClear()
@@ -135,7 +136,7 @@ local favorite_options = {
       type = "execute",
       name = _G.CANCEL,
       desc = _G.CANCEL,
-      order = 7,
+      order = 10,
       func = function(info)
         C_Timer.After(0.2, menu_close)
       end,
@@ -284,9 +285,19 @@ function bepgp_browser:OnEnable()
   help:SetText(string.format("%s%s",questionblue,L["Right-click a row to add or remove a Favorite."]))
   help:SetColor(1,1,0)
   help:SetJustifyV("TOP")
-  help:SetJustifyH("CENTER")
+  help:SetJustifyH("LEFT")
   self._container._help = help
   container:AddChild(help)
+
+  local help_sr = GUI:Create("Label")
+  help_sr:SetWidth(150)
+  help_sr:SetText(string.format("%s%s",chatballon,L["Send Soft-Reserve"]))
+  help_sr:SetColor(0,1,1)
+  help_sr:SetJustifyV("TOP")
+  help_sr:SetJustifyH("LEFT")
+  self._container._help_sr = help_sr
+  container:AddChild(help_sr)
+  help_sr.frame:Hide()
 
   local clear = GUI:Create("Button")
   clear:SetAutoWidth(true)
@@ -303,11 +314,22 @@ function bepgp_browser:OnEnable()
   bepgp:make_escable(container,"add")
   self:RegisterMessage(addonName.."_INIT_DONE","CoreInit")
   self:RegisterMessage(addonName.."_PRICESYSTEM", "PriceSystemUpdate")
+
+  self:RegisterBucketEvent("GROUP_ROSTER_UPDATE",1.0,"CheckStatus")
+  self:RegisterEvent("PARTY_LEADER_CHANGED","CheckStatus")
+  self:RegisterEvent("GROUP_JOINED","CheckStatus")
+  self:RegisterEvent("GROUP_LEFT","CheckStatus")
+  self:RegisterEvent("PLAYER_ENTERING_WORLD","CheckStatus")
+
+  self:RegisterEvent("CHAT_MSG_RAID", "captureSoftResCall")
+  self:RegisterEvent("CHAT_MSG_RAID_LEADER", "captureSoftResCall")
+  self:RegisterEvent("CHAT_MSG_RAID_WARNING", "captureSoftResCall")
+
   self:PriceSystemUpdate()
 end
 
-function bepgp_browser:Toggle()
-  if self._container.frame:IsShown() then
+function bepgp_browser:Toggle(forceShow)
+  if self._container.frame:IsShown() and (not forceShow) then
     self._container:Hide()
   else
     if self._initDone then
@@ -361,6 +383,32 @@ function bepgp_browser:favoriteClear(id)
   end
 end
 
+function bepgp_browser:softReserveSend(id)
+  local itemID = bepgp_browser._selected or id
+  if not itemID then return end
+  itemID = GetItemInfoInstant(itemID)
+  if not itemID then return end
+  local itemAsync = Item:CreateFromItemID(itemID)
+  itemAsync:ContinueOnItemLoad(function()
+    local link = itemAsync:GetItemLink()
+    if bepgp._ML and bepgp:inRaid(bepgp._ML) then
+      local msg = format("%s %s",L["res"],link)
+      SendChatMessage(msg,"WHISPER",nil,bepgp._ML)
+    end
+  end)
+end
+
+local srcall_capture = L["Whisper %s \`res [itemlink]\` to soft reserve."]:gsub("%%s","(.+)"):gsub("%b[]","")
+function bepgp_browser:captureSoftResCall(event, text, sender)
+  if bepgp._SUSPEND then return end
+  if bepgp.db.char.mode ~= "plusroll" then return end
+  if not (bepgp._ML and bepgp:inRaid(bepgp._ML)) then return end
+  local cleantext = text:gsub("%b[]","")
+  if string.match(cleantext,srcall_capture) then
+    self:Toggle(true)
+  end
+end
+
 local function populate(data,link,subtype,price,tier,favrank,id,slotvalue)
   table.insert(data,{["cols"]={
     {["value"]=link},
@@ -384,6 +432,7 @@ function bepgp_browser:RefreshGUI(slotvalue)
       self._container:SetTitle(L["BastionLoot browser"])
     end
   end
+  self:CheckStatus()
 end
 
 function bepgp_browser:Refresh()
@@ -454,6 +503,63 @@ function bepgp_browser:Refresh()
     self._container._browserimport.frame:Hide()
   end
   self:RefreshGUI(slotvalue)
+end
+
+function bepgp_browser:CheckStatus()
+  if not (IsInRaid() and GetNumGroupMembers() > 1) then
+    bepgp._ML = nil
+  end
+  local method, partyidx, raididx = GetLootMethod()
+  if method == "master" then
+    if raididx then
+      local name = GetUnitName("raid"..raididx, bepgp.db.profile.fullnames)
+      if name and name ~= _G.UNKNOWNOBJECT then
+        name = bepgp:Ambiguate(name)
+        bepgp._ML = name
+      else
+        bepgp._ML = nil
+      end
+    elseif partyidx then
+      if partyidx == 0 then
+        bepgp._ML = bepgp.db.profile.fullnames and bepgp._playerFullName or bepgp._playerName
+      else
+        local name = GetUnitName("party"..partyidx, bepgp.db.profile.fullnames)
+        if name and name ~= _G.UNKNOWNOBJECT then
+          name = bepgp:Ambiguate(name)
+          bepgp._ML = name
+        else
+          bepgp._ML = nil
+        end
+      end
+    else
+      bepgp._ML = nil
+    end
+  else
+    bepgp._ML = nil
+  end
+  if self._container then
+    self._container:SetStatusText(bepgp._ML or "")
+    if bepgp._ML then
+      if not favorite_options.args["sr"] then
+        favorite_options.args["sr"] = {
+          type = "execute",
+          name = C:Cyan(L["Soft-Reserve"]),
+          desc = L["Send Soft-Reserve"],
+          order = 7,
+          func = function(info)
+            bepgp_browser:softReserveSend()
+            C_Timer.After(0.2, menu_close)
+          end,
+        }
+      end
+      self._container._help_sr.frame:Show()
+    else
+      if favorite_options.args["sr"] then
+        favorite_options.args["sr"] = nil
+      end
+      self._container._help_sr.frame:Hide()
+    end
+  end
 end
 
 local lastEquipLoc -- DEBUG
@@ -601,3 +707,4 @@ function bepgp_browser:PriceSystemUpdate()
     end
   end
 end
+-- /run BastionLoot:GetModule("BastionLoot_browser"):CheckStatus()

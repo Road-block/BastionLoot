@@ -562,5 +562,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["|cffFFF0A7Use PR|r"] = "Use PR" -- needs translation
   L["|cff4DA6FFMainspec|r"] = "Mainspec" -- needs translation
   L["|cffB6FFA7Offspec|r"] = "Offspec" -- needs translation
+  L["Soft-Reserve"] = "Soft-Reserve" -- needs translation
+  L["Send Soft-Reserve"] = "Send Soft-Reserve" -- needs translation
 
   bepgp.L = L

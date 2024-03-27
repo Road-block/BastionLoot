@@ -4515,7 +4515,7 @@ function bepgp:inRaid(name)
 end
 
 function bepgp:GroupStatus()
-  if IsInRaid() and GetNumGroupMembers() > 0 then
+  if IsInRaid() and GetNumGroupMembers() > 1 then
     return "RAID"
   elseif UnitExists("party1") then
     return "PARTY"
@@ -5462,7 +5462,7 @@ function bepgp:parseNote(officernote, guild_index)
 end
 
 function bepgp:award_raid_ep(ep) -- awards ep to raid members in zone
-  if IsInRaid() and GetNumGroupMembers() > 0 then
+  if IsInRaid() and GetNumGroupMembers() > 1 then
     local guildcache = self:guildCache()
     for i = 1, MAX_RAID_MEMBERS do
       local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = bepgp:GetRaidRosterInfo(i)
