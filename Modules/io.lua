@@ -168,33 +168,38 @@ function bepgp_io:Logs()
   self:export("Logs", temp_data, ";")
 end
 
-local url_link = "=HYPERLINK(\"https://www.wowhead.com/wotlk/item=%d\";%q)"
-local wowhead_url = "https://www.wowhead.com/wotlk/item=%d"
+local url_link = "=HYPERLINK(\"https://www.wowhead.com/cata/item=%d\";%q)"
+local wowhead_url = "https://www.wowhead.com/cata/item=%d"
+if bepgp._wrath then
+  url_link = "=HYPERLINK(\"https://www.wowhead.com/wotlk/item=%d\";%q)"
+  wowhead_url = "https://www.wowhead.com/wotlk/item=%d"
+end
 if bepgp._bcc then
-  url_link = "=HYPERLINK(\"https://tbc.wowhead.com/item=%d\";%q)"
-  wowhead_url = "https://tbc.wowhead.com/item=%d"
+  url_link = "=HYPERLINK(\"https://www.wowhead.com/tbc/item=%d\";%q)"
+  wowhead_url = "https://www.wowhead.com/tbc/item=%d"
 end
 if bepgp._classic then
-  url_link = "=HYPERLINK(\"https://classic.wowhead.com/item=%d\";%q)"
-  wowhead_url = "https://classic.wowhead.com/item=%d"
+  url_link = "=HYPERLINK(\"https://www.wowhead.com/classic/item=%d\";%q)"
+  wowhead_url = "https://www.wowhead.com/classic/item=%d"
 end
 function bepgp_io:Browser(favorites)
   local keys
   self._iobrowser:Clear() -- item,itemtype,itempool,gp
-  self._iobrowser:AddLine(string.format("%s?%s?%s?%s",L["Item"],L["Item Type"],L["Item Pool"],L["Mainspec GP"]))
+  self._iobrowser:AddLine(string.format("%s?%s?%s?%s?%s",L["Item"],L["Item Type"],(_G.ITEMSLOTTEXT),L["Item Pool"],L["Mainspec GP"]))
   if self._fileexport then
     table.wipe(temp_data)
     keys = {L["Item"],L["Item Type"],L["Item Pool"],L["Mainspec GP"]}
   end
   for _,data in pairs(favorites) do
-    local id,link,subtype,price,tier = data.cols[6].value, data.cols[1].value, data.cols[2].value, data.cols[3].value, data.cols[4].value
+    local id,link,subtype,equiploc,price,tier = data.cols[7].value, data.cols[1].value, data.cols[2].value, data.cols[3].value, data.cols[4].value, data.cols[5].value
     local _,_,itemname = bepgp:getItemData(link)
     local url = string.format(url_link,id,itemname)
-    self._iobrowser:AddLine(string.format("%s?%s?%s?%s",url,subtype,tier,price))
+    self._iobrowser:AddLine(string.format("%s?%s?%s?%s?%s",url,subtype,equiploc,tier,price))
     if self._fileexport then
       local entry = {}
       entry[L["Item"]] = string.format(wowhead_url,id)
       entry[L["Item Type"]] = subtype
+      entry[(_G.ITEMSLOTTEXT)] = equiploc
       entry[L["Item Pool"]] = tier
       entry[L["Mainspec GP"]] = price
       table.insert(temp_data, entry)

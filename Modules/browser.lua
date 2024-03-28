@@ -54,6 +54,14 @@ local function st_sorter_plain(st,rowa,rowb,col)
   end
 end
 
+local function safe_equiploc(equiploc)
+  if (equiploc == nil) or (equiploc == "") or (equiploc == "INVTYPE_NON_EQUIP_IGNORE") then
+    return _G.INVTYPE_NON_EQUIP
+  else
+    return _G[equiploc]
+  end
+end
+
 local favmap = bepgp._favmap
 local fav5,fav4,fav3,fav2,fav1 = favmap[5],favmap[4],favmap[3],favmap[2],favmap[1]
 local menu_close = function()
@@ -145,7 +153,7 @@ local favorite_options = {
 }
 local item_interact = function(rowFrame, cellFrame, data, cols, row, realrow, column, table, button, ...)
   if not realrow then return false end
-  local itemID = data[realrow].cols[6].value
+  local itemID = data[realrow].cols[7].value
   if itemID then
     bepgp_browser._selected = tonumber(itemID)
     local link = data[realrow].cols[1].value
@@ -171,7 +179,7 @@ local item_interact = function(rowFrame, cellFrame, data, cols, row, realrow, co
 end
 local item_onenter = function(rowFrame, cellFrame, data, cols, row, realrow, column, table, ...)
   if not realrow then return false end
-  local itemID = data[realrow].cols[6].value
+  local itemID = data[realrow].cols[7].value
   if itemID then
     GameTooltip:SetOwner(rowFrame,"ANCHOR_TOP")
     GameTooltip:SetItemByID(itemID)
@@ -188,7 +196,7 @@ end
 function bepgp_browser:OnEnable()
   local container = GUI:Create("Window")
   container:SetTitle(L["BastionLoot browser"])
-  container:SetWidth(640)
+  container:SetWidth(720)
   container:SetHeight(305)
   container:EnableResize(false)
   container:SetLayout("List")
@@ -197,6 +205,7 @@ function bepgp_browser:OnEnable()
   local headers = {
     {["name"]=C:Orange(_G.ITEMS),["width"]=150,["comparesort"]=st_sorter_plain,["sortnext"]=2}, --name
     {["name"]=C:Orange(L["Item Type"]),["width"]=80}, --type
+    {["name"]=C:Orange(_G.ITEMSLOTTEXT),["width"]=80}, --equip location
     {["name"]=C:Orange(L["Mainspec GP"]),["width"]=80}, --ms_gp
     {["name"]=C:Orange(L["Item Pool"]),["width"]=60,}, --tier
     {["name"]=C:Orange(L["Favorites"]),["width"]=60,["sort"]=ST.SORT_DSC}, -- favorited
@@ -409,14 +418,15 @@ function bepgp_browser:captureSoftResCall(event, text, sender)
   end
 end
 
-local function populate(data,link,subtype,price,tier,favrank,id,slotvalue)
+local function populate(data,link,subtype,price,tier,favrank,id,locdesc,slotvalue)
   table.insert(data,{["cols"]={
     {["value"]=link},
     {["value"]=subtype},
+    {["value"]=locdesc},
     {["value"]=price},
     {["value"]=tier},
     {["value"]=favrank},
-    {["value"]=id} -- 6
+    {["value"]=id} -- 7
   }})
   bepgp_browser:RefreshGUI(slotvalue)
 end
@@ -453,19 +463,21 @@ function bepgp_browser:Refresh()
         local price, tier = bepgp:GetPrice(id,progress) --,pricelist[id][2]
         price = price or 0
         local favrank = favmap[rank]
-        local _,link,_,_,_,_,subtype = GetItemInfo(id)
+        local _,link,_,_,_,_,subtype,_,equiploc = GetItemInfo(id)
+        local locdesc = safe_equiploc(equiploc)
         if (link) then
           if typevalue == "_ALL" or subtype == typevalue then
-            populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+            populate(subdata,link,subtype,price,tier,favrank,id,locdesc,slotvalue)
           end
         else
           local item = Item:CreateFromItemID(id)
           item:ContinueOnItemLoad(function()
             local id = item:GetItemID()
             local link = item:GetItemLink()
-            local _,_, subtype = GetItemInfoInstant(id)
+            local _,_, subtype,equiploc = GetItemInfoInstant(id)
+            local locdesc = safe_equiploc(equiploc)
             if typevalue == "_ALL" or subtype == typevalue then
-              populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+              populate(subdata,link,subtype,price,tier,favrank,id,locdesc,slotvalue)
             end
           end)
         end        
@@ -481,19 +493,21 @@ function bepgp_browser:Refresh()
       if tiervalues[tier] then
         local rank = favorites[id]
         local favrank = rank and favmap[rank] or ""
-        local _,link,_,_,_,_,subtype = GetItemInfo(id)
+        local _,link,_,_,_,_,subtype,_,equiploc = GetItemInfo(id)
+        local locdesc = safe_equiploc(equiploc)
         if (link) then
           if typevalue == "_ALL" or subtype == typevalue then
-            populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+            populate(subdata,link,subtype,price,tier,favrank,id,locdesc,slotvalue)
           end
         else
           local item = Item:CreateFromItemID(id)
           item:ContinueOnItemLoad(function()
             local id = item:GetItemID()
             local link = item:GetItemLink()
-            local _,_, subtype = GetItemInfoInstant(id)
+            local _,_, subtype,equiploc = GetItemInfoInstant(id)
+            local locdesc = safe_equiploc(equiploc)
             if typevalue == "_ALL" or subtype == typevalue then
-              populate(subdata,link,subtype,price,tier,favrank,id,slotvalue)
+              populate(subdata,link,subtype,price,tier,favrank,id,locdesc,slotvalue)
             end
           end)
         end

@@ -613,16 +613,16 @@ function bepgp_bids:captureBidRoll(event, text)
           if msroll then
             bids_blacklist[who] = true
             if (bepgp.db.profile.altspool) and (main_name) then
-              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,rank,prioRoll,rankIdx,main_name})
+              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,prioRoll,rank,rankIdx,main_name})
             else
-              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,rank,prioRoll,rankIdx})
+              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,prioRoll,rank,rankIdx})
             end
           elseif osroll then
             bids_blacklist[who] = true
             if (bepgp.db.profile.altspool) and (main_name) then
-              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,osroll,rank,prioRoll,rankIdx,main_name})
+              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,osroll,prioRoll,rank,rankIdx,main_name})
             else
-              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,osroll,rank,prioRoll,rankIdx})
+              table.insert(bepgp_bids.bids_off,{name,class,ep,gp,osroll,prioRoll,rank,rankIdx})
             end
           end
           self:updateBids()
