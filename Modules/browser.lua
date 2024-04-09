@@ -82,7 +82,6 @@ local favorite_options = {
       order = 1,
       func = function(info)
         bepgp_browser:favoriteAdd(5)
-        bepgp_browser:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
     },
@@ -93,7 +92,6 @@ local favorite_options = {
       order = 2,
       func = function(info)
         bepgp_browser:favoriteAdd(4)
-        bepgp_browser:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
     },
@@ -104,7 +102,6 @@ local favorite_options = {
       order = 3,
       func = function(info)
         bepgp_browser:favoriteAdd(3)
-        bepgp_browser:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
     },
@@ -115,7 +112,6 @@ local favorite_options = {
       order = 4,
       func = function(info)
         bepgp_browser:favoriteAdd(2)
-        bepgp_browser:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
     },
@@ -126,7 +122,6 @@ local favorite_options = {
       order = 5,
       func = function(info)
         bepgp_browser:favoriteAdd(1)
-        bepgp_browser:Refresh()
         C_Timer.After(0.2, menu_close)
       end,
     },
@@ -374,6 +369,9 @@ function bepgp_browser:favoriteAdd(level,id)
       -- tbd
     end
   end
+  C_Timer.After(0.1,function()
+    bepgp_browser:Refresh()
+  end)
 end
 
 function bepgp_browser:favoriteClear(id)
@@ -640,7 +638,7 @@ function bepgp_browser:PriceListData(redo)
   end
 end
 
-local priceModLookup = {_classic={"_prices","_tokens"},_bcc={"_prices_bc","_tokens_bc"},_wrath={"_prices_wrath","_tokens_lk"},_cata={"_prices_cata","tokens_cata"}}
+local priceModLookup = {_classic={"_prices","_tokens"},_bcc={"_prices_bc","_tokens_bc"},_wrath={"_prices_wrath","_tokens_lk"},_cata={"_prices_cata","_tokens_cata"}}
 function bepgp_browser:PriceListLookups()
   local system = bepgp:GetPriceSystem(bepgp.db.profile.system)
   local flavor = system and system.flavor

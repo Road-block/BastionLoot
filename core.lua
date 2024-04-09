@@ -698,7 +698,7 @@ local defaults = {
     },
     classgroup = false,
     standby = false,
-    bidpopup = false,
+    bidpopup = true,
     mode = "epgp", -- "plusroll"
     priorank = bepgp.VARS.priorank,
     maxreserves = bepgp.VARS.maxreserves,
@@ -1962,7 +1962,7 @@ end
 function bepgp:optionSize()
   local mode = self.db.char.mode
   local is_admin = bepgp:admin()
-  local default_w, default_h = 800, 640
+  local default_w, default_h = 800, 660
   local w, h = default_w, default_h
   if not is_admin then
     h = h - 90
