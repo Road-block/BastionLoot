@@ -471,7 +471,7 @@ do
       tiersort = {"T13.5","T13","T12.5","T12","T11.5","T11"},
       modlist = {["T13"]="T13",["T12"]="T12",["T11"]="T11"},
       modsort = {"T13","T12","T11"},
-      bench_values = {["T13"]=L["3.Deathwing"], ["T12"]=L["2.Firelands"], ["T13"]=L["3.Deathwing"]},
+      bench_values = {["T13"]=L["3.Deathwing"], ["T12"]=L["2.Firelands"], ["T11"]=L["1.BD, BoT, TfW"]},
       bench_sorting = {"T11", "T12", "T13"},
       raidLimits = {
         ["T11"] = {total = 25,[_G.TANK] = 2,[_G.HEALER] = 5,},
