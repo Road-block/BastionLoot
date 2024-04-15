@@ -347,7 +347,7 @@ function bepgp_browser:Toggle(forceShow)
 end
 
 function bepgp_browser:favoriteAdd(level,id)
-  local itemID = bepgp_browser._selected or id
+  local itemID = id or bepgp_browser._selected
   if not itemID then return end
   itemID = GetItemInfoInstant(itemID)
   if not itemID then return end
@@ -574,6 +574,20 @@ function bepgp_browser:CheckStatus()
   end
 end
 
+local function hookEJLoot()
+  if ( not EncounterJournal ) and EncounterJournal_LoadUI then
+    EncounterJournal_LoadUI()
+  end
+  if EncounterJournal_Loot_OnClick then
+    hooksecurefunc("EncounterJournal_Loot_OnClick", function(self)
+      if IsAltKeyDown() and self.itemID then
+        bepgp_browser:favoriteAdd(-1,self.itemID)
+        bepgp_browser:Toggle(true)
+      end
+    end)
+  end
+end
+
 local lastEquipLoc -- DEBUG
 function bepgp_browser:CoreInit()
   if not self._initDone then
@@ -590,6 +604,9 @@ function bepgp_browser:CoreInit()
       self._container._filtertier:SetItemValue(option,true)
     end    
     self._container._modpreview:SetValue(progress)
+    if bepgp._cata then
+      hookEJLoot()
+    end
     self._initDone = true
   end
 end
