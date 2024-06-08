@@ -16,18 +16,21 @@ local T = LibStub("LibQTip-1.0")
 local wowver, wowbuild, wowbuildate, wowtocver = GetBuildInfo()
 bepgp._DEBUG = false
 bepgp._SUSPEND = false
-bepgp._cata = wowtocver > 40000 and wowtocver < 50000
+bepgp._cata = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CATACLYSM_CLASSIC) or false
 if not bepgp._cata then -- cata beta workaround build 53750, wow_project_id not updated yet
   bepgp._classic = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC) or false
   bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) or false
   bepgp._wrath = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC) or false
 end
 local RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
+bepgp._network = {}
 
 -- Upvalue some API
+local falsey = function() return false end
 local GetGuildTabardFileNames = _G.GetGuildTabardFileNames or _G.GetGuildTabardFiles
 local GuildRoster = C_GuildInfo and C_GuildInfo.GuildRoster or _G.GuildRoster
 local CanEditOfficerNote = C_GuildInfo and C_GuildInfo.CanEditOfficerNote or _G.CanEditOfficerNote
+local CanViewOfficerNote = C_GuildInfo and C_GuildInfo.CanViewOfficerNote or _G.CanViewOfficerNote or falsey
 local CanSpeakInGuildChat = C_GuildInfo and C_GuildInfo.CanSpeakInGuildChat or _G.CanSpeakInGuildChat
 local GuildControlGetRankFlags = C_GuildInfo and C_GuildInfo.GuildControlGetRankFlags or _G.GuildControlGetRankFlags
 local C_TimerAfter = C_Timer.After
@@ -3860,6 +3863,9 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
   local sender = bepgp:Ambiguate(sender)
   if sender == self._playerName then return end -- don't care for our own message
   local name, class, rank = self:verifyGuildMember(sender, true)
+  if (name and class) then
+    self._network[sender] = true
+  end
   local who,what,amount
   for name,epgp,change in string.gmatch(msg,"([^;]+);([^;]+);([^;]+)") do
     who = name
@@ -3897,6 +3903,8 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
       if (IsGuildLeader()) then
         self:shareSettings()
       end
+      local addonMsg = "ACK;0;0"
+      self:addonMessage(addonMsg,"WHISPER",sender)
     elseif who == "MODE" then
       bepgp.db.char.mode = what
       self:SetMode(what)
@@ -5489,6 +5497,10 @@ function bepgp:award_raid_ep(ep) -- awards ep to raid members in zone
     self:refreshPRTablets()
     local addonMsg = string.format("RAID;AWARD;%s",ep)
     self:addonMessage(addonMsg,"RAID")
+    local comms = bepgp:GetModule(addonName.."_comms",true)
+    if comms then
+      comms:Transmit(comms:GetDataForSending(),"GUILD")
+    end
   --[[else UIErrorsFrame:AddMessage(L["You aren't in a raid dummy"],1,0,0)]]
   end
 end
@@ -5543,6 +5555,10 @@ function bepgp:decay_epgp()
   self:refreshPRTablets()
   local addonMsg = string.format("ALL;DECAY;%s",(1-(decay or bepgp.VARS.decay))*100)
   self:addonMessage(addonMsg,"GUILD")
+  local comms = bepgp:GetModule(addonName.."_comms",true)
+  if comms then
+    comms:Transmit(comms:GetDataForSending(),"GUILD")
+  end
 end
 
 function bepgp:wipe_epgp()
@@ -5563,65 +5579,97 @@ function bepgp:wipe_epgp()
     logs:addToLog(msg)
   end
   self:refreshPRTablets()
+  local comms = bepgp:GetModule(addonName.."_comms",true)
+  if comms then
+    comms:Transmit(comms:GetDataForSending(),"GUILD")
+  end
 end
 
 function bepgp:get_ep(getname,officernote) -- gets ep by name or note
+  local canViewONote = CanViewOfficerNote()
+  local cacheDB
+  local bepgp_comms = bepgp:GetModule(addonName.."_comms",true)
+  if bepgp_comms and bepgp_comms.db then
+    cacheDB = bepgp_comms.db.profile.epgp
+  end
+  if canViewONote then
   local allies = self.db.profile.allies
-  if allies[getname] then
-    local standin = allies[getname].standin
-    --print("getting standin")
-    return bepgp:get_ep(standin)
-  end
-  if (officernote) then
-    local datatype, prefix, epgpdata, postfix, t1, t2, t3, t4 = self:parseNote(officernote, guild_index)
-    --print(datatype)
-    if datatype == "epgp" then
-      local ep, gp = t1, t2
-      return ep
-    elseif datatype == "standin" then
-      local ally_name, ally_class, ally_ep, ally_gp = t1, t2, t3, t4
-      --print("%s:%s:%s",ally_name,ally_class,ally_ep)
-      return ally_ep
-    else
-      return
+    if allies[getname] then
+      local standin = allies[getname].standin
+      --print("getting standin")
+      return bepgp:get_ep(standin)
+    end
+    if (officernote) then
+      local datatype, prefix, epgpdata, postfix, t1, t2, t3, t4 = self:parseNote(officernote, guild_index)
+      --print(datatype)
+      if datatype == "epgp" then
+        local ep, gp = t1, t2
+        return ep
+      elseif datatype == "standin" then
+        local ally_name, ally_class, ally_ep, ally_gp = t1, t2, t3, t4
+        --print("%s:%s:%s",ally_name,ally_class,ally_ep)
+        return ally_ep
+      else
+        return
+      end
+    end
+    for i = 1, GetNumGuildMembers(true) do
+      local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
+      name = bepgp:Ambiguate(name)
+      if (name == getname) and officernote then
+        return bepgp:get_ep(getname,officernote)
+      end
+    end
+    return
+  elseif (cacheDB) then
+    local epgp = cacheDB[getname]
+    if epgp then
+      local _epoch = cacheDB._epoch
+      return (cacheDB[getname][1] or 0), _epoch
     end
   end
-  for i = 1, GetNumGuildMembers(true) do
-    local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    name = bepgp:Ambiguate(name)
-    if (name == getname) and officernote then
-      return bepgp:get_ep(getname,officernote)
-    end
-  end
-  return
 end
 
 function bepgp:get_gp(getname,officernote) -- gets gp by name or officernote
-  local allies = self.db.profile.allies
-  if allies[getname] then
-    local standin = allies[getname].standin
-    return bepgp:get_gp(standin)
+  local canViewONote = CanViewOfficerNote()
+  local cacheDB
+  local bepgp_comms = bepgp:GetModule(addonName.."_comms",true)
+  if bepgp_comms and bepgp_comms.db then
+    cacheDB = bepgp_comms.db.profile.epgp
   end
-  if (officernote) then
-    local datatype, prefix, epgpdata, postfix, t1, t2, t3, t4 = self:parseNote(officernote, guild_index)
-    if datatype == "epgp" then
-      local ep, gp = t1, t2
-      return gp
-    elseif datatype == "standin" then
-      local ally_name, ally_class, ally_ep, ally_gp = t1, t2, t3, t4
-      return ally_gp
-    else
-      return
+  if canViewONote then
+    local allies = self.db.profile.allies
+    if allies[getname] then
+      local standin = allies[getname].standin
+      return bepgp:get_gp(standin)
+    end
+    if (officernote) then
+      local datatype, prefix, epgpdata, postfix, t1, t2, t3, t4 = self:parseNote(officernote, guild_index)
+      if datatype == "epgp" then
+        local ep, gp = t1, t2
+        return gp
+      elseif datatype == "standin" then
+        local ally_name, ally_class, ally_ep, ally_gp = t1, t2, t3, t4
+        return ally_gp
+      else
+        return
+      end
+    end
+    for i = 1, GetNumGuildMembers(true) do
+      local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
+      name = bepgp:Ambiguate(name)
+      if (name == getname) and officernote then
+        return bepgp:get_gp(getname,officernote)
+      end
+    end
+    return
+  elseif (cacheDB) then
+    local epgp = cacheDB[getname]
+    if epgp then
+      local _epoch = cacheDB._epoch
+      return (cacheDB[getname][2] or bepgp.VARS.basegp), _epoch
     end
   end
-  for i = 1, GetNumGuildMembers(true) do
-    local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    name = bepgp:Ambiguate(name)
-    if (name == getname) and officernote then
-      return bepgp:get_gp(getname,officernote)
-    end
-  end
-  return
 end
 
 function bepgp:init_notes(guild_index,name,officernote)
@@ -5734,6 +5782,10 @@ function bepgp:givename_ep(getname,ep,single) -- awards ep to a single character
       self:addonMessage(addonMsg,"WHISPER",getname)
     end
   end
+  local comms = bepgp:GetModule(addonName.."_comms",true)
+  if comms and single then
+    comms:Transmit(comms:GetDataForSending(),"GUILD")
+  end
 end
 
 function bepgp:givename_gp(getname,gp) -- assigns gp to a single character
@@ -5784,6 +5836,10 @@ function bepgp:givename_gp(getname,gp) -- assigns gp to a single character
   end
   local addonMsg = string.format("%s;%s;%s",getname,"GP",gp)
   self:addonMessage(addonMsg,"WHISPER",getname)
+  local comms = bepgp:GetModule(addonName.."_comms",true)
+  if comms then
+    comms:Transmit(comms:GetDataForSending(),"GUILD")
+  end
 end
 
 function bepgp:update_ep(getname,ep)
@@ -5845,3 +5901,8 @@ function bepgp:refreshPRTablets()
 end
 
 _G[addonName] = bepgp
+
+--[[
+ContainerFrameItemButton_OnClick(self, button)
+ContainerFrameItemButton_OnModifiedClick(self, button)
+]]

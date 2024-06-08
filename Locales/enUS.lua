@@ -343,7 +343,10 @@ Results will print here when done.]]
   L.STANDINGS_OVERLAY = [[
 Your current guild rank does not show EPGP standings.
 
-You can whisper |cffffd200!PR Name|r to any higher rank guild member with the addon to get back EPGP standings.]]
+You can Press the Update Button on the Left to get data from any EPGP admins online (5min CD).
+
+You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back information in whisper.
+]]
   L["{bepgp}%s has: %d EP %d GP %.03f PR."] = true
   L["{bepgp}You have: %d EP %d GP %.03f PR"] = true
   L["|cffff7f00Ctrl+Shift+Click|r to toggle Wincount."] = true
@@ -567,5 +570,11 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["|cffB6FFA7Offspec|r"] = true
   L["Soft-Reserve"] = true
   L["Send Soft-Reserve"] = true
+  L["LIVE"] = true
+  L["Request for standings sent."] = true
+  L["On cooldown: Can send a new request in %s"] = true
+  L["Send"] = true
+  L["Sending Standings to Members."] = true
+  L["On cooldown: Can push updates in %s"] = true
 
 bepgp.L = L

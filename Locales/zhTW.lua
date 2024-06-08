@@ -564,5 +564,11 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["|cffB6FFA7Offspec|r"] = "Offspec" -- needs translation
   L["Soft-Reserve"] = "Soft-Reserve" -- needs translation
   L["Send Soft-Reserve"] = "Send Soft-Reserve" -- needs translation
+  L["LIVE"] = "LIVE" -- needs translation
+  L["Request for standings sent."] = "Request for standings sent." -- needs translation
+  L["On cooldown: Can send a new request in %s"] = "On cooldown: Can send a new request in %s" -- needs translation
+  L["Send"] = "Send" -- needs translation
+  L["Sending Standings to Members."] = "Sending Standings to Members." -- needs translation
+  L["On cooldown: Can push updates in %s"] = "On cooldown: Can push updates in %s" -- needs translation
 
   bepgp.L = L

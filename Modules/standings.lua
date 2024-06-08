@@ -1,17 +1,21 @@
 local addonName, bepgp = ...
 local moduleName = addonName.."_standings"
-local bepgp_standings = bepgp:NewModule(moduleName)
+local bepgp_standings = bepgp:NewModule(moduleName, "AceEvent-3.0", "AceTimer-3.0")
 local ST = LibStub("ScrollingTable")
 local C = LibStub("LibCrayon-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local GUI = LibStub("AceGUI-3.0")
 local RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
+local falsey = function() return false end
+local CanViewOfficerNote = C_GuildInfo and C_GuildInfo.CanViewOfficerNote or _G.CanViewOfficerNote or falsey
+local lastRequest, lastPush
 
 local PLATE, MAIL, LEATHER, CLOTH = 4,3,2,1
 local DPS, CASTER, HEALER, TANK = 4,3,2,1
 local class_to_armor = {
   PALADIN = PLATE,
   WARRIOR = PLATE,
+  DEATHKNIGHT = PLATE,
   HUNTER = MAIL,
   SHAMAN = MAIL,
   DRUID = LEATHER,
@@ -30,6 +34,7 @@ local class_to_role = {
   PALADIN = {HEALER,DPS,TANK,CASTER},
   PRIEST = {HEALER,CASTER},
   DRUID = {HEALER,TANK,DPS,CASTER},
+  DEATHKNIGHT = {TANK,DPS},
   SHAMAN = {HEALER,DPS,CASTER},
   MAGE = {CASTER},
   WARLOCK = {CASTER},
@@ -104,12 +109,7 @@ function bepgp_standings:OnEnable()
   self._standings_table.frame:SetPoint("BOTTOMRIGHT",self._container.frame,"BOTTOMRIGHT", -10, 10)
   container:SetCallback("OnShow", function()
     bepgp_standings._standings_table:Show()
-    local _,perms = bepgp:getGuildPermissions()
-    if perms.OFFICER then
-      bepgp_standings._widgetoverlaylabel.frame:Hide()
-    else
-      bepgp_standings._widgetoverlaylabel.frame:Show()
-    end
+    self:ContextShowHide()
   end)
   container:SetCallback("OnClose", function()
     bepgp_standings._standings_table:Hide()
@@ -154,7 +154,48 @@ function bepgp_standings:OnEnable()
   container:AddChild(class_grouping)
   self._widgetclass_grouping = class_grouping
 
+  local update = GUI:Create("Button")
+  update:SetAutoWidth(true)
+  update:SetText(_G.UPDATE)
+  update:SetCallback("OnClick",function()
+    local bepgp_comms = bepgp:GetModule(addonName.."_comms",true)
+    local now = GetTime()
+    if bepgp_comms then
+      if not lastRequest or (now - lastRequest >= 300) then -- 5mins CD on manual requests
+        bepgp_comms:RequestData()
+        lastRequest = now
+        bepgp:Print(L["Request for standings sent."])
+      else
+        local cd = 300 - (now - lastRequest)
+        bepgp:Print(format(L["On cooldown: Can send a new request in %s"],SecondsToClock(cd)))
+      end
+    end
+  end)
+  container:AddChild(update)
+  self._widget_update = update
+
+  local push = GUI:Create("Button")
+  push:SetAutoWidth(true)
+  push:SetText(L["Send"])
+  push:SetCallback("OnClick",function()
+    local bepgp_comms = bepgp:GetModule(addonName.."_comms",true)
+    local now = GetTime()
+    if bepgp_comms then
+      if not lastPush or (now - lastPush >= 120) then -- 5mins CD on manual requests
+        bepgp_comms:Transmit(bepgp_comms:GetDataForSending(),"GUILD")
+        lastPush = now
+        bepgp:Print(L["Sending Standings to Members."])
+      else
+        local cd = 120 - (now - lastPush)
+        bepgp:Print(format(L["On cooldown: Can push updates in %s"],SecondsToClock(cd)))
+      end
+    end
+  end)
+  container:AddChild(push)
+  self._widget_push = push
+
   bepgp:make_escable(container,"add")
+  self:RegisterMessage(addonName.."_EPGPCACHE","CacheUpdate")
 end
 
 function bepgp_standings:Toggle()
@@ -166,13 +207,42 @@ function bepgp_standings:Toggle()
   self:Refresh()
 end
 
+function bepgp_standings:ContextShowHide()
+  if CanViewOfficerNote() then
+    self._widgetoverlaylabel.frame:Hide()
+    self._widget_update.frame:Hide()
+    self._widget_push.frame:Show()
+  else
+    if #data > 0 then
+      self._widgetoverlaylabel.frame:Hide()
+    else
+      self._widgetoverlaylabel.frame:Show()
+    end
+    self._widget_update.frame:Show()
+    self._widget_push.frame:Hide()
+  end
+end
+
+function bepgp_standings:CacheUpdate()
+  if not CanViewOfficerNote() then
+    self:Refresh()
+  end
+end
+
 function bepgp_standings:Refresh()
   local members = bepgp:buildRosterTable()
+  local container = self._container
+  local canViewONote = CanViewOfficerNote()
+  local _epoch
   table.wipe(data)
   for k,v in pairs(members) do
-    local ep = bepgp:get_ep(v.name,v.onote) or 0
+    local ep, gp = 0, bepgp.VARS.basegp
+    ep = bepgp:get_ep(v.name,v.onote) or 0
     if ep > 0 then
-      local gp = bepgp:get_gp(v.name,v.onote) or bepgp.VARS.basegp
+      gp, _epoch = bepgp:get_gp(v.name,v.onote)
+      gp = gp or bepgp.VARS.basegp
+    end
+    if ep > 0 then
       local pr = ep/gp
       local eClass, class, hexclass = bepgp:getClassData(v.class)
       local color = RAID_CLASS_COLORS[eClass]
@@ -186,6 +256,15 @@ function bepgp_standings:Refresh()
       }})
     end
   end
+  if _epoch then
+    local _,timestamp = bepgp:getServerTime("%d,%b`%y","%H:%M",_epoch)
+    container:SetTitle(format("%s (%s)",L["BastionLoot standings"],timestamp))
+  elseif canViewONote then
+    container:SetTitle(format("%s (%s)",L["BastionLoot standings"],GREEN_FONT_COLOR:WrapTextInColorCode(L["LIVE"])))
+  else
+    container:SetTitle(L["BastionLoot standings"])
+  end
+  self:ContextShowHide()
   self._standings_table:SetData(data)
   if self._standings_table and self._standings_table.showing then
     self._standings_table:SortData()

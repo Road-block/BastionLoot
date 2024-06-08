@@ -790,4 +790,3 @@ function bepgp_loot:clickHandlerLoot()
     end
   end
 end
-

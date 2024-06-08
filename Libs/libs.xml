@@ -31,4 +31,6 @@
 <Include file="LibDialog-1.0\lib.xml"/>
 <Include file="LibDeformat-3.0\lib.xml"/>
 <Include file="LibGratuity-3.0\lib.xml"/>
+<Include file="LibDeflate\lib.xml"/>
+<Include file="LibSerialize\lib.xml"/>
 </Ui>
