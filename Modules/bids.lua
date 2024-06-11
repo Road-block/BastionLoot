@@ -22,14 +22,16 @@ local bidlink = {
 local out = "|cff9664c8"..addonName..":|r %s"
 local running_bid
 local color_msgp, color_osgp = "4DA6FF", "B6FFA7"
--- name(1), class(2), ep(3), gp(4), pr or roll(5), priotype(6), rank(7), rankid(8), main(9)
-local DATAID = {NAME=1,CLASS=2,VAL1=3,VAL2=4,PRIO=5,PRIOTYPE=6,RANK=7,RANKID=8,MAIN=9}
+local DATAID = {NAME=1,CLASS=2,VAL1=3,VAL2=4,PRIO=5,PRIOTYPE=6,RANK=7,RANKID=8,MAIN=9,WINCOUNT=10}
 local prioRoll, prioEpgp = 1,2
+local bepgp_loot
 
 local pr_sorter_bids_rank = function(a,b)
   local minep = bepgp.db.profile.minep
   local priorank = bepgp.db.char.priorank
   local prvetoOpt = bepgp.db.char.prveto
+  local wincount_sort = bepgp.db.char.wincountepgp
+  -- name(1), class(2), ep(3), gp(4), pr or roll(5), priotype(6), rank(7), rankid(8), main(9), wincount(10)
   local a_rank_pass = a[8] <= priorank
   local b_rank_pass = b[8] <= priorank
   if minep > 0 then
@@ -40,10 +42,16 @@ local pr_sorter_bids_rank = function(a,b)
         if a[6] ~= b[6] then
           return tonumber(a[6]) > tonumber(b[6])
         else
-          if a[5] ~= b[5] then
-            return tonumber(a[5]) > tonumber(b[5])
+          if wincount_sort then
+            if (a[10] and b[10] and a[10] ~= b[10]) then
+              return a[10] < b[10]
+            end
           else
-            return tonumber(a[3]) > tonumber(b[3])
+            if a[5] ~= b[5] then -- highest PR or roll wins
+              return tonumber(a[5]) > tonumber(b[5])
+            else -- highest EP fallback (not a decider)
+              return tonumber(a[3]) > tonumber(b[3])
+            end
           end
         end
       elseif a_rank_pass and (not b_rank_pass) then
@@ -61,10 +69,16 @@ local pr_sorter_bids_rank = function(a,b)
       if a[6] ~= b[6] then
         return tonumber(a[6]) > tonumber(b[6])
       else
-        if a[5] ~= b[5] then
-          return tonumber(a[5]) > tonumber(b[5])
+        if wincount_sort then
+          if (a[10] and b[10] and a[10] ~= b[10]) then
+            return a[10] < b[10]
+          end
         else
-          return tonumber(a[3]) > tonumber(b[3])
+          if a[5] ~= b[5] then -- highest PR or roll wins
+            return tonumber(a[5]) > tonumber(b[5])
+          else -- highest EP fallback (not a decider)
+            return tonumber(a[3]) > tonumber(b[3])
+          end
         end
       end
     elseif a_rank_pass and (not b_rank_pass) then
@@ -78,17 +92,25 @@ end
 local pr_sorter_bids = function(a,b)
   local minep = bepgp.db.profile.minep
   local prvetoOpt = bepgp.db.char.prveto
+  local wincount_sort = bepgp.db.char.wincountepgp
+  -- name(1), class(2), ep(3), gp(4), pr or roll(5), priotype(6), rank(7), rankid(8), main(9), wincount(10)
   if minep > 0 then
     local a_over = a[3]-minep >= 0
     local b_over = b[3]-minep >= 0
-    if a_over and b_over or (not a_over and not b_over) then
-      if a[6] ~= b[6] then
+    if a_over and b_over or (not a_over and not b_over) then -- min EP before PR
+      if a[6] ~= b[6] then -- PR before rolls
         return tonumber(a[6]) > tonumber(b[6])
       else
-        if a[5] ~= b[5] then
-          return tonumber(a[5]) > tonumber(b[5])
+        if wincount_sort then
+          if (a[10] and b[10] and a[10] ~= b[10]) then
+            return a[10] < b[10]
+          end
         else
-          return tonumber(a[3]) > tonumber(b[3])
+          if a[5] ~= b[5] then -- highest PR or roll wins
+            return tonumber(a[5]) > tonumber(b[5])
+          else -- highest EP fallback (not a decider)
+            return tonumber(a[3]) > tonumber(b[3])
+          end
         end
       end
     elseif a_over and (not b_over) then
@@ -97,13 +119,19 @@ local pr_sorter_bids = function(a,b)
       return false
     end
   else
-    if a[6] ~= b[6] then
+    if a[6] ~= b[6] then -- PR before rolls
       return tonumber(a[6]) > tonumber(b[6])
     else
-      if a[5] ~= b[5] then
-        return tonumber(a[5]) > tonumber(b[5])
+      if wincount_sort then
+        if (a[10] and b[10] and a[10] ~= b[10]) then
+          return a[10] < b[10]
+        end
       else
-        return tonumber(a[3]) > tonumber(b[3])
+        if a[5] ~= b[5] then -- highest PR or roll wins
+          return tonumber(a[5]) > tonumber(b[5])
+        else -- highest EP fallback (not a decider)
+          return tonumber(a[3]) > tonumber(b[3])
+        end
       end
     end
   end
@@ -147,11 +175,16 @@ function bepgp_bids:announceWinner(data)
   local minep_applies = bepgp.db.profile.minep > 0
   local rank_applies = bepgp.db.char.priorank ~= bepgp.VARS.priorank
   local rankos_applies = rank_applies and not bepgp.db.char.priorank_ms
-  local name, pr, msos, mode = data[1], data[2], data[3], data[4]
+  local name, pr, msos, mode, wincount = data[1], data[2], data[3], data[4], (data[5] or false)
+  local wincountOpt = bepgp.db.char.wincountepgp
   local out
   if mode == prioRoll then
     if msos == "ms" then
+      -- do something with wincount?
       out = L["Winning Mainspec Roll: %s (%s)"]
+      if wincount and wincountOpt then
+        out = L["Winning Mainspec Roll: %s (%s)"]..string.format(" +%d ",wincount)
+      end
       if rank_applies then
         out = out .. L["+RankPrio"]
       end
@@ -230,6 +263,7 @@ function bepgp_bids:Refresh()
   frame:SetMovable(true)
   local minep = bepgp.db.profile.minep
   local prvetoOpt = bepgp.db.char.prveto
+  local wincountOpt = bepgp.db.char.wincountepgp
   local minilvlOpt = bepgp.db.char.minilvl and bepgp.db.char.minilvl > 0
   local line
   line = frame:AddHeader()
@@ -276,7 +310,7 @@ function bepgp_bids:Refresh()
       frame:SetCell(line,6,C:Orange(L["Main"]),nil,"RIGHT")
       line = frame:AddSeparator(1)
       for i,data in ipairs(self.bids_main) do
-        local name, class, ep, gp, pr, prtype, rank, rankidx, main = unpack(data,1,9)
+        local name, class, ep, gp, pr, prtype, rank, rankidx, main, wincount = unpack(data,1,10)
         local eclass,_,hexclass = bepgp:getClassData(class)
         local r,g,b = RAID_CLASS_COLORS[eclass].r, RAID_CLASS_COLORS[eclass].g, RAID_CLASS_COLORS[eclass].b
         --local name_c = C:Colorize(hexclass,name)
@@ -294,15 +328,18 @@ function bepgp_bids:Refresh()
         frame:SetCellTextColor(line,1,r,g,b)
         frame:SetCell(line,2,text2,nil,"CENTER")
         frame:SetCell(line,3,text3,nil,"CENTER")
+        if prtype == prioRoll then
+          if wincountOpt and wincount then
+            text4 = string.format("%s (+%d)",text4,wincount)
+          end
+        end
+        frame:SetCell(line,4,text4,nil,"CENTER")
         if prtype == prioEpgp then
-          frame:SetCell(line,4,text4,nil,"CENTER")
           frame:SetCellColor(line,4,colorPRcell.r, colorPRcell.g, colorPRcell.b)
-        else
-          frame:SetCell(line,4,text4,nil,"RIGHT")
         end
         frame:SetCell(line,5,rank,nil,"RIGHT")
         frame:SetCell(line,6,text6,nil,"RIGHT")
-        frame:SetLineScript(line, "OnMouseUp", bepgp_bids.announceWinner, {name, pr, "ms", prtype})
+        frame:SetLineScript(line, "OnMouseUp", bepgp_bids.announceWinner, {name, pr, "ms", prtype, (wincountOpt and wincount)})
       end
     end
     if #(self.bids_off) > 0 then
@@ -328,7 +365,7 @@ function bepgp_bids:Refresh()
       frame:SetCell(line,6,C:Orange(L["Main"]),nil,"RIGHT")
       line = frame:AddSeparator(1)
       for i,data in ipairs(self.bids_off) do
-        local name, class, ep, gp, pr, prtype, rank, rankidx, main = unpack(data,1,9)
+        local name, class, ep, gp, pr, prtype, rank, rankidx, main, wincount = unpack(data,1,10)
         local eclass,_,hexclass = bepgp:getClassData(class)
         local r,g,b = RAID_CLASS_COLORS[eclass].r, RAID_CLASS_COLORS[eclass].g, RAID_CLASS_COLORS[eclass].b
         --local name_c = C:Colorize(hexclass,name)
@@ -525,7 +562,7 @@ function bepgp_bids:captureBid(event, text, sender)
       if bids_blacklist[sender] == nil then
         local name, class, rank, officernote, rankIdx, roster_index = bepgp:verifyGuildMember(sender)
         if not name and bepgp.db.profile.allypool then
-          local allies = self.db.profile.allies
+          local allies = bepgp.db.profile.allies
           if allies[sender] then
             name = sender
             class = allies[sender].class
@@ -574,6 +611,7 @@ function bepgp_bids:captureBidRoll(event, text)
   if not (running_bid and running_bid:find("roll")) then return end -- DEBUG
   if not (bepgp:raidLeader() or bepgp:lootMaster()) then return end
   if not bepgp_bids.bid_item.itemstring then return end
+  local wincountOpt = bepgp.db.char.wincountepgp
   local who, roll, low, high = DF.Deformat(text, RANDOM_ROLL_RESULT)
   roll, low, high = tonumber(roll),tonumber(low),tonumber(high)
   local msroll, osroll,is_ally
@@ -589,7 +627,7 @@ function bepgp_bids:captureBidRoll(event, text)
       if bids_blacklist[who] == nil then
         local name, class, rank, officernote, rankIdx, roster_index = bepgp:verifyGuildMember(who)
         if not name and bepgp.db.profile.allypool then
-          local allies = self.db.profile.allies
+          local allies = bepgp.db.profile.allies
           if allies[who] then
             name = who
             class = allies[who].class
@@ -612,10 +650,12 @@ function bepgp_bids:captureBidRoll(event, text)
           end
           if msroll then
             bids_blacklist[who] = true
+            bepgp_loot = bepgp_loot or bepgp:GetModule(addonName.."_loot",true)
+            local wincount = bepgp_loot and bepgp_loot:getWincount(who) or 0
             if (bepgp.db.profile.altspool) and (main_name) then
-              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,prioRoll,rank,rankIdx,main_name})
+              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,prioRoll,rank,rankIdx,main_name,wincount})
             else
-              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,prioRoll,rank,rankIdx})
+              table.insert(bepgp_bids.bids_main,{name,class,ep,gp,msroll,prioRoll,rank,rankIdx,nil,wincount})
             end
           elseif osroll then
             bids_blacklist[who] = true

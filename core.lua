@@ -722,6 +722,7 @@ local defaults = {
     plusroll_logs = {},
     wincountmanual = true,
     wincountignore = false,
+    wincountepgp = false,
     wincounttoken = true,
     wincountstack = true,
     plusrollepgp = false,
@@ -1345,6 +1346,7 @@ function bepgp:options(force)
         bepgp.db.char.minilvl = minilvlopt
         if minilvlopt and minilvlopt == 0 then
           bepgp.db.char.prveto = false
+          bepgp.db.char.wincountepgp = false
         end
       end,
       validate = function(info, val)
@@ -1365,10 +1367,26 @@ function bepgp:options(force)
       type = "toggle",
       name = L["Allow PR veto"],
       desc = L["Allow players to spend PR for roll items"],
-      order = 118,
+      order = 119,
       get = function() return not not bepgp.db.char.prveto end,
       set = function(info, val)
         bepgp.db.char.prveto = not bepgp.db.char.prveto
+      end,
+      hidden = function()
+        if not (bepgp._cata or bepgp._wrath) then return true end
+        if not bepgp:admin() then return true end
+        local minilvlopt = tonumber(bepgp.db.char.minilvl)
+        if not (minilvlopt and minilvlopt > 0) then return true end
+      end,
+    }
+    self._options.args.general.args.main.args["set_wincountepgp"] = {
+      type = "toggle",
+      name = L["Wincount Roll Bids"],
+      desc = L["Use Wincount for MS Roll wins"],
+      order = 120,
+      get = function(info) return not not bepgp.db.char.wincountepgp end,
+      set = function(info, val)
+        bepgp.db.char.wincountepgp = not bepgp.db.char.wincountepgp
       end,
       hidden = function()
         if not (bepgp._cata or bepgp._wrath) then return true end
@@ -1382,7 +1400,7 @@ function bepgp:options(force)
       name = L["Minimum EP"],
       desc = L["Set Minimum EP"],
       usage = "<minep>",
-      order = 119,
+      order = 123,
       get = function() return tostring(bepgp.db.profile.minep) end,
       set = function(info, val)
         bepgp.db.profile.minep = tonumber(val)
@@ -1405,7 +1423,7 @@ function bepgp:options(force)
      type = "execute",
      name = L["Reset EPGP"],
      desc = string.format(L["Resets everyone\'s EPGP to 0/%d (Guild Leader only)."],bepgp.VARS.basegp),
-     order = 120,
+     order = 125,
      hidden = function() return not (IsGuildLeader()) end,
      func = function() LD:Spawn(addonName.."DialogResetPoints") end
     }
@@ -1579,7 +1597,12 @@ function bepgp:options(force)
         end
       end,
       hidden = function()
-        return (bepgp.db.char.mode ~= "plusroll") or (not bepgp.db.char.wincountmanual)
+        if bepgp.db.char.mode == "epgp" and bepgp.db.char.wincountepgp then
+          return false
+        elseif bepgp.db.char.mode == "plusroll" and bepgp.db.char.wincountmanual then
+          return false
+        end
+        return true
       end,
     }
     self._options.args.general.args.main.args["reserveclear"] = {
@@ -1904,6 +1927,11 @@ function bepgp.OnLDBClick(obj,button)
         if mode == "epgp" then
           if loot then
             loot:Toggle()
+            if bepgp.db.char.wincountepgp then
+              if rollloot then
+                rollloot:Toggle()
+              end
+            end
           end
         elseif mode == "plusroll" and roll_admin then
           if reserves then
@@ -2314,6 +2342,7 @@ function bepgp:templateCache(id)
                 bepgp:givename_gp(name, gp)
               end
               LD:Dismiss(addonName.."DialogItemPoints")
+              LD:Dismiss(addonName.."DialogItemWinCount")
             end,
           },
           { -- OffSpec GP
@@ -2336,6 +2365,7 @@ function bepgp:templateCache(id)
                 bepgp:givename_gp(name, gp)
               end
               LD:Dismiss(addonName.."DialogItemPoints")
+              LD:Dismiss(addonName.."DialogItemWinCount")
             end,
           },
           { -- Bank/D-E
@@ -2350,9 +2380,123 @@ function bepgp:templateCache(id)
                 loot:addOrUpdateLoot(data, update)
               end
               LD:Dismiss(addonName.."DialogItemPoints")
+              LD:Dismiss(addonName.."DialogItemWinCount")
             end,
           },
         },        
+      }
+    elseif id == "DialogItemWinCount" then
+      print(key) -- DEBUG
+      self._dialogTemplates[key] = {
+        hide_on_escape = true,
+        show_while_dead = true,
+        text = L["%s looted to %s. Mark it as.."],
+        on_show = function(self)
+          local data = self.data
+          local loot_indices = data.loot_indices
+          local from_log = data[loot_indices.log]
+          local item_id = data[loot_indices.item_id]
+          local enClass = data[loot_indices.class]
+          self.text:SetText(string.format(L["%s looted %s. What do you want to do?"],data[loot_indices.player_c],data[loot_indices.item]))
+        end,
+        on_cancel = function(self)
+          local data = self.data
+          local loot_indices = data.loot_indices
+          local player = data[loot_indices.player]
+          local player_c = data[loot_indices.player_c]
+          local item = data[loot_indices.item]
+          local item_id = data[loot_indices.item_id]
+          local from_log = data[loot_indices.log]
+          local bepgp_loot = bepgp:GetModule(addonName.."_loot",true)
+          local plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs",true)
+          if from_log then -- update from log
+            local log_indices = data.log_indices
+            local log_entry = bepgp.db.char.plusroll_logs[from_log]
+            local tag = log_entry[log_indices.tag]
+            if tag ~= "none" then
+              if tag == "+1" then
+                -- remove from wincount and update log
+              end
+            end
+          else -- new entry
+            if plusroll_logs then
+              plusroll_logs:addToLog(player,player_c,item,item_id,"none")
+            end
+          end
+        end,
+        buttons = {
+          { -- Won as mainspec
+            text = L["Mainspec"].." +1",
+            on_click = function(self, button, down)
+              local data = self.data
+              local loot_indices = data.loot_indices
+              local player = data[loot_indices.player]
+              local player_c = data[loot_indices.player_c]
+              local item = data[loot_indices.item]
+              local item_id = data[loot_indices.item_id]
+              local from_log = data[loot_indices.log]
+              local bepgp_loot = bepgp:GetModule(addonName.."_loot",true)
+              local plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs",true)
+              if from_log then
+                local log_entry = bepgp.db.char.plusroll_logs[from_log]
+                local log_indices = data.log_indices
+                local tag = log_entry[log_indices.tag]
+                if tag ~= "+1" then
+                  if bepgp_loot then
+                    bepgp_loot:addWincount(player,item_id)
+                  end
+                  if plusroll_logs then
+                    plusroll_logs:updateLog(from_log,"+1")
+                  end
+                end
+              else -- new entry
+                if bepgp_loot then
+                  bepgp_loot:addWincount(player,item_id)
+                end
+                if plusroll_logs then
+                  plusroll_logs:addToLog(player,player_c,item,item_id,"+1")
+                end
+              end
+              LD:Dismiss(addonName.."DialogItemPoints")
+              LD:Dismiss(addonName.."DialogItemWinCount")
+            end,
+          },
+          { -- Won as offspec
+            text = L["Offspec"],
+            on_click = function(self, button, down)
+              local data = self.data
+              local loot_indices = data.loot_indices
+              local player = data[loot_indices.player]
+              local player_c = data[loot_indices.player_c]
+              local item = data[loot_indices.item]
+              local item_id = data[loot_indices.item_id]
+              local from_log = data[loot_indices.log]
+              local plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs",true)
+              local bepgp_loot = bepgp:GetModule(addonName.."_loot",true)
+              if from_log then
+                local log_entry = bepgp.db.char.plusroll_logs[from_log]
+                local log_indices = data.log_indices
+                local tag = log_entry[log_indices.tag]
+                if tag ~= "os" then
+                  if tag == "+1" then
+                    if plusroll_loot then
+                      bepgp_loot:removeWincount(player,item_id)
+                    end
+                  end
+                  if plusroll_logs then
+                    plusroll_logs:updateLog(from_log,"os")
+                  end
+                end
+              else
+                if plusroll_logs then
+                  plusroll_logs:addToLog(player,player_c,item,item_id,"os")
+                end
+              end
+              LD:Dismiss(addonName.."DialogItemPoints")
+              LD:Dismiss(addonName.."DialogItemWinCount")
+            end,
+          },
+        },
       }
     elseif id == "DialogItemPlusPoints" then
       self._dialogTemplates[key] = {
@@ -3317,14 +3461,14 @@ function bepgp:AddTipInfo(tooltip,...)
       end
       if tipOptionGroup.mlinfo then
         if roll_admin and is_admin and mode_epgp then
-          if owner and owner._bepgpclicks then
-            tooltip:AddDoubleLine(C:Yellow(L["Alt Click/RClick/MClick"]), C:Orange(L["Call for: MS/OS/Both"]))
+          if owner and (owner._bepgpclicks or owner.BGR) then
+            tooltip:AddDoubleLine(C:Yellow(L["Alt Click"]), C:Orange(L["Call for: MS/OS"]))
           end
         end
       end
     end
     if tipOptionGroup.mlinfo and (roll_admin and mode_plusroll) then
-      if owner and owner._bepgprollclicks then
+      if owner and (owner._bepgprollclicks or owner.BGR) then
         tooltip:AddDoubleLine(C:Yellow(L["Alt Click"]), C:Orange(L["Call for Rolls"]))
       end
     end

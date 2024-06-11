@@ -96,8 +96,8 @@ Results will print here when done.]]
   L["Restart"] = true
   L["Restart BastionLoot if having startup problems."] = true
   L["v%s Loaded."] = true
-  L["Alt Click/RClick/MClick"] = true
-  L["Call for: MS/OS/Both"] = true
+  L["Alt Click"] = true
+  L["Call for: MS/OS"] = true
   L["gp:|cff32cd32%d|r gp_os:|cff20b2aa%d|r"] = true
   L["pr:|cffff0000%.02f|r(%.02f) pr_os:|cffff0000%.02f|r(%.02f)"] = true
   L["|cffff0000Finished|r"] = true
@@ -576,5 +576,7 @@ You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back i
   L["Send"] = true
   L["Sending Standings to Members."] = true
   L["On cooldown: Can push updates in %s"] = true
+  L["Wincount Roll Bids"] = true
+  L["Use Wincount for MS Roll wins"] = true
 
 bepgp.L = L

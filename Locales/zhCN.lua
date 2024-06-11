@@ -85,8 +85,8 @@ if not L then return end
   L["Standings"] = "排名"
   L["Show Standings Table."] = "显示排名表."
   L["v%s Loaded."] = "v%s 加载."
-  L["Alt Click/RClick/MClick"] = "Alt+左键/右键/中键"
-  L["Call for: MS/OS/Both"] = "要求: MS/OS/Both"
+  L["Alt Click"] = "Alt+左键/右键/中键"
+  L["Call for: MS/OS"] = "要求: MS/OS/Both"
   L["gp:|cff32cd32%d|r gp_os:|cff20b2aa%d|r"] = "gp:|cff32cd32%d|r 副天赋gp:|cff20b2aa%d|r"
   L["pr:|cffff0000%.02f|r(%.02f) pr_os:|cffff0000%.02f|r(%.02f)"] = "pr:|cffff0000%.02f|r(%.02f) 副天赋pr:|cffff0000%.02f|r(%.02f)"
   L["|cffff0000Finished|r"] = "|cffff0000完成|r"
@@ -570,5 +570,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Send"] = "Send" -- needs translation
   L["Sending Standings to Members."] = "Sending Standings to Members." -- needs translation
   L["On cooldown: Can push updates in %s"] = "On cooldown: Can push updates in %s" -- needs translation
+  L["Wincount Roll Bids"] = "Wincount Roll Bids" -- needs translation
+  L["Use Wincount for MS Roll wins"] = "Use Wincount for MS Roll wins" -- needs translation
 
   bepgp.L = L

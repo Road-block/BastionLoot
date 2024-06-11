@@ -34,6 +34,16 @@ local loot_indices = {
   off_price2=12,
   class=13,
 }
+local loot_indices2 = {
+  time=1,
+  player=2,
+  player_c=3,
+  item=4,
+  item_id=5,
+  log=6,
+  class=7,
+}
+
 local itemCache = {}
 local function st_sorter_numeric(st,rowa,rowb,col)
   local cella = st.data[rowa].cols[7].value
@@ -141,6 +151,7 @@ function bepgp_loot:OnEnable()
   container:AddChild(export)
   bepgp:make_escable(container,"add")
   LD:Register(addonName.."DialogItemPoints", bepgp:templateCache("DialogItemPoints"))
+  LD:Register(addonName.."DialogItemWinCount", bepgp:templateCache("DialogItemWinCount"))
 
   -- loot awarded
   self:RegisterEvent("CHAT_MSG_LOOT","captureLoot")
@@ -210,6 +221,69 @@ function bepgp_loot:GiveMasterLoot(slot, index)
   end
 end
 
+function bepgp_loot:addWincount(name,item)
+  local wincount = bepgp.db.char.wincount
+  local raidident = bepgp:getRaidID()
+  if raidident then
+    wincount[raidident] = wincount[raidident] or {}
+    wincount[raidident][name] = wincount[raidident][name] or {}
+    table.insert(wincount[raidident][name],item)
+  end
+  self:Refresh()
+end
+
+function bepgp_loot:removeWincount(name,item)
+  local wincount = bepgp.db.char.wincount
+  local raidident = bepgp:getRaidID()
+  local wins = wincount[raidident] and wincount[raidident][name]
+  if wins then
+    local count = #(wins)
+    for i=count,1,-1 do
+      if wins[i]==item then
+        wins[i]=nil
+        break
+      end
+    end
+    if #(wins)==0 then
+      wincount[raidident][name]=nil
+    end
+  end
+  self:Refresh()
+end
+
+function bepgp_loot:getWincount(name)
+  local wincount = bepgp.db.char.wincount
+  local raidident = bepgp:getRaidID()
+  if raidident then
+    if wincount[raidident] and wincount[raidident][name] then
+      return #(wincount[raidident][name])
+    else
+      return 0
+    end
+  end
+end
+
+function bepgp_loot:announceWincount(name, row)
+  local out = row and string.format("%s %s",name,L["Wincount"]) or "{bepgp}"
+  local channel
+  if row then
+    local group = bepgp:GroupStatus()
+    channel = group ~= "SOLO" and group or nil
+  elseif name then
+    channel = name
+  end
+  if channel then -- DEBUG
+    if row then
+      local count, items = data[row].cols[2].value, data[row].cols[3].value
+      out = string.format("%s: %s (%s)",out,count,items)
+      SendChatMessage(out,channel)
+    else
+      out = self:getWincount(channel)
+      SendChatMessage(out,"WHISPER",nil,channel)
+    end
+  end
+end
+
 -- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("You receive loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
 -- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("Bushido receives loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
 -- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("Bushido-PyrewoodVillage receives loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
@@ -263,44 +337,67 @@ function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemStr
   local price,tier,price2,wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount,item_level = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
   price2 = type(price2)=="number" and price2 or nil
   local prvetoOpt = bepgp.db.char.prveto
+  local wincountOpt = bepgp.db.char.wincountepgp
   if (not (price)) or (price == 0) then
     return
   end
-  if not (bepgp:itemLevelOptionPass(item_level) or prvetoOpt) then
-    return
-  end
-  local class,_
-  if player == bepgp._playerName then
-    class = UnitClass("player") -- localized
-  else
-    _, class = bepgp:verifyGuildMember(player,true) -- localized
-  end
-  local allies = bepgp.db.profile.allies
-  if allies[player] and not class then
-    local standin = allies[player].standin
-    if standin then
-      class = allies[player].class
+  local pr_ilvl = bepgp:itemLevelOptionPass(item_level)
+
+  if wincountOpt and not pr_ilvl then -- not an automatic PR item and wincount enabled
+    local _,cached,class,enClass,hexClass
+    if player == bepgp._playerName then
+      class = UnitClass("player") -- localized
+      enClass,_,hexClass = bepgp:getClassData(class)
+    else
+      cached = bepgp:groupCache(player)
+      if cached then
+        class, enClass, hexClass = cached.class, cached.eclass, cached.hex
+      end
+    end
+    if not (class) then return end
+    self._lastPlayerItem, self._lastPlayerItemTime, self._lastPlayerItemSource = player_item, now, source
+    local player_color = C:Colorize(hexClass,player)
+    local epoch, timestamp = bepgp:getServerTime()
+    local data = {[loot_indices2.time]=epoch,[loot_indices2.player]=player,[loot_indices2.player_c]=player_color,[loot_indices2.item]=itemLink,[loot_indices2.item_id]=itemID,[loot_indices2.class]=enClass,loot_indices=loot_indices2}
+    if not bepgp._SUSPEND then
+      LD:Spawn(addonName.."DialogItemWinCount", data)
     end
   end
-  if not (class) then return end
-  local enClass,_,hexclass = bepgp:getClassData(class)
-  self._lastPlayerItem, self._lastPlayerItemTime, self._lastPlayerItemSource = player_item, now, source
-  local player_color = C:Colorize(hexclass,player)
-  local off_price,off_price2 = math.floor(price*bepgp.db.profile.discount)
-  if price2 then
-    off_price2 = math.floor(price2*bepgp.db.profile.discount)
-  end
-  local epoch, timestamp = bepgp:getServerTime()
-  local data = {[loot_indices.time]=epoch,[loot_indices.player]=player,[loot_indices.player_c]=player_color,[loot_indices.item]=itemLink,[loot_indices.item_id]=itemID,[loot_indices.bind]=bind,[loot_indices.price]=price,[loot_indices.off_price]=off_price,[loot_indices.price2]=price2,[loot_indices.off_price2]=off_price2,[loot_indices.class]=enClass,loot_indices=loot_indices}
-  if price2 then
-    if wand_discount then data.use_discount = true end
-    if ranged_discount and ranged_discount:match(enClass) then data.use_discount = true end
-    if shield_discount and shield_discount:match(enClass) then data.use_discount = true end
-    if onehand_discount and onehand_discount:match(enClass) then data.use_discount = true end
-    if twohand_discount and twohand_discount:match(enClass) then data.use_discount = true end
-  end
-  if not bepgp._SUSPEND then
-    LD:Spawn(addonName.."DialogItemPoints", data)
+
+  if (pr_ilvl or prvetoOpt) then -- automatic PR item or pr veto enabled
+    local class,_
+    if player == bepgp._playerName then
+      class = UnitClass("player") -- localized
+    else
+      _, class = bepgp:verifyGuildMember(player,true) -- localized
+    end
+    local allies = bepgp.db.profile.allies
+    if allies[player] and not class then
+      local standin = allies[player].standin
+      if standin then
+        class = allies[player].class
+      end
+    end
+    if not (class) then return end
+    local enClass,_,hexclass = bepgp:getClassData(class)
+    self._lastPlayerItem, self._lastPlayerItemTime, self._lastPlayerItemSource = player_item, now, source
+    local player_color = C:Colorize(hexclass,player)
+    local off_price,off_price2 = math.floor(price*bepgp.db.profile.discount)
+    if price2 then
+      off_price2 = math.floor(price2*bepgp.db.profile.discount)
+    end
+    local epoch, timestamp = bepgp:getServerTime()
+    local data = {[loot_indices.time]=epoch,[loot_indices.player]=player,[loot_indices.player_c]=player_color,[loot_indices.item]=itemLink,[loot_indices.item_id]=itemID,[loot_indices.bind]=bind,[loot_indices.price]=price,[loot_indices.off_price]=off_price,[loot_indices.price2]=price2,[loot_indices.off_price2]=off_price2,[loot_indices.class]=enClass,loot_indices=loot_indices}
+    if price2 then
+      if wand_discount then data.use_discount = true end
+      if ranged_discount and ranged_discount:match(enClass) then data.use_discount = true end
+      if shield_discount and shield_discount:match(enClass) then data.use_discount = true end
+      if onehand_discount and onehand_discount:match(enClass) then data.use_discount = true end
+      if twohand_discount and twohand_discount:match(enClass) then data.use_discount = true end
+    end
+    if not bepgp._SUSPEND then
+      LD:Spawn(addonName.."DialogItemPoints", data)
+    end
   end
 end
 
@@ -339,36 +436,62 @@ function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,
   local price,tier,price2,_,_,_,_,_,item_level = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
   price2 = type(price2)=="number" and price2 or nil
   local prvetoOpt = bepgp.db.char.prveto
+  local wincountOpt = bepgp.db.char.wincountepgp
   if not (price) or price == 0 then
-    return
-  end
-  if not (bepgp:itemLevelOptionPass(item_level) or prvetoOpt) then
     return
   end
   local bind = bepgp:itemBinding(itemString)
   if (not bind) then return end
   if (bind == bepgp.VARS.bop) and (not tmpTrade) then return end
-  local _, class = bepgp:verifyGuildMember(tradeTarget,true)
-  local allies = bepgp.db.profile.allies
-  if allies[tradeTarget] and not class then
-    local standin = allies[tradeTarget].standin
-    if standin then
-      class = allies[tradeTarget].class
+
+  local pr_ilvl = bepgp:itemLevelOptionPass(item_level)
+
+  if wincountOpt and not pr_ilvl then -- not an automatic PR item and wincount enabled
+    local _,cached,class,enClass,hexClass
+    if player == bepgp._playerName then
+      class = UnitClass("player") -- localized
+      enClass,_,hexClass = bepgp:getClassData(class)
+    else
+      cached = bepgp:groupCache(player)
+      if cached then
+        class, enClass, hexClass = cached.class, cached.eclass, cached.hex
+      end
+    end
+    if not (class) then return end
+    local player_color = C:Colorize(hexClass,player)
+    local epoch, timestamp = bepgp:getServerTime()
+    local data = self:findLootUnassigned(itemID)
+    if (data) then
+      local data2 = {[loot_indices2.time]=epoch,[loot_indices2.player]=player,[loot_indices2.player_c]=player_color,[loot_indices2.item]=itemLink,[loot_indices2.item_id]=itemID,[loot_indices2.class]=enClass,loot_indices=loot_indices2}
+      if not bepgp._SUSPEND then
+        LD:Spawn(addonName.."DialogItemWinCount", data2)
+      end
     end
   end
-  if not class then return end
-  local _,_,hexclass = bepgp:getClassData(class)
-  local target_color = C:Colorize(hexclass,tradeTarget)
-  local epoch, timestamp = bepgp:getServerTime()
-  local data = self:findLootUnassigned(itemID)
-  if (data) then
-    data[loot_indices.time] = epoch
-    data[loot_indices.player] = tradeTarget
-    data[loot_indices.player_c] = target_color
-    data.loot_indices = loot_indices
-    data[loot_indices.update] = 1
-    if not bepgp._SUSPEND then
-      LD:Spawn(addonName.."DialogItemPoints", data)
+
+  if (pr_ilvl or prvetoOpt) then -- automatic PR item or pr veto enabled
+    local _, class = bepgp:verifyGuildMember(tradeTarget,true)
+    local allies = bepgp.db.profile.allies
+    if allies[tradeTarget] and not class then
+      local standin = allies[tradeTarget].standin
+      if standin then
+        class = allies[tradeTarget].class
+      end
+    end
+    if not class then return end
+    local _,_,hexclass = bepgp:getClassData(class)
+    local target_color = C:Colorize(hexclass,tradeTarget)
+    local epoch, timestamp = bepgp:getServerTime()
+    local data = self:findLootUnassigned(itemID)
+    if (data) then
+      data[loot_indices.time] = epoch
+      data[loot_indices.player] = tradeTarget
+      data[loot_indices.player_c] = target_color
+      data.loot_indices = loot_indices
+      data[loot_indices.update] = 1
+      if not bepgp._SUSPEND then
+        LD:Spawn(addonName.."DialogItemPoints", data)
+      end
     end
   end
 end
@@ -493,7 +616,7 @@ function bepgp_loot:bidCall(frame, button, context) -- context is one of "master
     if not (slot and LootSlotHasItem(slot)) then return end
     itemLink = GetLootSlotLink(slot)
   elseif context == "container" then
-    hasItem = frame.hasItem -- default bags, Bagnon, Combuctor, Baggins, AdiBags, tdBag2, Tukui, ElvUI
+    hasItem = frame.hasItem -- default bags, Bagnon, Combuctor, Baggins, AdiBags, tdBag2, Tukui, ElvUI, Baganator
     if hasItem then
       if frame.ARK_Data then -- ArkInventory
         bagID, slotID = frame.ARK_Data.blizzard_id, frame.ARK_Data.slot_id
@@ -512,7 +635,7 @@ function bepgp_loot:bidCall(frame, button, context) -- context is one of "master
         if bagID and slotID then
           itemLink = GetContainerItemLink(bagID, slotID)
         end
-      else -- get from ItemButton (default bags, Bagnon, BaudManifest, tdBag2, Baggins, Tukui, ElvUI)
+      else -- get from ItemButton (default bags, Bagnon, BaudManifest, tdBag2, Baggins, Tukui, ElvUI, Baganator)
         bagID, slotID = frame:GetParent():GetID(), frame:GetID()
         if bagID and slotID then
           itemLink = GetContainerItemLink(bagID, slotID)
@@ -532,13 +655,7 @@ function bepgp_loot:bidCall(frame, button, context) -- context is one of "master
     return
   end
   if bepgp:itemLevelOptionPass(item_level) then
-    if button == "LeftButton" then
-      bepgp:widestAudience(string.format(L["Whisper %s a + for %s (MS)"],bepgp._playerName,itemLink))
-    elseif button == "RightButton" then
-      bepgp:widestAudience(string.format(L["Whisper %s a - for %s (OS)"],bepgp._playerName,itemLink))
-    elseif button == "MiddleButton" then
-      bepgp:widestAudience(string.format(L["Whisper %s a + or - for %s (MS or OS)"],bepgp._playerName,itemLink))
-    end
+    bepgp:widestAudience(string.format(L["Whisper %s a + or - for %s (MS or OS)"],bepgp._playerName,itemLink))
   else
     if prvetoOpt then
       bepgp:widestAudience(string.format(L["'/roll' (MS) or '/roll 50' (OS). You can also whisper %s a + to use PR for %s"],bepgp._playerName,itemLink))
@@ -598,11 +715,10 @@ function bepgp_loot:bagginsHook()
 end
 
 function bepgp_loot:baganatorHook()
-  if Baganator_BackpackViewFrame and Baganator_BackpackViewFrame.BagLive then
-    local buttons = Baganator_BackpackViewFrame.BagLive.buttons or {}
-    for _,itemButton in pairs(buttons) do
-      bepgp_loot:hookContainerButton(itemButton)
-    end
+  if not self:IsHooked("ContainerFrameItemButton_OnModifiedClick") then
+    self:SecureHook("ContainerFrameItemButton_OnModifiedClick", function(frame, button)
+      bepgp_loot:bidCall(frame, button, "container")
+    end)
   end
 end
 
@@ -680,9 +796,6 @@ function bepgp_loot:clickHandlerBags(id)
       end
       bag_addons[addon] = true
     elseif addon == "Baganator" then
-      if Baganator_BackpackViewFrame and Baganator_BackpackViewFrame.BagLive and Baganator_BackpackViewFrame.BagLive.RebuildLayout then
-        self:SecureHook(Baganator_BackpackViewFrame.BagLive, "RebuildLayout", "baganatorHook")
-      end
       self:baganatorHook()
       bag_addons[addon] = true
     end

@@ -64,7 +64,12 @@ local assign_options = {
         local log_index = bepgp_plusroll_logs._selected
         local log_entry = bepgp.db.char.plusroll_logs[log_index]
         local entry = {[loot_indices.player]=log_entry[log_indices.player],[loot_indices.item]=log_entry[log_indices.item],[loot_indices.item_id]=log_entry[log_indices.item_id],[loot_indices.player_c]=log_entry[log_indices.player_c],[loot_indices.log]=log_index,loot_indices=loot_indices,log_indices=log_indices}
-        LD:Spawn(addonName.."DialogItemPlusPoints", entry)
+        local mode = bepgp.db.char.mode
+        if mode == "epgp" and bepgp.db.char.wincountepgp then
+          LD:Spawn(addonName.."DialogItemWinCount", entry)
+        else
+          LD:Spawn(addonName.."DialogItemPlusPoints", entry)
+        end
         C_Timer.After(0.2, menu_close)
       end,
     },

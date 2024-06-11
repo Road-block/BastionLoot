@@ -85,8 +85,8 @@ if not L then return end
   L["Standings"] = "排名"
   L["Show Standings Table."] = "顯示排名表."
   L["v%s Loaded."] = "v%s 加載."
-  L["Alt Click/RClick/MClick"] = "Alt+左鍵/右鍵/中鍵"
-  L["Call for: MS/OS/Both"] = "要求: MS/OS/Both"
+  L["Alt Click"] = "Alt+左鍵/右鍵/中鍵"
+  L["Call for: MS/OS"] = "要求: MS/OS/Both"
   L["gp:|cff32cd32%d|r gp_os:|cff20b2aa%d|r"] = "gp:|cff32cd32%d|r 副天賦gp:|cff20b2aa%d|r"
   L["pr:|cffff0000%.02f|r(%.02f) pr_os:|cffff0000%.02f|r(%.02f)"] = "pr:|cffff0000%.02f|r(%.02f) 副天賦pr:|cffff0000%.02f|r(%.02f)"
   L["|cffff0000Finished|r"] = "|cffff0000完成|r"
@@ -542,7 +542,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Sending request for raid difficulty change"] = "Sending request for raid difficulty change" -- needs translation
   L["Granting raid difficulty change to %s."] = "Granting raid difficulty change to %s." -- needs translation
   L["|cff33ff99Pending Loot:|r"] = "|cff33ff99Pending Loot:|r" -- needs translation
-    L["Suspend"] = "Suspend" -- needs translation
+  L["Suspend"] = "Suspend" -- needs translation
   L["Suspend bid monitoring for this session.(does not persist relog)"] = "Suspend bid monitoring for this session.(does not persist relog)" -- needs translation
   L["Bid processing suspended. (session only)"] = "Bid processing suspended. (session only)" -- needs translation
   L["Bid processing resumed."] = "Bid processing resumed." -- needs translation
@@ -570,5 +570,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Send"] = "Send" -- needs translation
   L["Sending Standings to Members."] = "Sending Standings to Members." -- needs translation
   L["On cooldown: Can push updates in %s"] = "On cooldown: Can push updates in %s" -- needs translation
+  L["Wincount Roll Bids"] = "Wincount Roll Bids" -- needs translation
+  L["Use Wincount for MS Roll wins"] = "Use Wincount for MS Roll wins" -- needs translation
 
   bepgp.L = L
