@@ -26,32 +26,38 @@ local DATAID = {NAME=1,CLASS=2,VAL1=3,VAL2=4,PRIO=5,PRIOTYPE=6,RANK=7,RANKID=8,M
 local prioRoll, prioEpgp = 1,2
 local bepgp_loot
 
+-- rank > minep > pr
 local pr_sorter_bids_rank = function(a,b)
   local minep = bepgp.db.profile.minep
   local priorank = bepgp.db.char.priorank
-  local prvetoOpt = bepgp.db.char.prveto
   local wincount_sort = bepgp.db.char.wincountepgp
   -- name(1), class(2), ep(3), gp(4), pr or roll(5), priotype(6), rank(7), rankid(8), main(9), wincount(10)
   local a_rank_pass = a[8] <= priorank
   local b_rank_pass = b[8] <= priorank
-  if minep > 0 then
-    local a_over = a[3]-minep >= 0
-    local b_over = b[3]-minep >= 0
-    if a_over and b_over or (not a_over and not b_over) then
+  if a[6] ~= b[6] then -- comparing different prio types
+    return tonumber(a[6]) > tonumber(b[6]) -- PR before Rolls
+  else -- comparing same prio types
+    if a[6] == prioEpgp then -- comparing epgp
       if a_rank_pass and b_rank_pass or (not a_rank_pass and not b_rank_pass) then
-        if a[6] ~= b[6] then
-          return tonumber(a[6]) > tonumber(b[6])
-        else
-          if wincount_sort then
-            if (a[10] and b[10] and a[10] ~= b[10]) then
-              return a[10] < b[10]
-            end
-          else
-            if a[5] ~= b[5] then -- highest PR or roll wins
+        if minep > 0 then -- compare EP cuttoff, then PR
+          local a_over = a[3]-minep >= 0
+          local b_over = b[3]-minep >= 0
+          if a_over and b_over or (not a_over and not b_over) then
+            if a[5] ~= b[5] then
               return tonumber(a[5]) > tonumber(b[5])
-            else -- highest EP fallback (not a decider)
+            else
               return tonumber(a[3]) > tonumber(b[3])
             end
+          elseif a_over and (not b_over) then
+            return true
+          elseif b_over and (not a_over) then
+            return false
+          end
+        else -- just PR compare
+          if a[5] ~= b[5] then
+            return tonumber(a[5]) > tonumber(b[5])
+          else
+            return tonumber(a[3]) > tonumber(b[3])
           end
         end
       elseif a_rank_pass and (not b_rank_pass) then
@@ -59,73 +65,52 @@ local pr_sorter_bids_rank = function(a,b)
       elseif b_rank_pass and (not a_rank_pass) then
         return false
       end
-    elseif a_over and (not b_over) then
-      return true
-    elseif b_over and (not a_over) then
-      return false
-    end
-  else
-    if a_rank_pass and b_rank_pass or (not a_rank_pass and not b_rank_pass) then
-      if a[6] ~= b[6] then
-        return tonumber(a[6]) > tonumber(b[6])
+    else -- comparing rolls
+      if wincount_sort and (a[10] and b[10] and a[10] ~= b[10]) then
+        return a[10] < b[10]
       else
-        if wincount_sort then
-          if (a[10] and b[10] and a[10] ~= b[10]) then
-            return a[10] < b[10]
-          end
-        else
-          if a[5] ~= b[5] then -- highest PR or roll wins
-            return tonumber(a[5]) > tonumber(b[5])
-          else -- highest EP fallback (not a decider)
-            return tonumber(a[3]) > tonumber(b[3])
-          end
+        if a[5] ~= b[5] then -- highest PR or roll wins
+          return tonumber(a[5]) > tonumber(b[5])
+        else -- highest EP fallback (not a decider)
+          return tonumber(a[3]) > tonumber(b[3])
         end
       end
-    elseif a_rank_pass and (not b_rank_pass) then
-      return true
-    elseif b_rank_pass and (not a_rank_pass) then
-      return false
     end
   end
 end
 
 local pr_sorter_bids = function(a,b)
   local minep = bepgp.db.profile.minep
-  local prvetoOpt = bepgp.db.char.prveto
   local wincount_sort = bepgp.db.char.wincountepgp
   -- name(1), class(2), ep(3), gp(4), pr or roll(5), priotype(6), rank(7), rankid(8), main(9), wincount(10)
-  if minep > 0 then
-    local a_over = a[3]-minep >= 0
-    local b_over = b[3]-minep >= 0
-    if a_over and b_over or (not a_over and not b_over) then -- min EP before PR
-      if a[6] ~= b[6] then -- PR before rolls
-        return tonumber(a[6]) > tonumber(b[6])
-      else
-        if wincount_sort then
-          if (a[10] and b[10] and a[10] ~= b[10]) then
-            return a[10] < b[10]
-          end
-        else
-          if a[5] ~= b[5] then -- highest PR or roll wins
+  if a[6] ~= b[6] then -- comparing different prio types
+    return tonumber(a[6]) > tonumber(b[6]) -- PR before Rolls
+  else -- comparing same prio types
+    if a[6] == prioEpgp then -- comparing epgp
+      if minep > 0 then -- compare EP cuttoff, then PR
+        local a_over = a[3]-minep >= 0
+        local b_over = b[3]-minep >= 0
+        if a_over and b_over or (not a_over and not b_over) then
+          if a[5] ~= b[5] then
             return tonumber(a[5]) > tonumber(b[5])
-          else -- highest EP fallback (not a decider)
+          else
             return tonumber(a[3]) > tonumber(b[3])
           end
+        elseif a_over and (not b_over) then
+          return true
+        elseif b_over and (not a_over) then
+          return false
+        end
+      else -- just PR compare
+        if a[5] ~= b[5] then
+          return tonumber(a[5]) > tonumber(b[5])
+        else
+          return tonumber(a[3]) > tonumber(b[3])
         end
       end
-    elseif a_over and (not b_over) then
-      return true
-    elseif b_over and (not a_over) then
-      return false
-    end
-  else
-    if a[6] ~= b[6] then -- PR before rolls
-      return tonumber(a[6]) > tonumber(b[6])
-    else
-      if wincount_sort then
-        if (a[10] and b[10] and a[10] ~= b[10]) then
-          return a[10] < b[10]
-        end
+    else -- comparing rolls
+      if wincount_sort and (a[10] and b[10] and a[10] ~= b[10]) then
+        return a[10] < b[10]
       else
         if a[5] ~= b[5] then -- highest PR or roll wins
           return tonumber(a[5]) > tonumber(b[5])
