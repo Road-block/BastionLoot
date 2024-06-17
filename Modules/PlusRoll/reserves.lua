@@ -274,7 +274,7 @@ function bepgp_plusroll_reserves:captureRes(fromfilter, event, text, sender)
     end
   end
   if not (string.find(text, "|Hitem:", 1, true)) then return false end
-  local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%d]+|h%[.-%]|h|r"," ; ")
+  local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
   if count > 1 then return false end
   local reskw_found
   local lowtext = string.lower(linkstriptext)
@@ -284,7 +284,7 @@ function bepgp_plusroll_reserves:captureRes(fromfilter, event, text, sender)
   end
   if (reskw_found) then
     local _, itemLink, itemColor, itemString, itemName, itemID
-    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%d]+|h%[.-%]|h|r)")
+    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r)")
     if (itemLink) and (itemLink ~= "") then
       itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
     end
@@ -369,10 +369,10 @@ function bepgp_plusroll_reserves:resRemove(text, sender)
   end
   if rem_query then
     if not (string.find(text, "|Hitem:", 1, true)) then return false end
-    local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%d]+|h%[.-%]|h|r"," ; ")
+    local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
     if count > 1 then return false end
     local _, itemLink, itemColor, itemString, itemName, itemID
-    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%d]+|h%[.-%]|h|r)")
+    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r)")
     if (itemLink) and (itemLink ~= "") then
       itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
     end

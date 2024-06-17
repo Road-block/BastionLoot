@@ -107,7 +107,7 @@ end
 
 function bepgp_loot:OnEnable()
   local container = GUI:Create("Window")
-  container:SetTitle(L["BastionLoot loot info"])
+  container:SetTitle(L["BastionLoot loot info"].."["..L["EPGP"].."]")
   container:SetWidth(555)
   container:SetHeight(320)
   container:EnableResize(false)
@@ -222,67 +222,27 @@ function bepgp_loot:GiveMasterLoot(slot, index)
 end
 
 function bepgp_loot:addWincount(name,item)
-  local wincount = bepgp.db.char.wincount
-  local raidident = bepgp:getRaidID()
-  if raidident then
-    wincount[raidident] = wincount[raidident] or {}
-    wincount[raidident][name] = wincount[raidident][name] or {}
-    table.insert(wincount[raidident][name],item)
+  local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot",true)
+  if plusroll_loot and plusroll_loot.addWincount then
+    return plusroll_loot:addWincount(name,item)
   end
-  self:Refresh()
 end
 
 function bepgp_loot:removeWincount(name,item)
-  local wincount = bepgp.db.char.wincount
-  local raidident = bepgp:getRaidID()
-  local wins = wincount[raidident] and wincount[raidident][name]
-  if wins then
-    local count = #(wins)
-    for i=count,1,-1 do
-      if wins[i]==item then
-        wins[i]=nil
-        break
-      end
-    end
-    if #(wins)==0 then
-      wincount[raidident][name]=nil
-    end
+  local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot",true)
+  if plusroll_loot and plusroll_loot.removeWincount then
+    return plusroll_loot:removeWincount(name, item)
   end
-  self:Refresh()
 end
 
 function bepgp_loot:getWincount(name)
-  local wincount = bepgp.db.char.wincount
-  local raidident = bepgp:getRaidID()
-  if raidident then
-    if wincount[raidident] and wincount[raidident][name] then
-      return #(wincount[raidident][name])
-    else
-      return 0
-    end
+  local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot",true)
+  if plusroll_loot and plusroll_loot.getWincount then
+    return plusroll_loot:getWincount(name)
   end
 end
 
-function bepgp_loot:announceWincount(name, row)
-  local out = row and string.format("%s %s",name,L["Wincount"]) or "{bepgp}"
-  local channel
-  if row then
-    local group = bepgp:GroupStatus()
-    channel = group ~= "SOLO" and group or nil
-  elseif name then
-    channel = name
-  end
-  if channel then -- DEBUG
-    if row then
-      local count, items = data[row].cols[2].value, data[row].cols[3].value
-      out = string.format("%s: %s (%s)",out,count,items)
-      SendChatMessage(out,channel)
-    else
-      out = self:getWincount(channel)
-      SendChatMessage(out,"WHISPER",nil,channel)
-    end
-  end
-end
+
 
 -- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("You receive loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")
 -- /run BastionLoot:GetModule("BastionLoot_loot"):captureLoot("Bushido receives loot: \124cffa335ee\124Hitem:18205::::::::60:::::\124h[Eskhandar's Collar]\124h\124r.")

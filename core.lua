@@ -2386,7 +2386,6 @@ function bepgp:templateCache(id)
         },        
       }
     elseif id == "DialogItemWinCount" then
-      print(key) -- DEBUG
       self._dialogTemplates[key] = {
         hide_on_escape = true,
         show_while_dead = true,
@@ -2479,7 +2478,7 @@ function bepgp:templateCache(id)
                 local tag = log_entry[log_indices.tag]
                 if tag ~= "os" then
                   if tag == "+1" then
-                    if plusroll_loot then
+                    if bepgp_loot then
                       bepgp_loot:removeWincount(player,item_id)
                     end
                   end
@@ -6045,8 +6044,3 @@ function bepgp:refreshPRTablets()
 end
 
 _G[addonName] = bepgp
-
---[[
-ContainerFrameItemButton_OnClick(self, button)
-ContainerFrameItemButton_OnModifiedClick(self, button)
-]]

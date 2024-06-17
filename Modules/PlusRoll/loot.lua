@@ -68,9 +68,9 @@ function bepgp_plusroll_loot:OnEnable()
   container:SetCallback("OnShow", function()
     bepgp_plusroll_loot._wincount_table:Show()
     if bepgp_plusroll_loot._wincount_table:GetSelection() then
-      bepgp_plusroll_loot._container._announce:SetDisabled(false)
-    else
       bepgp_plusroll_loot._container._announce:SetDisabled(true)
+    else
+      bepgp_plusroll_loot._container._announce:SetDisabled(false)
     end
     local ident = bepgp:getRaidID()
     if ident then
@@ -95,14 +95,14 @@ function bepgp_plusroll_loot:OnEnable()
   announce:SetText(L["Announce"])
   announce:SetCallback("OnClick",function()
     local realrow = bepgp_plusroll_loot._wincount_table:GetSelection()
-    if realrow then
+    if realrow and data[realrow] then
       local name = data[realrow].cols[1].value
       bepgp_plusroll_loot:announceWincount(name,realrow)
     end
   end)
   announce:SetCallback("OnEnter",function(widget,script)
     local realrow = bepgp_plusroll_loot._wincount_table:GetSelection()
-    if realrow then
+    if realrow and data[realrow] then
       local items = data[realrow].cols[3].value
       GameTooltip:SetOwner(widget.frame,"ANCHOR_TOP")
       GameTooltip:SetText(_G.ITEMS)
@@ -185,6 +185,12 @@ function bepgp_plusroll_loot:RefreshGUI()
   if self._wincount_table and self._wincount_table.showing then
     self._wincount_table:SortData()
   end
+  local selected = self._wincount_table:GetSelection()
+  if selected then
+    self._container._announce:SetDisabled(false)
+  else
+    self._container._announce:SetDisabled(true)
+  end
 end
 
 function bepgp_plusroll_loot:Refresh()
@@ -217,6 +223,7 @@ function bepgp_plusroll_loot:Refresh()
       end
     end
   end
+  self._wincount_table:ClearSelection()
   self:RefreshGUI()
 end
 

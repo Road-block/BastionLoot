@@ -28,6 +28,7 @@ local loot_indices = { -- duplication from loot.lua here but beats coding around
   item=4,
   item_id=5,
   log=6,
+  class=7,
 }
 local log_indices = {
   time=1,
@@ -104,7 +105,7 @@ end
 
 function bepgp_plusroll_logs:OnEnable()
   local container = GUI:Create("Window")
-  container:SetTitle(L["BastionLoot logs"])
+  container:SetTitle(L["BastionLoot loot info"].."[".._G.ROLL.."]")
   container:SetWidth(505)
   container:SetHeight(320)
   container:EnableResize(false)
