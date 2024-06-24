@@ -287,7 +287,7 @@ end
 function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemString,itemName,itemID)
   local iName, iLink, iRarity, iLevel, iMinLevel, iType, iSubType, iStackCount, iEquipLoc, iTexture,
     iSellPrice, iClassID, iSubClassID, bindType, expacID, iSetID, isCraft = GetItemInfo(itemID)
-  itemCache[itemID] = true
+  itemCache[itemLink] = true
   local dupe, player_item, now = self:processLootDupe(player,itemName,source)
   if dupe then
     return
@@ -364,10 +364,10 @@ end
 function bepgp_loot:processLoot(player,itemLink,source)
   local itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
   if itemName then
-    if itemCache[itemID] then
+    if itemCache[itemLink] then
       self:processLootCallback(player,itemLink,source,itemColor,itemString,itemName,itemID)
     else
-      local item = Item:CreateFromItemID(itemID)
+      local item = Item:CreateFromItemLink(itemLink)
       item:ContinueOnItemLoad(function()
         bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemString,itemName,itemID)
       end)
@@ -376,9 +376,9 @@ function bepgp_loot:processLoot(player,itemLink,source)
 end
 
 -- /run local _,link = GetItemInfo(16857)local data=BastionLoot:GetModule("BastionEPGP_loot"):findLootUnassigned(link)print(data[8] or "nodata")
-function bepgp_loot:findLootUnassigned(itemID)
+function bepgp_loot:findLootUnassigned(itemLink)
   for i,data in ipairs(bepgp.db.char.loot) do
-    if data[loot_indices.item_id] == itemID and data[loot_indices.action] == bepgp.VARS.unassigned then
+    if data[loot_indices.item] == itemLink and data[loot_indices.action] == bepgp.VARS.unassigned then
       return data
     end
   end
@@ -392,7 +392,7 @@ function bepgp_loot:addOrUpdateLoot(data,update)
 end
 
 function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,itemID,itemLink,tmpTrade)
-  itemCache[itemID] = true
+  itemCache[itemLink] = true
   local price,tier,price2,_,_,_,_,_,item_level = bepgp:GetPrice(itemString, bepgp.db.profile.progress)
   price2 = type(price2)=="number" and price2 or nil
   local prvetoOpt = bepgp.db.char.prveto
@@ -408,21 +408,21 @@ function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,
 
   if wincountOpt and not pr_ilvl then -- not an automatic PR item and wincount enabled
     local _,cached,class,enClass,hexClass
-    if player == bepgp._playerName then
+    if tradeTarget == bepgp._playerName then
       class = UnitClass("player") -- localized
       enClass,_,hexClass = bepgp:getClassData(class)
     else
-      cached = bepgp:groupCache(player)
+      cached = bepgp:groupCache(tradeTarget)
       if cached then
         class, enClass, hexClass = cached.class, cached.eclass, cached.hex
       end
     end
     if not (class) then return end
-    local player_color = C:Colorize(hexClass,player)
+    local player_color = C:Colorize(hexClass,tradeTarget)
     local epoch, timestamp = bepgp:getServerTime()
-    local data = self:findLootUnassigned(itemID)
+    local data = self:findLootUnassigned(itemLink)
     if (data) then
-      local data2 = {[loot_indices2.time]=epoch,[loot_indices2.player]=player,[loot_indices2.player_c]=player_color,[loot_indices2.item]=itemLink,[loot_indices2.item_id]=itemID,[loot_indices2.class]=enClass,loot_indices=loot_indices2}
+      local data2 = {[loot_indices2.time]=epoch,[loot_indices2.player]=tradeTarget,[loot_indices2.player_c]=player_color,[loot_indices2.item]=itemLink,[loot_indices2.item_id]=itemID,[loot_indices2.class]=enClass,loot_indices=loot_indices2}
       if not bepgp._SUSPEND then
         LD:Spawn(addonName.."DialogItemWinCount", data2)
       end
@@ -442,7 +442,7 @@ function bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,
     local _,_,hexclass = bepgp:getClassData(class)
     local target_color = C:Colorize(hexclass,tradeTarget)
     local epoch, timestamp = bepgp:getServerTime()
-    local data = self:findLootUnassigned(itemID)
+    local data = self:findLootUnassigned(itemLink)
     if (data) then
       data[loot_indices.time] = epoch
       data[loot_indices.player] = tradeTarget
@@ -465,11 +465,11 @@ function bepgp_loot:tradeLoot()
     local tradeTarget, itemLink, tmpTrade = self._tradeTarget, self._itemLink, self._tmpTrade
     local itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
     if (itemName) then
-      if itemCache[itemID] then
+      if itemCache[itemLink] then
         self:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,itemID,itemLink,tmpTrade)
         self:tradeReset()
       else
-        local item = Item:CreateFromItemID(itemID)
+        local item = Item:CreateFromItemLink(itemLink)
         item:ContinueOnItemLoad(function()
           bepgp_loot:tradeLootCallback(tradeTarget,itemColor,itemString,itemName,itemID,itemLink,tmpTrade)
           self:tradeReset()

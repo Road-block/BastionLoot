@@ -702,10 +702,10 @@ function bepgp_bids:bidPrint(link,masterlooter,need,greed,bid,roll)
       if (need and greed) or bid then
         msg = string.gsub(msg,"$MS",mslink)
         msg = string.gsub(msg,"$OS",oslink)
-      elseif (need) then
+      elseif (need and not greed) then
         msg = string.gsub(msg,"$MS",mslink)
         msg = string.gsub(msg,L["or $OS "],"")
-      elseif (greed) then
+      elseif (greed and not need) then
         msg = string.gsub(msg,"$OS",oslink)
         msg = string.gsub(msg,L["$MS or "],"")
       end

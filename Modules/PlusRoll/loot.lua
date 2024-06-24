@@ -350,7 +350,7 @@ end
 function bepgp_plusroll_loot:processLootCallback(player,itemLink,source,itemColor,itemString,itemName,itemID)
   local iName, iLink, iRarity, iLevel, iMinLevel, iType, iSubType, iStackCount, iEquipLoc, iTexture,
     iSellPrice, iClassID, iSubClassID, bindType, expacID, iSetID, isCraft = GetItemInfo(itemID)
-  itemCache[itemID] = true
+  itemCache[itemLink] = true
   local dupe, player_item, now = self:processLootDupe(player,itemName,source)
   if dupe then
     return
@@ -386,10 +386,10 @@ end
 function bepgp_plusroll_loot:processLoot(player,itemLink,source)
   local itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
   if itemName then
-    if itemCache[itemID] then
+    if itemCache[itemLink] then
       self:processLootCallback(player,itemLink,source,itemColor,itemString,itemName,itemID)
     else
-      local item = Item:CreateFromItemID(itemID)
+      local item = Item:CreateFromItemLink(itemLink)
       item:ContinueOnItemLoad(function()
         bepgp_plusroll_loot:processLootCallback(player,itemLink,source,itemColor,itemString,itemName,itemID)
       end)

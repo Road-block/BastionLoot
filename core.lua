@@ -2679,7 +2679,7 @@ function bepgp:templateCache(id)
                 end
               else -- new entry
                 if bepgp.db.char.plusrollepgp and bepgp.db.char.plusrollepgp == "msr" then
-                  local price,tier,price2 = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
+                  local price,tier,price2,_,_,_,_,_,item_level = bepgp:GetPrice(item_id, bepgp.db.profile.progress)
                   price2 = type(price2)=="number" and price2 or nil
                   if price and price > 0 and bepgp:itemLevelOptionPass(item_level) then
                     if data.use_discount and price2 then
@@ -5290,7 +5290,7 @@ end
 
 function bepgp:removeStandin(standin)
   if not bepgp:admin() then return end
-  local std_name,std_class,std_rank,std_ofnote,std_rnkIdx,roster_index = self:verifyGuildMember(std,true,true)
+  local std_name,std_class,std_rank,std_ofnote,std_rnkIdx,roster_index = self:verifyGuildMember(standin,true,true)
   if std_name and roster_index then
     std_ofnote = std_ofnote or ""
     local newnote
@@ -5743,7 +5743,7 @@ function bepgp:get_ep(getname,officernote) -- gets ep by name or note
       return bepgp:get_ep(standin)
     end
     if (officernote) then
-      local datatype, prefix, epgpdata, postfix, t1, t2, t3, t4 = self:parseNote(officernote, guild_index)
+      local datatype, prefix, epgpdata, postfix, t1, t2, t3, t4 = self:parseNote(officernote)
       --print(datatype)
       if datatype == "epgp" then
         local ep, gp = t1, t2
@@ -5787,7 +5787,7 @@ function bepgp:get_gp(getname,officernote) -- gets gp by name or officernote
       return bepgp:get_gp(standin)
     end
     if (officernote) then
-      local datatype, prefix, epgpdata, postfix, t1, t2, t3, t4 = self:parseNote(officernote, guild_index)
+      local datatype, prefix, epgpdata, postfix, t1, t2, t3, t4 = self:parseNote(officernote)
       if datatype == "epgp" then
         local ep, gp = t1, t2
         return gp
@@ -5961,7 +5961,7 @@ function bepgp:givename_gp(getname,gp) -- assigns gp to a single character
         postfix = string.format(L[", %s\'s Standin"],ally)
       else
         local msg = string.format(L["%s is %s and %s is an Ally with %s standin. Skipping %s."],L["Enable Allies"],_G.OFF,ally,getname,string.upper(L["gp"]))
-        self:debugPrint(ms)
+        self:debugPrint(msg)
         if logs then
           logs:addToLog(msg)
         end
