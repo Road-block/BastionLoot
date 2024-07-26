@@ -665,6 +665,7 @@ local object_names = {
   [208045] = L["Cache of the Broodmother"],
   [207891] = L["Heart of Wind"],
   [207892] = L["Heart of Wind"],
+  [207893] = L["Heart of Wind"],
   [207894] = L["Heart of Wind"],
   [179564] = L["Gordok Tribute"], -- DEBUG
 }
