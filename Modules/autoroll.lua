@@ -457,7 +457,7 @@ local items_to_cache = {
 }
 function bepgp_autoroll:cacheItemOptions()
   for option, itemid in pairs(items_to_cache) do
-    local id = GetItemInfoInstant(itemid)
+    local id = bepgp.GetItemInfoInstant(itemid)
     if id then
       local itemAsync = Item:CreateFromItemID(id)
       itemAsync:ContinueOnItemLoad(function()

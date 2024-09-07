@@ -286,7 +286,7 @@ end
 --/run BastionLoot:GetModule("BastionLoot_loot"):processLootCallback("Bushido","\124cffa335ee\124Hitem:40266::::::::80:::::\124h[Hero's Surrender]\124h\124r","chat","|cffa335ee","item:40266","Hero's Surrender",40266)
 function bepgp_loot:processLootCallback(player,itemLink,source,itemColor,itemString,itemName,itemID)
   local iName, iLink, iRarity, iLevel, iMinLevel, iType, iSubType, iStackCount, iEquipLoc, iTexture,
-    iSellPrice, iClassID, iSubClassID, bindType, expacID, iSetID, isCraft = GetItemInfo(itemID)
+    iSellPrice, iClassID, iSubClassID, bindType, expacID, iSetID, isCraft = bepgp.GetItemInfo(itemID)
   itemCache[itemLink] = true
   local dupe, player_item, now = self:processLootDupe(player,itemName,source)
   if dupe then
@@ -375,7 +375,7 @@ function bepgp_loot:processLoot(player,itemLink,source)
   end
 end
 
--- /run local _,link = GetItemInfo(16857)local data=BastionLoot:GetModule("BastionEPGP_loot"):findLootUnassigned(link)print(data[8] or "nodata")
+-- /run local _,link = bepgp.GetItemInfo(16857)local data=BastionLoot:GetModule("BastionEPGP_loot"):findLootUnassigned(link)print(data[8] or "nodata")
 function bepgp_loot:findLootUnassigned(itemLink)
   for i,data in ipairs(bepgp.db.char.loot) do
     if data[loot_indices.item] == itemLink and data[loot_indices.action] == bepgp.VARS.unassigned then
@@ -641,7 +641,7 @@ local bag_addons = {
 function bepgp_loot:hookBagAddons()
   local hook_install = false
   for k,v in pairs(bag_addons) do
-    local loading, finished = IsAddOnLoaded(k)
+    local loading, finished = bepgp.IsAddOnLoaded(k)
     if finished and loading and v == false then
       self:clickHandlerBags(k)
       hook_install = true
@@ -828,7 +828,7 @@ function bepgp_loot:xlootUpdate()
 end
 
 function bepgp_loot:hookLootAddons()
-  local loading, finished = IsAddOnLoaded("ElvUI")
+  local loading, finished = bepgp.IsAddOnLoaded("ElvUI")
   if loading and finished then
     local E = ElvUI and ElvUI[1]
     local elvloot = E and E.private.general.loot or false
@@ -841,7 +841,7 @@ function bepgp_loot:hookLootAddons()
       end
     end
   end
-  loading, finished = IsAddOnLoaded("XLoot_Frame")
+  loading, finished = bepgp.IsAddOnLoaded("XLoot_Frame")
   if loading and finished and XLootButtonOnClick then
     self:Hook("XLootButtonOnClick","clickHandlerLootXLoot")
     if XLootFrame then

@@ -780,10 +780,10 @@ prices[20644] = {4,"T1.5"} --Nightmare Engulfed Object
   ["T3"] = 9
 }]]
 --[[
-itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = GetItemInfoInstant(itemID or "itemString" or "itemName" or "itemLink")
+itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = bepgp.GetItemInfoInstant(itemID or "itemString" or "itemName" or "itemLink")
 itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
 itemEquipLoc, itemIcon, itemSellPrice, itemClassID, itemSubClassID, bindType, expacID, itemSetID,
-isCraftingReagent = GetItemInfo(itemID or "itemString" or "itemName" or "itemLink")
+isCraftingReagent = bepgp.GetItemInfo(itemID or "itemString" or "itemName" or "itemLink")
 Search for ItemMixin
 ]]
 local progress_scaling = {
@@ -802,7 +802,7 @@ function bepgp_prices:GetPrice(item,progress)
   if not (type(item)=="number" or type(item)=="string") then return end
   if not progress then progress = "T3" end
   local price,itemID,data,tier
-  itemID = GetItemInfoInstant(item)
+  itemID = bepgp.GetItemInfoInstant(item)
   if (itemID) then
     data = prices[itemID]
     if (data) then
@@ -818,9 +818,9 @@ end
 function bepgp_prices:OnEnable()
   local system = {func=bepgp_prices.GetPrice,flavor="_classic"}
   bepgp:RegisterPriceSystem(name_version,system)
-  local mzt,_,_,_,reason = GetAddOnInfo("MizusRaidTracker")
+  local mzt,_,_,_,reason = bepgp.GetAddOnInfo("MizusRaidTracker")
   if not (reason == "ADDON_MISSING" or reason == "ADDON_DISABLED") then
-    local loading, finished = IsAddOnLoaded("MizusRaidTracker")
+    local loading, finished = bepgp.IsAddOnLoaded("MizusRaidTracker")
     if loading and finished then
       self:ADDON_LOADED("ADDON_LOADED","MizusRaidTracker")
     else

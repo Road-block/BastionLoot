@@ -54,9 +54,9 @@ function bepgp_io:OnEnable()
 
   self._ioreserves = Dump:New(L["Export Reserves"],450,320)
   self._ioroster = Dump:New(L["Export Raid Roster"],250,320)
-  local bastionexport,_,_,_,reason = GetAddOnInfo("BastionEPGP_Export")
+  local bastionexport,_,_,_,reason = bepgp.GetAddOnInfo("BastionEPGP_Export")
   if not (reason == "ADDON_MISSING" or reason == "ADDON_DISABLED") then
-    local loaded, finished = IsAddOnLoaded("BastionEPGP_Export")
+    local loaded, finished = bepgp.IsAddOnLoaded("BastionEPGP_Export")
     if loaded then
       BastionEPGPExport = BastionEPGPExport or {}
       self._fileexport = BastionEPGPExport

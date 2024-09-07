@@ -6,8 +6,6 @@ local C = LibStub("LibCrayon-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local GUI = LibStub("AceGUI-3.0")
 local RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
-local falsey = function() return false end
-local CanViewOfficerNote = C_GuildInfo and C_GuildInfo.CanViewOfficerNote or _G.CanViewOfficerNote or falsey
 local lastRequest, lastPush
 
 local PLATE, MAIL, LEATHER, CLOTH = 4,3,2,1
@@ -208,7 +206,7 @@ function bepgp_standings:Toggle()
 end
 
 function bepgp_standings:ContextShowHide()
-  if CanViewOfficerNote() then
+  if bepgp.CanViewOfficerNote() then
     self._widgetoverlaylabel.frame:Hide()
     self._widget_update.frame:Hide()
     self._widget_push.frame:Show()
@@ -224,7 +222,7 @@ function bepgp_standings:ContextShowHide()
 end
 
 function bepgp_standings:CacheUpdate()
-  if not CanViewOfficerNote() then
+  if not bepgp.CanViewOfficerNote() then
     self:Refresh()
   end
 end
@@ -232,7 +230,7 @@ end
 function bepgp_standings:Refresh()
   local members = bepgp:buildRosterTable()
   local container = self._container
-  local canViewONote = CanViewOfficerNote()
+  local canViewONote = bepgp.CanViewOfficerNote()
   local _epoch
   table.wipe(data)
   for k,v in pairs(members) do

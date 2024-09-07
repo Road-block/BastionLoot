@@ -1,8 +1,8 @@
-## Interface: 40400
+## Interface: 40401
 ## Author: Roadblock
 ## Title: BastionLoot
 ## Notes: In-game EPGP loot helper, supports standby, main/alt shared pool, minEP, offpecGP. Pluggable price list. Alternative +roll mode.
-## Version: 4.2.4
+## Version: 4.2.5
 ## X-Alpha:
 ## X-Website: https://github.com/Road-block/BastionLoot/releases/latest
 ## OptionalDeps: Ace3, MizusRaidTracker
@@ -15,6 +15,7 @@
 Libs\libs.xml
 Locales\locales.xml
 
+compat.lua
 core.lua
 
 Modules\prices_cata.lua

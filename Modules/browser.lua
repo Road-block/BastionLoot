@@ -349,7 +349,7 @@ end
 function bepgp_browser:favoriteAdd(level,id)
   local itemID = id or bepgp_browser._selected
   if not itemID then return end
-  itemID = GetItemInfoInstant(itemID)
+  itemID = bepgp.GetItemInfoInstant(itemID)
   if not itemID then return end
   favorites[itemID] = level
   -- check if we're adding a reward and add the required turn-in (token)
@@ -393,7 +393,7 @@ end
 function bepgp_browser:softReserveSend(id)
   local itemID = bepgp_browser._selected or id
   if not itemID then return end
-  itemID = GetItemInfoInstant(itemID)
+  itemID = bepgp.GetItemInfoInstant(itemID)
   if not itemID then return end
   local itemAsync = Item:CreateFromItemID(itemID)
   itemAsync:ContinueOnItemLoad(function()
@@ -455,13 +455,13 @@ function bepgp_browser:Refresh()
   table.wipe(subdata)
   if slotvalue == "_FAV" then
     for id, rank in pairs(favorites) do
-      if not (GetItemInfoInstant(id)) or type(id)~="number" then -- cleanup bad items
+      if not (bepgp.GetItemInfoInstant(id)) or type(id)~="number" then -- cleanup bad items
         self:favoriteClear(id)
       else
         local price, tier = bepgp:GetPrice(id,progress) --,pricelist[id][2]
         price = price or 0
         local favrank = favmap[rank]
-        local _,link,_,_,_,_,subtype,_,equiploc = GetItemInfo(id)
+        local _,link,_,_,_,_,subtype,_,equiploc = bepgp.GetItemInfo(id)
         local locdesc = safe_equiploc(equiploc)
         if (link) then
           if typevalue == "_ALL" or subtype == typevalue then
@@ -472,7 +472,7 @@ function bepgp_browser:Refresh()
           item:ContinueOnItemLoad(function()
             local id = item:GetItemID()
             local link = item:GetItemLink()
-            local _,_, subtype,equiploc = GetItemInfoInstant(id)
+            local _,_, subtype,equiploc = bepgp.GetItemInfoInstant(id)
             local locdesc = safe_equiploc(equiploc)
             if typevalue == "_ALL" or subtype == typevalue then
               populate(subdata,link,subtype,price,tier,favrank,id,locdesc,slotvalue)
@@ -491,7 +491,7 @@ function bepgp_browser:Refresh()
       if tiervalues[tier] then
         local rank = favorites[id]
         local favrank = rank and favmap[rank] or ""
-        local _,link,_,_,_,_,subtype,_,equiploc = GetItemInfo(id)
+        local _,link,_,_,_,_,subtype,_,equiploc = bepgp.GetItemInfo(id)
         local locdesc = safe_equiploc(equiploc)
         if (link) then
           if typevalue == "_ALL" or subtype == typevalue then
@@ -502,7 +502,7 @@ function bepgp_browser:Refresh()
           item:ContinueOnItemLoad(function()
             local id = item:GetItemID()
             local link = item:GetItemLink()
-            local _,_, subtype,equiploc = GetItemInfoInstant(id)
+            local _,_, subtype,equiploc = bepgp.GetItemInfoInstant(id)
             local locdesc = safe_equiploc(equiploc)
             if typevalue == "_ALL" or subtype == typevalue then
               populate(subdata,link,subtype,price,tier,favrank,id,locdesc,slotvalue)
@@ -618,8 +618,8 @@ function bepgp_browser:PriceListData(redo)
       typesort = table.wipe(typesort)
     end
     for id,info in pairs(pricelist) do
-      local itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = GetItemInfoInstant(id)
-      local subName, isArmor = GetItemSubClassInfo(itemClassID, itemSubClassID)
+      local itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = bepgp.GetItemInfoInstant(id)
+      local subName, isArmor = bepgp.GetItemSubClassInfo(itemClassID, itemSubClassID)
       local price, tier = bepgp:GetPrice(id,progress)
       --local tier = info[2]
       price = price or 0

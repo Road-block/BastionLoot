@@ -114,7 +114,7 @@ end
 
 function bepgp_tokens_cata:RewardItemString(tokenItem)
   if not (type(tokenItem)=="number" or type(tokenItem)=="string") then return end
-  local tokenID = GetItemInfoInstant(tokenItem)
+  local tokenID = bepgp.GetItemInfoInstant(tokenItem)
   if not tokenID then return end
   local rewardID = last_reward_flipped[tokenID]
   if rewardID then
@@ -133,7 +133,7 @@ end
 
 function bepgp_tokens_cata:TokensItemString(rewardItem)
   if not (type(rewardItem)=="number" or type(rewardItem)=="string") then return end
-  local rewardID = GetItemInfoInstant(rewardItem)
+  local rewardID = bepgp.GetItemInfoInstant(rewardItem)
   if not rewardID then return end
   local tokenID = tokens[rewardID]
   if tokenID then

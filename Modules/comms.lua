@@ -3,9 +3,6 @@ local moduleName = addonName.."_comms"
 local bepgp_comms = bepgp:NewModule(moduleName, "AceEvent-3.0", "AceTimer-3.0", "AceComm-3.0")
 local LibSerialize = LibStub("LibSerialize")
 local LibDeflate = LibStub("LibDeflate")
-local falsey = function() return false end
-local CanViewOfficerNote = C_GuildInfo and C_GuildInfo.CanViewOfficerNote or _G.CanViewOfficerNote or falsey
-local GuildControlGetRankFlags = C_GuildInfo and C_GuildInfo.GuildControlGetRankFlags or _G.GuildControlGetRankFlags
 
 local inProgress = { }
 local messageQueue = { }
@@ -38,7 +35,7 @@ function bepgp_comms:Init(guild_name)
   local realmname = GetRealmName()
   local profilekey = guild_name.." - "..realmname
   self._oReadRanks = self:GetOReadRanks()
-  if CanViewOfficerNote() then
+  if bepgp.CanViewOfficerNote() then
     bepgp._network[bepgp._playerName] = true
   end
   self.db = LibStub("AceDB-3.0"):New("BastionLootCache",defaults,profilekey)
@@ -70,7 +67,7 @@ end
 function bepgp_comms:GetOReadRanks()
   self._oReadRanks = wipe(self._oReadRanks or {})
   for rankIndex=1,GuildControlGetNumRanks() do
-    local onote_read = GuildControlGetRankFlags(rankIndex)[11]
+    local onote_read = bepgp.GuildControlGetRankFlags(rankIndex)[11]
     local roster_rank = rankIndex-1
     if onote_read then
       self._oReadRanks[roster_rank] = GuildControlGetRankName(rankIndex)
@@ -100,7 +97,7 @@ end
 
 local raw_epgp_data = { }
 function bepgp_comms:GetDataForSending(name)
-  if not CanViewOfficerNote() then return end
+  if not bepgp.CanViewOfficerNote() then return end
   local cacheDB = self.db and self.db.profile and self.db.profile.epgp
   wipe(raw_epgp_data)
   if name then
@@ -208,7 +205,7 @@ function bepgp_comms:OnCommReceived(prefix, payload, distribution, sender)
   if not (name and class) then return end -- not in our guild
   bepgp._network[sender] = true
   if prefix == self._prefixRQ then -- someone is requesting epgp data
-    if not CanViewOfficerNote() then return end -- we don't have access to raw data
+    if not bepgp.CanViewOfficerNote() then return end -- we don't have access to raw data
     if distribution == "GUILD" then
       -- logic to decide if we are sending or leaving it to someone else
       local name1, name2 = self:GetDataNodes()
@@ -225,7 +222,7 @@ function bepgp_comms:OnCommReceived(prefix, payload, distribution, sender)
   end
   if prefix == self._prefixData then -- someone is sending us epgp data
     if not self.db.profile.epgp then return end
-    if CanViewOfficerNote() then return end -- we have real-time access
+    if bepgp.CanViewOfficerNote() then return end -- we have real-time access
     local _, _epoch = payload:match("^(_epoch:)(%d+)$")
     _epoch = _epoch and tonumber(_epoch)
     if _epoch then

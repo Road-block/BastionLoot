@@ -26,15 +26,7 @@ local RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
 bepgp._network = {}
 
 -- Upvalue some API
-local falsey = function() return false end
-local GetGuildTabardFileNames = _G.GetGuildTabardFileNames or _G.GetGuildTabardFiles
-local GuildRoster = C_GuildInfo and C_GuildInfo.GuildRoster or _G.GuildRoster
-local CanEditOfficerNote = C_GuildInfo and C_GuildInfo.CanEditOfficerNote or _G.CanEditOfficerNote
-local CanViewOfficerNote = C_GuildInfo and C_GuildInfo.CanViewOfficerNote or _G.CanViewOfficerNote or falsey
-local CanSpeakInGuildChat = C_GuildInfo and C_GuildInfo.CanSpeakInGuildChat or _G.CanSpeakInGuildChat
-local GuildControlGetRankFlags = C_GuildInfo and C_GuildInfo.GuildControlGetRankFlags or _G.GuildControlGetRankFlags
 local C_TimerAfter = C_Timer.After
-local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or _G.GetAddOnMetadata
 local CanLootUnit = _G.CanLootUnit -- local hasLoot, canLoot = CanLootUnit(guid)
 local CombatLogGetCurrentEventInfo = _G.CombatLogGetCurrentEventInfo
 local CombatLog_Object_IsA = _G.CombatLog_Object_IsA
@@ -3092,8 +3084,8 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
   -- guild specific stuff should go in profile named after guild
   -- player specific in char
   strlen = string.utf8len or string.len
-  self._versionString = GetAddOnMetadata(addonName,"Version")
-  self._websiteString = GetAddOnMetadata(addonName,"X-Website")
+  self._versionString = bepgp.GetAddOnMetadata(addonName,"Version")
+  self._websiteString = bepgp.GetAddOnMetadata(addonName,"X-Website")
   self._labelfull = string.format("%s %s",label,self._versionString)
   if self._cata or self._wrath or self._bcc then
     self.db = LibStub("AceDB-3.0"):New("BastionLootDB", defaults)
@@ -3797,7 +3789,7 @@ function bepgp:guildBranding()
   f:SetHeight(64)
   f:SetPoint("CENTER",UIParent,"CENTER",0,0)
 
-  local tabardBackgroundUpper, tabardBackgroundLower, tabardEmblemUpper, tabardEmblemLower, tabardBorderUpper, tabardBorderLower = GetGuildTabardFileNames()
+  local tabardBackgroundUpper, tabardBackgroundLower, tabardEmblemUpper, tabardEmblemLower, tabardBorderUpper, tabardBorderLower = bepgp.GetGuildTabardFileNames()
   if ( not tabardEmblemUpper ) then
     tabardBackgroundUpper = "Textures\\GuildEmblems\\Background_49_TU_U"
     tabardBackgroundLower = "Textures\\GuildEmblems\\Background_49_TL_U"
@@ -4616,7 +4608,7 @@ function bepgp:GUILD_ROSTER_UPDATE(event)
 end
 
 function bepgp:admin()
-  return IsInGuild() and (CanEditOfficerNote())
+  return IsInGuild() and (bepgp.CanEditOfficerNote())
 end
 
 function bepgp:lootMaster()
@@ -4995,7 +4987,7 @@ end
 function bepgp:getItemData(itemLink) -- itemcolor, itemstring, itemname, itemid
   local link_found, _, itemColor, itemString, itemName = string.find(itemLink, "^(|c%x+)|H(.+)|h(%[.+%])")
   if link_found then
-    local itemID = GetItemInfoInstant(itemString)
+    local itemID = bepgp.GetItemInfoInstant(itemString)
     return itemColor, itemString, itemName, itemID
   else
     return
@@ -5076,7 +5068,7 @@ function bepgp:safeGuildRoster()
   if InCombatLockdown() then return end
   local now = GetTime()
   if not self._lastgRosterUpdate or (now - self._lastgRosterUpdate) >= 10 then
-    GuildRoster()
+    bepgp.GuildRoster()
     self._lastgRosterUpdate = GetTime()
   end
 end
@@ -5089,12 +5081,12 @@ function bepgp:getGuildPermissions()
     local name, _, rankIndex = GetGuildRosterInfo(i)
     name = bepgp:Ambiguate(name)
     if name == self._playerName then
-      speakPermissions.OFFICER = GuildControlGetRankFlags(rankIndex+1)[4]
-      readPermissions.OFFICER = GuildControlGetRankFlags(rankIndex+1)[11]
+      speakPermissions.OFFICER = bepgp.GuildControlGetRankFlags(rankIndex+1)[4]
+      readPermissions.OFFICER = bepgp.GuildControlGetRankFlags(rankIndex+1)[11]
       break
     end
   end
-  speakPermissions.GUILD = CanSpeakInGuildChat()
+  speakPermissions.GUILD = bepgp.CanSpeakInGuildChat()
   local groupstatus = self:GroupStatus()
   speakPermissions.PARTY = (groupstatus == "PARTY") or (groupstatus == "RAID")
   speakPermissions.RAID = groupstatus == "RAID"
@@ -5730,7 +5722,7 @@ function bepgp:wipe_epgp()
 end
 
 function bepgp:get_ep(getname,officernote) -- gets ep by name or note
-  local canViewONote = CanViewOfficerNote()
+  local canViewONote = bepgp.CanViewOfficerNote()
   local cacheDB
   local bepgp_comms = bepgp:GetModule(addonName.."_comms",true)
   if bepgp_comms and bepgp_comms.db then
@@ -5775,7 +5767,7 @@ function bepgp:get_ep(getname,officernote) -- gets ep by name or note
 end
 
 function bepgp:get_gp(getname,officernote) -- gets gp by name or officernote
-  local canViewONote = CanViewOfficerNote()
+  local canViewONote = bepgp.CanViewOfficerNote()
   local cacheDB
   local bepgp_comms = bepgp:GetModule(addonName.."_comms",true)
   if bepgp_comms and bepgp_comms.db then

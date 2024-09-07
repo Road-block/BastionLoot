@@ -4,7 +4,6 @@ local bepgp_prices_cata = bepgp:NewModule(moduleName, "AceEvent-3.0")
 local ST = LibStub("ScrollingTable")
 local name_version = "BastionEPGP_CC-1.0"
 local prices = {}
-local GetItemInventoryTypeByID = C_Item and C_Item.GetItemInventoryTypeByID or _G.GetItemInventoryTypeByID
 
 local EQUIPSLOT_MULTIPLIER_1 = {
   INVTYPE_HEAD = 1,
@@ -2495,9 +2494,9 @@ function bepgp_prices_cata:GetPrice(item,progress)
   local price1,price2,itemID,data,tier,useful
   local itemType, itemSubType, itemEquipLoc, icon, classID, subclassID
   local wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount, item_level
-  itemID, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = GetItemInfoInstant(item)
+  itemID, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = bepgp.GetItemInfoInstant(item)
   if (itemID) then
-    local invType = GetItemInventoryTypeByID(itemID)
+    local invType = bepgp.GetItemInventoryTypeByID(itemID)
     data = prices[itemID]
     if (data) then
       local quality, ilevel, equip = unpack(data)
@@ -2515,9 +2514,9 @@ end
 function bepgp_prices_cata:OnEnable()
   local system = {func=bepgp_prices_cata.GetPrice,flavor="_cata"}
   bepgp:RegisterPriceSystem(name_version,system)
-  local mzt,_,_,_,reason = GetAddOnInfo("MizusRaidTracker")
+  local mzt,_,_,_,reason = bepgp.GetAddOnInfo("MizusRaidTracker")
   if not (reason == "ADDON_MISSING" or reason == "ADDON_DISABLED") then
-    local loading, finished = IsAddOnLoaded("MizusRaidTracker")
+    local loading, finished = bepgp.IsAddOnLoaded("MizusRaidTracker")
     if loading and finished then
       self:ADDON_LOADED("ADDON_LOADED","MizusRaidTracker")
     else
@@ -2554,7 +2553,7 @@ function bepgp_prices_cata:Recalculate()
   local stats = {}
   local count = 0
   for i=50000,80000 do
-    local itemID, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = GetItemInfoInstant(i)
+    local itemID, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = bepgp.GetItemInfoInstant(i)
     if itemID and EQUIPSLOT_MULTIPLIER_1[itemEquipLoc] then
       if not BastionLootDB._CACHE_ITEM_DATA[itemID] then
         BastionLootDB._CACHE_ITEM_DATA[itemID] = {-1,-1,itemEquipLoc}
@@ -2567,7 +2566,7 @@ function bepgp_prices_cata:Recalculate()
           if quality == 4 and iLevel >= 359 then
             local iLink = itemAsync:GetItemLink()
             stats.ITEM_MOD_RESILIENCE_RATING = nil
-            GetItemStats(iLink,stats)
+            bepgp.GetItemStats(iLink,stats)
             if not stats.ITEM_MOD_RESILIENCE_RATING then
               local iID = itemAsync:GetItemID()
               local iName = itemAsync:GetItemName()

@@ -38,6 +38,20 @@ function bepgp_rolls:ToggleMenus(flag)
     if not self:IsHooked(DropDownList1, "OnHide") then
       self:SecureHookScript(DropDownList1,"OnHide","ExtraHide")
     end
+    if Menu and Menu.ModifyMenu then -- 11.x 4.4.1+ etc
+      if self._menuInjection then return end
+      Menu.ModifyMenu("MENU_UNIT_RAID",function(owner, rootDescription, contextData)
+        rootDescription:CreateDivider()
+        rootDescription:CreateTitle(string.format("|cff33ff99%s|r",addonName))
+        rootDescription:CreateButton(L["Set Banker"], function()
+          bepgp_rolls:SetBanker(contextData)
+        end)
+        rootDescription:CreateButton(L["Set Disenchanter"], function()
+          bepgp_rolls:SetDisenchanter(contextData)
+        end)
+      end)
+      self._menuInjection = true
+    end
   else
     self:Unhook(DropDownList1,"OnShow")
     self:Unhook(DropDownList1,"OnHide")
@@ -68,36 +82,38 @@ function bepgp_rolls:StartMenuTimer()
   end
 end
 
-function bepgp_rolls:SetBanker()
-  local unit = UIDROPDOWNMENU_OPEN_MENU.unit
-  local name
+function bepgp_rolls:SetBanker(ctx)
+  local unit, name
+  if UIDROPDOWNMENU_OPEN_MENU and UIDROPDOWNMENU_OPEN_MENU.unit then
+    unit = UIDROPDOWNMENU_OPEN_MENU.unit
+  elseif ctx and ctx.unit then
+    unit = ctx.unit
+  end
   if type(unit)=="string" and strfind(unit,"raid") then
     name = GetUnitName(unit, bepgp.db.profile.fullnames)
     bepgp_rolls.special_recipients.BANKER = name
     bepgp:Print(L["Banker"]..":"..name)
   end
-  --[[local name = UIDROPDOWNMENU_OPEN_MENU.name
-  if type(name)=="string" then
-    bepgp_rolls.special_recipients.BANKER = name
-    bepgp:Print(L["Banker"]..":"..name)
-  end]]
-  CloseDropDownMenus()
+  if not ctx then
+    CloseDropDownMenus()
+  end
 end
 
-function bepgp_rolls:SetDisenchanter()
-  local unit = UIDROPDOWNMENU_OPEN_MENU.unit
-  local name
+function bepgp_rolls:SetDisenchanter(ctx)
+  local unit, name
+  if UIDROPDOWNMENU_OPEN_MENU and UIDROPDOWNMENU_OPEN_MENU.unit then
+    unit = UIDROPDOWNMENU_OPEN_MENU.unit
+  elseif ctx and ctx.unit then
+    unit = ctx.unit
+  end
   if type(unit)=="string" and strfind(unit,"raid") then
     name = GetUnitName(unit, bepgp.db.profile.fullnames)
     bepgp_rolls.special_recipients.DISENCHANTER = name
     bepgp:Print(L["Disenchanter"]..":"..name)
   end
-  --[[local name = UIDROPDOWNMENU_OPEN_MENU.name
-  if type(name)=="string" then
-    bepgp_rolls.special_recipients.DISENCHANTER = name
-    bepgp:Print(L["Disenchanter"]..":"..name)
-  end]]
-  CloseDropDownMenus()
+  if not ctx then
+    CloseDropDownMenus()
+  end
 end
 
 function bepgp_rolls:resetMasterLootAdditions()

@@ -341,7 +341,7 @@ function bepgp_plusroll_reserves:resReply(text,sender)
         local names = ""
         if num_reserves > 0 then
           local msg = L["%s Reserves:"]
-          local _, link = GetItemInfo(item)
+          local _, link = bepgp.GetItemInfo(item)
           msg = string.format(msg,link)
           local first = true
           for player in pairs(players) do
@@ -517,7 +517,7 @@ function bepgp_plusroll_reserves:Refresh()
         lock = false
       end
       if tonumber(id) then
-        local _, link = GetItemInfo(id)
+        local _, link = bepgp.GetItemInfo(id)
         if (link) then
           populate(data,link,player,lock,id)
         else

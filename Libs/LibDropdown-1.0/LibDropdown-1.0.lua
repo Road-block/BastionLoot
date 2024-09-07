@@ -1,5 +1,5 @@
 local MAJOR = "LibDropdown-1.0"
-local MINOR = 4
+local MINOR = 5
 
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -23,7 +23,15 @@ local wipe = wipe
 local CreateFrame = CreateFrame
 local PlaySound = PlaySound
 local ShowUIPanel = ShowUIPanel
-local GetMouseFocus = GetMouseFocus
+local GetMouseFocus = function()
+	if _G.GetMouseFocus then
+		return _G.GetMouseFocus()
+	elseif _G.GetMouseFoci then
+		return _G.GetMouseFoci()[1] -- topmost
+	else
+		return lib.noop()
+	end
+end
 local UISpecialFrames = UISpecialFrames
 
 local ChatFrame1 = ChatFrame1
