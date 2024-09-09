@@ -24,7 +24,7 @@ local MAJOR = "LibDialog-1.0"
 
 _G.assert(LibStub, MAJOR .. " requires LibStub")
 
-local MINOR = 10 -- Should be manually increased
+local MINOR = 11 -- Should be manually increased
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not lib then
@@ -583,8 +583,14 @@ local function _BuildDialog(delegate, data)
         dialog = _G.setmetatable(_G.CreateFrame("Frame", ("%s_Dialog%d"):format(MAJOR, #active_dialogs + 1), _G.UIParent), dialog_meta)
         dialog.is_new = true
 
-        local close_button = _G.CreateFrame("Button", nil, dialog, "UIPanelCloseButton")
+        local close_button = _G.CreateFrame("Button", nil, dialog, "UIPanelCloseButtonNoScripts")
         close_button:SetPoint("TOPRIGHT", -3, -3)
+        close_button:SetScript("OnClick", function(close_button)
+            local dialog = close_button:GetParent()
+            if dialog and not (InCombatLockdown() and dialog:IsProtected()) then
+                dialog:Hide()
+            end
+        end)
         close_button:Hide()
 
         dialog.close_button = close_button
