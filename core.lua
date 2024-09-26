@@ -1113,6 +1113,10 @@ function bepgp:options(force)
       get = function() return not not bepgp.db.char.favalert end,
       set = function(info, val)
         bepgp.db.char.favalert = not bepgp.db.char.favalert
+        if bepgp.db.char.favalert then
+          bepgp:RegisterEvent("LOOT_OPENED", "lootAnnounce")
+          bepgp:RegisterEvent("START_LOOT_ROLL", "favAlert")
+        end
       end,
     }
     self._options.args.general.args.main.args["minimap"] = {
@@ -1149,6 +1153,9 @@ function bepgp:options(force)
       get = function() return not not bepgp.db.char.lootannounce end,
       set = function(info, val)
         bepgp.db.char.lootannounce = not bepgp.db.char.lootannounce
+        if bepgp.db.char.lootannounce then
+          bepgp:RegisterEvent("LOOT_OPENED", "lootAnnounce")
+        end
       end,
     }
     self._options.args.general.args.main.args["rosterthrottle"] = {
@@ -3146,6 +3153,9 @@ function bepgp:OnEnable(reset) -- 2. PLAYER_LOGIN
   end
   if bepgp.db.char.lootannounce or bepgp.db.char.favalert then
     bepgp:RegisterEvent("LOOT_OPENED", "lootAnnounce")
+    if bepgp.db.char.favalert then
+      bepgp:RegisterEvent("START_LOOT_ROLL", "favAlert")
+    end
   end
   if not bepgp.cleuParser then -- re-use if someone did /disable /enable
     bepgp.cleuParser = CreateFrame("Frame")
@@ -3464,8 +3474,11 @@ function bepgp:AddTipInfo(tooltip,...)
         tooltip:AddDoubleLine(C:Yellow(L["Alt Click"]), C:Orange(L["Call for Rolls"]))
       end
     end
+    if tipOptionGroup.favinfo and (owner and (owner.encounterID and owner.itemID)) then -- encounter journal
+      tooltip:AddDoubleLine(C:Yellow(L["Alt Click"]), C:Orange(L["Add Favorite"]))
+    end
     local favorite = self.db.char.favorites[itemid]
-    if tipOptionGroup.favinfo and favorite  then
+    if tipOptionGroup.favinfo and favorite then
       tooltip:AddLine(self._favmap[favorite])
     end
     if tipOptionGroup.tkninfo and self.TokensItemString and self.RewardItemString then
@@ -3605,6 +3618,18 @@ function bepgp:lootAnnounce(event)
       bepgp._announceDone[k] = true
     end
     bepgp._announceItems = nil
+  end
+end
+
+function bepgp:favAlert(event, rollID, rollTime, lootHandle)
+  if not bepgp.db.char.favalert then return end
+  local texture, name, count, quality, bindOnPickUp, canNeed, canGreed = GetLootRollItemInfo(rollID)
+  if (name) and (canNeed or canGreed) then
+    local link = GetLootRollItemLink(rollID)
+    local _, _, _, itemID = bepgp:getItemData(link)
+    if itemID and bepgp.db.char.favorites[itemID] then
+      bepgp:Alert(string.format(L["BastionLoot Favorite: %s"],link))
+    end
   end
 end
 

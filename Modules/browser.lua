@@ -351,7 +351,9 @@ function bepgp_browser:favoriteAdd(level,id)
   if not itemID then return end
   itemID = bepgp.GetItemInfoInstant(itemID)
   if not itemID then return end
-  favorites[itemID] = level
+  if favorites and (not favorites[itemID]) then
+    favorites[itemID] = level
+  end
   -- check if we're adding a reward and add the required turn-in (token)
   if tokens and tokens.GetToken then
     local token = tokens:GetToken(itemID)
