@@ -3458,8 +3458,10 @@ function bepgp:AddTipInfo(tooltip,...)
           local off_price2 = math.floor(price2*self.db.profile.discount)
           local textRight3 = string.format(L["gp:|cff32cd32%d|r gp_os:|cff20b2aa%d|r"],price2,off_price2)
           tooltip:AddDoubleLine(L["Class/Role Discount"],textRight3)
-        end        
-        tooltip:AddDoubleLine(" ", textRight2)
+        end
+        if (ep > 0) and (gp ~= bepgp.VARS.basegp) then
+          tooltip:AddDoubleLine(" ", textRight2)
+        end
       end
       if tipOptionGroup.mlinfo then
         if roll_admin and is_admin and mode_epgp then
