@@ -347,11 +347,13 @@ function bepgp_browser:Toggle(forceShow)
 end
 
 function bepgp_browser:favoriteAdd(level,id)
+  if not favorites then return end
   local itemID = id or bepgp_browser._selected
   if not itemID then return end
   itemID = bepgp.GetItemInfoInstant(itemID)
   if not itemID then return end
-  if favorites and (not favorites[itemID]) then
+  local update = bepgp_browser._selected and (not id)
+  if update or (not favorites[itemID]) then
     favorites[itemID] = level
   end
   -- check if we're adding a reward and add the required turn-in (token)
