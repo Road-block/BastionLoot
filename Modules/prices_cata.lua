@@ -31,6 +31,7 @@ local EQUIPSLOT_MULTIPLIER_1 = {
   INVTYPE_RELIC = 0.5,
   -- Hack for Tier 9 25M heroic tokens.
   INVTYPE_CUSTOM_MULTISLOT_TIER = 0.9,
+  INVTYPE_CUSTOM_MULTISLOT = 1, -- Only used for Crystallized Firestone atm
 }
 
 -- This is the low price equipslot multiplier (off hand weapons, non
@@ -41,6 +42,7 @@ local EQUIPSLOT_MULTIPLIER_2 = {
   INVTYPE_2HWEAPON = 1,     -- Hunter or Titan Grip Off-hand
   INVTYPE_RANGED = 0.5,     -- Non-hunter Ranged Weapon
   INVTYPE_RANGEDRIGHT = 0.5,-- Non-hunter Ranged Weapon or Wands
+  INVTYPE_CUSTOM_MULTISLOT = 0.5, -- Only used for Crystallized Firestone atm
 }
 
 
@@ -93,6 +95,7 @@ local CUSTOM_ITEM_DATA = {
   [71671] = { 4, 391, "INVTYPE_LEGS" }, -- Leggings of the Fiery Vanquisher (dk/druid/mage/rogue)
   [71678] = { 4, 391, "INVTYPE_LEGS" }, -- Leggings of the Fiery Conqueror (paladin/priest/warlock)
   [71685] = { 4, 391, "INVTYPE_LEGS" }, -- Leggings of the Fiery Protector (hunter/shaman/warrior)
+  [71617] = { 4, 391, "INVTYPE_CUSTOM_MULTISLOT"}, -- Crystallized Firestone
   -- T13.397 (normal)
   [78172] = { 4, 397, "INVTYPE_HEAD" }, -- Crown of the Corrupted Vanquisher (dk/druid/mage/rogue)
   [78177] = { 4, 397, "INVTYPE_HEAD" }, -- Crown of the Corrupted Protector (hunter/shaman/warrior)
@@ -2636,7 +2639,29 @@ function bepgp_prices_cata:Distribution(ilvlMin,ilvlMax)
 end
 
 bepgp_prices_cata._prices = prices
-
+--[[ Crystallized Firestone
+69109 -- scales-of-life (TANK:DRUID,DEATHKNIGHT,PALADIN,WARRIOR)
+69113 -- apparatus-of-khazgoroth (STR-MELEE)
+71557 -- ranseur-of-hatred (HUNTER, FERAL)
+71558 -- lava-bolt-crossbow (HUNTER > ROGUE)
+71559 -- spire-of-scarlet-pain (CASTER)
+71560 -- chelleys-sterilized-scalpel (HEALER, CASTER)
+71561 -- hide-bound-chains (HUNTER, SHAMAN)
+71562 -- obsidium-cleaver  (STR-MELEE > TANK)
+71563 -- firebound-gorget (STR-MELEE > TANK)
+71564 -- thecks-emberseal (STR-TANK)
+71567 -- covenant-of-the-flame (DRUID, SHAMAN [PALADIN, DEATHKNIGHT])
+71568 -- morningstar-shard (ROGUE)
+71575 -- trail-of-embers (CASTER)
+71577 -- singed-plume-of-aviana (PALADIN, DRUID, SHAMAN [DEATHKNIGHT])
+71579 -- scorchvine-wand (HEALER > CASTER)
+71580 -- soulflame-vial (PALADIN, DRUID, SHAMAN)
+71587 -- relic-of-the-elemental-lords (PALADIN, DEATHKNIGHT)
+71590 -- deathclutch-figurine (TANK:PALADIN, TANK:DEATHKNIGHT)
+71592 -- deflecting-star (TANK:WARRIOR)
+71593 -- giantslicer (MELEE:WARRIOR)
+71641 -- riplimbs-lost-collar (ROGUE)
+]]
 --[[
 Enum.ItemClass[Armor|Weapon|Miscellaneous]
 Enum.ItemArmorSubclass[Cloth|Leather|Mail|Plate|Shield|Libram|Idol|Totem|Sigil|Relic]

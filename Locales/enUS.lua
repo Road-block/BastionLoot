@@ -578,5 +578,13 @@ You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back i
   L["On cooldown: Can push updates in %s"] = true
   L["Wincount Roll Bids"] = true
   L["Use Wincount for MS Roll wins"] = true
+  L["Click Button again"] = true
+  L[".. or Clear the checkbox to change item"] = true
+  L["Select [%s] GP value"] = true
+  L["%s-Click to Link Item"] = true
+  L["to finalize GP addition"] = true
+  L[".. or clear the checkbox to change item"] = true
+  L["Show Selected Item"] = true
+  L["Use GP Button to Set"] = true
 
 bepgp.L = L

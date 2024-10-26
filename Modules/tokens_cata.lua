@@ -54,6 +54,7 @@ rewards[71683] = { 71502, 71543,71548,71553, 71601,71605 } -- Gauntlets of the F
 rewards[71671] = { 71479,71484, 71489,71493,71498, 71509, 71540 } -- Leggings of the Fiery Vanquisher (dk/druid/mage/rogue)
 rewards[71678] = { 71515,71520,71525, 71529,71534, 71596 } -- Leggings of the Fiery Conqueror (paladin/priest/warlock)
 rewards[71685] = { 71504, 71545,71550,71555, 71602,71607 } -- Leggings of the Fiery Protector (hunter/shaman/warrior)
+rewards[71617] = { 69109, 69113, 71557, 71558, 71559, 71560, 71561, 71562, 71563, 71564, 71567, 71568, 71575, 71577, 71579, 71580, 71587, 71590, 71592, 71593, 71641 } -- Crystallized Firestone (various)
 -- T13.397 (normal)
 rewards[78172] = { 76976,77010, 76750,77015,77019, 76213, 77025 } -- Crown of the Corrupted Vanquisher (dk/druid/mage/rogue)
 rewards[78177] = { 77030, 76758,77037,77042, 76983,76990 } -- Crown of the Corrupted Protector (hunter/shaman/warrior)

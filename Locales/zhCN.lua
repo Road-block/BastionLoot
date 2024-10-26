@@ -572,5 +572,13 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["On cooldown: Can push updates in %s"] = "On cooldown: Can push updates in %s" -- needs translation
   L["Wincount Roll Bids"] = "Wincount Roll Bids" -- needs translation
   L["Use Wincount for MS Roll wins"] = "Use Wincount for MS Roll wins" -- needs translation
+  L["Click Button again"] = "Click Button again" -- needs translation
+  L[".. or Clear the checkbox to change item"] = ".. or Clear the checkbox to change item" -- needs translation
+  L["Select [%s] GP value"] = "Select [%s] GP value" -- needs translation
+  L["%s-Click to Link Item"] = "%s-Click to Link Item" -- needs translation
+  L["to finalize GP addition"] = "to finalize GP addition" -- needs translation
+  L[".. or clear the checkbox to change item"] = ".. or clear the checkbox to change item" -- needs translation
+  L["Show Selected Item"] = "Show Selected Item" -- needs translation
+  L["Use GP Button to Set"] = "Use GP Button to Set" -- needs translation
 
   bepgp.L = L

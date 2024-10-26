@@ -661,6 +661,19 @@ local object_names = {
   [207894] = L["Heart of Wind"],
   [179564] = L["Gordok Tribute"], -- DEBUG
 }
+local class_to_firestoneitems = {
+  DEATHKNIGHT = { 69109, 69113, 71562, 71563, 71564, 71587, 71590 },
+  DRUID = { 71557, 71559, 71560, 71567, 71577, 71580 },
+  HUNTER = { 71557, 71558, 71561 },
+  MAGE = { 71559, 71560, 71575, 71579 },
+  PALADIN = { 69109, 69113, 71562, 71563, 71564, 71577, 71580, 71587, 71590 },
+  PRIEST = { 71559, 71560, 71575, 71579 },
+  ROGUE = { 71558, 71568, 71641 },
+  SHAMAN = { 71559, 71560, 71561, 71577, 71580 },
+  WARLOCK = { 71559, 71560, 71575, 71579 },
+  WARRIOR = { 69109, 69113, 71562, 71563, 71564, 71592, 71593 },
+  UNKNOWN = { 69109, 69113, 71557, 71558, 71559, 71560, 71561, 71562, 71563, 71564, 71567, 71568, 71575, 71577, 71579, 71580, 71587, 71590, 71592, 71593, 71641 },
+}
 local defaults = {
   profile = {
     announce = "GUILD",
@@ -2240,22 +2253,32 @@ function bepgp:templateCache(id)
         on_show = function(self)
           local data = self.data
           local loot_indices = data.loot_indices
+          local item_id = data[loot_indices.item_id]
+          if item_id == 71617 then -- Crystallized Firestone
+            data.firestoneData = data.firestoneData or {}
+            data.firestoneData.Items = bepgp:getFirestoneItems((data[loot_indices.class] or "UNKNOWN"), data)
+          else
+            data.firestoneData = nil
+          end
           local price2 = data[loot_indices.price2]
-          local discountChkBx
           if self.checkboxes then
             for i=1,#self.checkboxes do
               if self.checkboxes[i] then
                 local chkBoxText = self.checkboxes[i].Text or self.checkboxes[i].text
-                if chkBoxText and chkBoxText:GetText() == L["Class/Role Discount"] then
-                  discountChkBx = self.checkboxes[i]
-                  break
+                if chkBoxText then
+                  local label = chkBoxText:GetText()
+                  if label == L["Class/Role Discount"] then
+                    data._discountCheckbox = self.checkboxes[i]
+                  else
+                    data._firestoneCheckbox = self.checkboxes[i]
+                  end
                 end
               end
             end
           end
-          if discountChkBx then
-            discountChkBx:Show()
-            discountChkBx:HookScript("OnEnter",function(self)
+          if data._discountCheckbox then
+            data._discountCheckbox:Show()
+            data._discountCheckbox:HookScript("OnEnter",function(self)
               GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
               local chunks = strsplittable(";",L.DISCOUNT_HINT)
               if #chunks > 0 then
@@ -2266,13 +2289,38 @@ function bepgp:templateCache(id)
                 GameTooltip:Show()
               end
             end)
-            discountChkBx:HookScript("OnLeave",function(self)
+            data._discountCheckbox:HookScript("OnLeave",function(self)
               if GameTooltip:IsOwned(self) then
                 GameTooltip:Hide()
               end
             end)
             if not price2 then
-              discountChkBx:Hide()
+              data._discountCheckbox:Hide()
+            end
+          end
+          if data._firestoneCheckbox then
+            data._firestoneCheckbox:Show()
+            data._firestoneCheckbox:HookScript("OnEnter",function(self)
+              GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+              if self:GetChecked() then
+                GameTooltip:SetText(L["Click Button again"])
+                GameTooltip:AddLine(L["to finalize GP addition"])
+                GameTooltip:AddLine(L[".. or clear the checkbox to change item"])
+              else
+                GameTooltip:SetText(L["Show Selected Item"])
+                GameTooltip:AddLine(L["Use GP Button to Set"])
+              end
+              GameTooltip:Show()
+            end)
+            data._firestoneCheckbox:HookScript("OnLeave",function(self)
+              if GameTooltip:IsOwned(self) then
+                GameTooltip:Hide()
+              end
+            end)
+            if not data.firestoneData then
+              data._firestoneCheckbox:Hide()
+            else
+              data._firestoneCheckbox.Text:SetText(data.firestoneData.firestone)
             end
           end
           self.text:SetText(string.format(L["%s looted %s. What do you want to do?"],data[loot_indices.player_c],data[loot_indices.item]))
@@ -2305,6 +2353,29 @@ function bepgp:templateCache(id)
           end
         end,
         checkboxes = {
+          { -- Firestone turn-in
+            label = "Crystallized Firestone",
+            get_value = function(self)
+              local dialog = self:GetParent():GetParent()
+              local data = dialog.data
+              local status = data.firestoneData and data.firestoneData.gp and true or false
+              return status
+            end,
+            set_value = function(self, value, dialogData, button, down)
+              local dialog = self:GetParent():GetParent()
+              local data = dialog.data
+              if (value) then
+                if data.firestoneData and data.firestoneData.gp then
+                  data._firestoneCheckbox.Text:SetText(data.firestoneData.firestone)
+                  data.firestoneData.gp = nil
+                  data.firestoneData.gp_os = nil
+                  data.firestoneData.gp2 = nil
+                  data.firestoneData.gp2_os = nil
+                  data.firestoneData.item = nil
+                end
+              end
+            end,
+          },
           { -- Discount GP
             label = L["Class/Role Discount"],
             get_value = function(self)
@@ -2323,19 +2394,29 @@ function bepgp:templateCache(id)
         },
         buttons = {
           { -- MainSpec GP
-            text = L["Add MainSpec GP"],
-            on_click = function(self, button, down)
+            text = L["Add MainSpec GP"], 
+            on_click = function(self, button, down) -- docs lie: it's dialog, dialog.data, "clicked"
               local data = self.data
               local loot_indices = data.loot_indices
               data[loot_indices.action] = bepgp.VARS.msgp
+              local name = data[loot_indices.player]
+              local gp = tonumber(data[loot_indices.price])
+              local gp2 = tonumber(data[loot_indices.price2])
+              if data.firestoneData then
+                if (not data.firestoneData.gp) then
+                  bepgp._firestoneDD = LDD:OpenAce3Menu(data.firestoneData.Items)
+                  bepgp._firestoneDD:SetPoint("TOP", self.buttons[1], "BOTTOM", 0,0)
+                  return true
+                else
+                  gp = data.firestoneData.gp
+                  gp2 = data.firestoneData.gp2
+                end
+              end
               local update = data[loot_indices.update] ~= nil
               local loot = bepgp:GetModule(addonName.."_loot")
               if loot then
                 loot:addOrUpdateLoot(data, update)
               end
-              local name = data[loot_indices.player]
-              local gp = tonumber(data[loot_indices.price])
-              local gp2 = tonumber(data[loot_indices.price2])
               if data.use_discount and gp2 then
                 bepgp:givename_gp(name, gp2)
               else
@@ -2351,14 +2432,25 @@ function bepgp:templateCache(id)
               local data = self.data
               local loot_indices = data.loot_indices
               data[loot_indices.action] = bepgp.VARS.osgp
+              local name = data[loot_indices.player]
+              local gp = tonumber(data[loot_indices.off_price])
+              local gp2 = tonumber(data[loot_indices.off_price2])
+              local discount = bepgp.db.profile.discount
+              if data.firestoneData and discount > 0 then
+                if (not data.firestoneData.gp_os) then
+                  bepgp._firestoneDD = LDD:OpenAce3Menu(data.firestoneData.Items)
+                  bepgp._firestoneDD:SetPoint("TOP", self.buttons[2], "BOTTOM", 0,0)
+                  return true
+                else
+                  gp = data.firestoneData.gp_os
+                  gp2 = data.firestoneData.gp2_os
+                end
+              end
               local update = data[loot_indices.update] ~= nil
               local loot = bepgp:GetModule(addonName.."_loot")
               if loot then
                 loot:addOrUpdateLoot(data, update)
               end
-              local name = data[loot_indices.player]
-              local gp = tonumber(data[loot_indices.off_price])
-              local gp2 = tonumber(data[loot_indices.off_price2])
               if data.use_discount and gp2 then
                 bepgp:givename_gp(name, gp2)
               else
@@ -4884,6 +4976,89 @@ function bepgp:itemLevelOptionPass(item_level)
   return true
 end
 
+bepgp._firestoneItems = { }
+local function firestonDDClose()
+  if bepgp._firestoneDD then
+    bepgp._firestoneDD:Release()
+  end
+end
+function bepgp:getFirestoneItems(enClass, dialogData)
+  local firestoneItems
+  local priceMenu = bepgp._firestoneItems
+  if (not enClass) or (not class_to_firestoneitems[enClass]) then
+    firestoneItems = class_to_firestoneitems["UNKNOWN"] -- return all
+  else
+    firestoneItems = class_to_firestoneitems[enClass]
+  end
+  wipe(priceMenu)
+  if firestoneItems then
+    local linkMod = GetModifiedClick("CHATLINK")
+    linkMod = ("-"):split(linkMod)
+    priceMenu.type = "group"
+    priceMenu.name = "Crystallized Firestone"
+    priceMenu.desc = "Crystallized Firestone ".. TURN_IN_QUEST
+    priceMenu.args = priceMenu.args or {}
+    priceMenu.args["Title"] = {
+      type = "header",
+      name = "Crystallized Firestone ".. TURN_IN_QUEST,
+      order = 0,
+    }
+    local itemAsync = Item:CreateFromItemID(71617) -- Crystallized Firestone id
+    itemAsync:ContinueOnItemLoad(function()
+      local itemLink = itemAsync:GetItemLink()
+      local itemName = itemAsync:GetItemName()
+      priceMenu.name = itemLink
+      priceMenu.desc = format("%s %s",itemLink, TURN_IN_QUEST)
+      priceMenu.args["Title"].name = format(L["Select [%s] GP value"],itemName)
+      dialogData.firestoneData.firestone = itemName
+    end)
+    for i,itemID in ipairs(firestoneItems) do
+      local price1, tier, price2, wand_discount,ranged_discount,shield_discount,onehand_discount,twohand_discount, item_level = bepgp:GetPrice(itemID, bepgp.db.profile.progress)
+      if price1 then
+        local off_price = math.floor(price1*self.db.profile.discount)
+        local off_price2
+        if price2 and price2 > 0 then
+          off_price2 = math.floor(price2*self.db.profile.discount)
+        end
+        local itemAsync = Item:CreateFromItemID(itemID)
+        itemAsync:ContinueOnItemLoad(function()
+          local itemLink = itemAsync:GetItemLink()
+          local invTypeName = itemAsync:GetInventoryTypeName()
+          priceMenu.args[itemID] = {
+            type = "execute",
+            name = format("%03d %s %s",price1, itemLink, (_G[invTypeName or "UNKNOWN"])),
+            desc = format(L["%s-Click to Link Item"],linkMod),
+            order = i,
+            func = function(info)
+              if ( IsModifiedClick("CHATLINK") ) then
+                ChatEdit_LinkItem(itemID, itemLink)
+                return
+              end
+              dialogData.firestoneData.gp = price1
+              dialogData.firestoneData.gp_os = off_price
+              dialogData.firestoneData.gp2 = price2
+              dialogData.firestoneData.gp2_os = off_price2
+              dialogData.firestoneData.item = itemLink
+              dialogData._firestoneCheckbox.Text:SetText(itemLink)
+              dialogData._firestoneCheckbox:SetChecked(true)
+              C_Timer.After(0.2, firestonDDClose)
+            end,
+          }
+        end)
+      end
+    end
+    priceMenu.args.cancel = {
+      type = "execute",
+      name = _G.CANCEL,
+      desc = _G.CANCEL,
+      order = 25,
+      func = function(info)
+        C_Timer.After(0.2, firestonDDClose)
+      end,
+    }
+  end
+  return priceMenu
+end
 -------------------------------------------
 --// UTILITY
 -------------------------------------------
