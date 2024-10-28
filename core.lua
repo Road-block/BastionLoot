@@ -3392,6 +3392,11 @@ function bepgp:deferredInit(guildname)
       if not self:IsHooked("GuildRosterSetOfficerNote") then
         self:RawHook("GuildRosterSetOfficerNote",true)
       end
+      if C_GuildInfo and C_GuildInfo.SetNote then
+        if not self:IsHooked(C_GuildInfo, "SetNote") then
+          self:SecureHook(C_GuildInfo, "SetNote", "C_GuildInfo_SetNote")
+        end
+      end
     end
     -- version check
     self:parseVersion(bepgp._versionString)
@@ -4023,41 +4028,59 @@ function bepgp:guildBranding()
   --self._guildLogo:SetIgnoreParentAlpha(true)
 end
 
+function bepgp:officerNoteTamper(name,index,prevnote)
+  name = bepgp:Ambiguate(name)
+  prevnote = prevnote or ""
+  local oldtype, _, olddata, _, t1, t2, t3, t4 = bepgp:parseNote(prevnote,index)
+  local oldmain, ally, ally_class, ally_ep, ally_gp, ep, gp
+  local msg, admin_msg
+  if oldtype == "alt" --[[and self.db.profile.altspool]] then
+    oldmain = t1
+  elseif oldtype == "standin" --[[and self.db.profile.allypool]] then
+    ally, ally_class, ally_ep, ally_gp = t1, t2, t3, t4
+  elseif oldtype == "epgp" then
+    ep, gp = t1, t2
+  end
+  local datatype, _, epgpdata, _, t1, t2, t3, t4 = bepgp:parseNote(note)
+  if oldmain then
+    admin_msg = string.format(L["Manually modified %s\'s note. Previous main was %s"],name,oldmain)
+    msg = string.format(L["|cffff0000Manually modified %s\'s note. Previous main was %s|r"],name,oldmain)
+  elseif ally and ally_class then
+    admin_msg = string.format(L["Manually modified %s\'s note. Previous ally info %s, %d:%d"],name,ally,(ally_ep or 0), (ally_gp or bepgp.VARS.basegp))
+    msg = string.format(L["|cffff0000Manually modified %s\'s note. Previous ally info %s, %d:%d"],name,ally,(ally_ep or 0), (ally_gp or bepgp.VARS.basegp))
+  elseif ep and gp then
+    local oldepgp = string.format("{%d:%d}",ep,gp)
+    admin_msg = string.format(L["Manually modified %s\'s note. EPGP was %s"],name,oldepgp)
+    msg = string.format(L["|cffff0000Manually modified %s\'s note. EPGP was %s|r"],name,oldepgp)
+  end
+  if admin_msg then
+    self:adminSay(admin_msg)
+  end
+  if msg then
+    self:Print(msg)
+  end
+end
+
+function bepgp:C_GuildInfo_SetNote(guid,note,isPublicNote)
+  if not isPublicNote then
+    for index=1,GetNumGuildMembers(1) do
+      local name, _, _, _, _, _, _, prevnote, _, _, _, _, _, _, _, _, g_GUID = GetGuildRosterInfo(index)
+      if guid == g_GUID then
+        self:officerNoteTamper(name,index,prevnote)
+        return
+      end
+    end
+  end
+end
+
 function bepgp:GuildRosterSetOfficerNote(index,note,fromAddon)
   if (fromAddon) then
     self.hooks["GuildRosterSetOfficerNote"](index,note)
   else
     local name, _, _, _, _, _, _, prevnote, _, _ = GetGuildRosterInfo(index)
-    name = bepgp:Ambiguate(name)
-    prevnote = prevnote or ""
-    local oldtype, _, olddata, _, t1, t2, t3, t4 = bepgp:parseNote(prevnote,index)
-    local oldmain, ally, ally_class, ally_ep, ally_gp, ep, gp
-    local msg, admin_msg
-    if oldtype == "alt" --[[and self.db.profile.altspool]] then
-      oldmain = t1
-    elseif oldtype == "standin" --[[and self.db.profile.allypool]] then
-      ally, ally_class, ally_ep, ally_gp = t1, t2, t3, t4
-    elseif oldtype == "epgp" then
-      ep, gp = t1, t2
-    end
-    local datatype, _, epgpdata, _, t1, t2, t3, t4 = bepgp:parseNote(note)
-    if oldmain then
-      admin_msg = string.format(L["Manually modified %s\'s note. Previous main was %s"],name,oldmain)
-      msg = string.format(L["|cffff0000Manually modified %s\'s note. Previous main was %s|r"],name,oldmain)
-    elseif ally and ally_class then
-      admin_msg = string.format(L["Manually modified %s\'s note. Previous ally info %s, %d:%d"],name,ally,(ally_ep or 0), (ally_gp or bepgp.VARS.basegp))
-      msg = string.format(L["|cffff0000Manually modified %s\'s note. Previous ally info %s, %d:%d"],name,ally,(ally_ep or 0), (ally_gp or bepgp.VARS.basegp))
-    elseif ep and gp then
-      local oldepgp = string.format("{%d:%d}",ep,gp)
-      admin_msg = string.format(L["Manually modified %s\'s note. EPGP was %s"],name,oldepgp)
-      msg = string.format(L["|cffff0000Manually modified %s\'s note. EPGP was %s|r"],name,oldepgp)
-    end
-    if admin_msg then
-      self:adminSay(admin_msg)
-    end
-    if msg then
-      self:Print(msg)
-    end
+
+    self:officerNoteTamper(name,index,prevnote)
+
     local safenote = string.gsub(note,"(.*)(%b{})(.*)",self.sanitizeNote)
     return self.hooks["GuildRosterSetOfficerNote"](index,safenote)
   end
