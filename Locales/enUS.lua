@@ -460,6 +460,10 @@ You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back i
   L["Ashli's Bag"] = true -- 186672
   L["Cache of the Broodmother"] = true -- 208044, 208045
   L["Heart of Wind"] = true -- 207891, 207892, 207894
+  L["Cache of the Fire Lord"] = true -- 208967, 209261
+  L["Elementium Fragment"] = true -- 210079, 210217, 210218, 210219, 210220
+  L["Lesser Cache of the Aspects"] = true -- 210160, 210161, 210162, 210163, 210221
+  L["Greater Cache of the Aspects"] = true -- 209894, 209895, 209896, 209897, 210222
   L["Gordok Tribute"] = true -- DEBUG
   L["Delay Updates"] = true
   L["Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)"] = true

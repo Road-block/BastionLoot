@@ -455,6 +455,10 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Ashli's Bag"] = "Ashli's Bag" -- needs translation
   L["Cache of the Broodmother"] = "Cache of the Broodmother" -- needs translation
   L["Heart of Wind"] = "Heart of Wind" -- needs translation
+  L["Cache of the Fire Lord"] = "Cache of the Fire Lord" -- needs translation
+  L["Elementium Fragment"] = "Elementium Fragment" -- needs translation
+  L["Lesser Cache of the Aspects"] = "Lesser Cache of the Aspects" -- needs translation
+  L["Greater Cache of the Aspects"] = "Greater Cache of the Aspects" -- needs translation
   L["Delay Updates"] = "Delay Updates" -- needs translation
   L["Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)"] = "Time in seconds between roster updates and initial roster scan.\nCan try higher values as a workaround for other addon compatibility issues (eg. Questie)" -- needs translation
   L["Extra Messages"] = "Extra Messages" -- needs translation
