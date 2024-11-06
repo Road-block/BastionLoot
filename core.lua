@@ -3266,6 +3266,7 @@ function bepgp:OnEnable(reset) -- 2. PLAYER_LOGIN
       bepgp:RegisterEvent("START_LOOT_ROLL", "favAlert")
     end
   end
+  self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED", "favCheckRemove")
   if not bepgp.cleuParser then -- re-use if someone did /disable /enable
     bepgp.cleuParser = CreateFrame("Frame")
     bepgp.cleuParser.OnEvent = function(frame, event, ...)
@@ -3745,6 +3746,21 @@ function bepgp:favAlert(event, rollID, rollTime, lootHandle)
     local _, _, _, itemID = bepgp:getItemData(link)
     if itemID and bepgp.db.char.favorites[itemID] then
       bepgp:Alert(string.format(L["BastionLoot Favorite: %s"],link))
+    end
+  end
+end
+
+function bepgp:favCheckRemove(event, slotid, emptied)
+  if not emptied then
+    local itemID = GetInventoryItemID("player", slotid)
+    local itemLink = GetInventoryItemLink("player", slotid)
+    if itemID and bepgp.db.char.favorites[itemID] then
+      local browser = self:GetModule(addonName.."_browser")
+      if browser then
+        browser:favoriteClear(itemID)
+        local msg = string.format(L["%s removed from Favorites"],itemLink)
+        self:Print(msg)
+      end
     end
   end
 end

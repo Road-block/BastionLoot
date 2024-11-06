@@ -590,5 +590,6 @@ You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back i
   L[".. or clear the checkbox to change item"] = true
   L["Show Selected Item"] = true
   L["Use GP Button to Set"] = true
+  L["%s removed from Favorites"] = true
 
 bepgp.L = L

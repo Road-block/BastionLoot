@@ -584,5 +584,6 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L[".. or clear the checkbox to change item"] = ".. or clear the checkbox to change item" -- needs translation
   L["Show Selected Item"] = "Show Selected Item" -- needs translation
   L["Use GP Button to Set"] = "Use GP Button to Set" -- needs translation
+  L["%s removed from Favorites"] = "%s removed from Favorites" -- needs translation
 
   bepgp.L = L
