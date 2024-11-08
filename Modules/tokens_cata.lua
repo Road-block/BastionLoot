@@ -6,6 +6,29 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local tokens = {} -- item = token
 local rewards = {} -- token = items
 local last_reward_flipped = {} -- token = reward
+local item_upgrades = {} -- baseitemid = token
+-- crystallized firestone for now
+item_upgrades[68915] = 71617
+item_upgrades[68972] = 71617
+item_upgrades[70929] = 71617
+item_upgrades[70939] = 71617
+item_upgrades[71146] = 71617
+item_upgrades[71147] = 71617
+item_upgrades[71148] = 71617
+item_upgrades[71149] = 71617
+item_upgrades[71150] = 71617
+item_upgrades[71151] = 71617
+item_upgrades[71152] = 71617
+item_upgrades[71154] = 71617
+item_upgrades[71218] = 71617
+item_upgrades[71359] = 71617
+item_upgrades[71360] = 71617
+item_upgrades[71361] = 71617
+item_upgrades[71362] = 71617
+item_upgrades[71365] = 71617
+item_upgrades[71366] = 71617
+item_upgrades[71367] = 71617
+item_upgrades[71640] = 71617
 
 -- T11.359 (normal)
 rewards[63682] = { 60341,60351, 60277,60282,60286, 60243, 60299  } -- Helm of the Forlorn Vanquisher (dk/druid/mage/rogue)
@@ -113,6 +136,17 @@ function bepgp_tokens_cata:GetToken(reward)
   return tokens[reward] or nil
 end
 
+function bepgp_tokens_cata:ItemUpgradeString(baseItem)
+  if not (type(baseItem)=="number" or type(baseItem)=="string") then return end
+  local baseitemID = bepgp.GetItemInfoInstant(baseItem)
+  if not baseitemID then return end
+  local tokenID = item_upgrades[baseitemID]
+  if not tokenID then return end
+  local _,_,_,_,icon = bepgp.GetItemInfoInstant(tokenID)
+  local markup = item_icon_markup[icon]
+  return string.format("%s +%s",L["|cff00ff00Upgradeable:|r"],(markup or tokenID))
+end
+
 function bepgp_tokens_cata:RewardItemString(tokenItem)
   if not (type(tokenItem)=="number" or type(tokenItem)=="string") then return end
   local tokenID = bepgp.GetItemInfoInstant(tokenItem)
@@ -181,6 +215,7 @@ function bepgp_tokens_cata:CoreInit()
   self:cacheTokens()
   bepgp.TokensItemString = self.TokensItemString
   bepgp.RewardItemString = self.RewardItemString
+  bepgp.ItemUpgradeString = self.ItemUpgradeString
   if not self._initDone then
     self:delayInit()
   end

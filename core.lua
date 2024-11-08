@@ -62,6 +62,7 @@ bepgp.VARS = {
   osgp = L["Offspec GP"],
   bankde = L["Bank-D/E"],
   unassigned = C:Red(L["Unassigned"]),
+  crystalfirestone = 71617,
   autoloot = {
     [40752] = "BadgeHero",
     [101] = "currency",
@@ -2271,7 +2272,7 @@ function bepgp:templateCache(id)
           local data = self.data
           local loot_indices = data.loot_indices
           local item_id = data[loot_indices.item_id]
-          if item_id == 71617 then -- Crystallized Firestone
+          if bepgp.VARS.crystalfirestone and (item_id == bepgp.VARS.crystalfirestone) then -- Crystallized Firestone
             data.firestoneData = data.firestoneData or {}
             data.firestoneData.Items = bepgp:getFirestoneItems((data[loot_indices.class] or "UNKNOWN"), data)
           else
@@ -3598,16 +3599,24 @@ function bepgp:AddTipInfo(tooltip,...)
     if tipOptionGroup.favinfo and favorite then
       tooltip:AddLine(self._favmap[favorite])
     end
-    if tipOptionGroup.tkninfo and self.TokensItemString and self.RewardItemString then
-      wipe(item_swaps)
-      local required_line = self:TokensItemString(itemid)
-      local reward_line = self:RewardItemString(itemid)
-      if required_line then
-        tooltip:AddDoubleLine(_G.CTRL_KEY,_G.SOURCE..required_line)
-        item_swaps[itemid] = required_line
-      elseif reward_line then
-        tooltip:AddDoubleLine(_G.CTRL_KEY,L["Token for:"]..reward_line)
-        item_swaps[itemid] = reward_line
+    if tipOptionGroup.tkninfo then
+      if self.ItemUpgradeString then
+        local token_markup = self:ItemUpgradeString(itemid)
+        if token_markup then
+          tooltip:AddDoubleLine(" ",token_markup)
+        end
+      end
+      if self.TokensItemString and self.RewardItemString then
+        wipe(item_swaps)
+        local required_line = self:TokensItemString(itemid)
+        local reward_line = self:RewardItemString(itemid)
+        if required_line then
+          tooltip:AddDoubleLine(_G.CTRL_KEY,_G.SOURCE..required_line)
+          item_swaps[itemid] = required_line
+        elseif reward_line then
+          tooltip:AddDoubleLine(_G.CTRL_KEY,L["Token for:"]..reward_line)
+          item_swaps[itemid] = reward_line
+        end
       end
     end
     if tipOptionGroup.useinfo and (type(useful)=="table" and #(useful)>0) then
@@ -5059,7 +5068,7 @@ function bepgp:getFirestoneItems(enClass, dialogData)
       name = "Crystallized Firestone ".. TURN_IN_QUEST,
       order = 0,
     }
-    local itemAsync = Item:CreateFromItemID(71617) -- Crystallized Firestone id
+    local itemAsync = Item:CreateFromItemID(bepgp.VARS.crystalfirestone) -- Crystallized Firestone id
     itemAsync:ContinueOnItemLoad(function()
       local itemLink = itemAsync:GetItemLink()
       local itemName = itemAsync:GetItemName()
