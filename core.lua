@@ -3425,10 +3425,11 @@ function bepgp:deferredInit(guildname)
     -- main
     self:testMain()
     -- group status change
-    self:RegisterEvent("GROUP_ROSTER_UPDATE","testLootPrompt")
-    self:RegisterEvent("GROUP_JOINED","testLootPrompt")
-    self:RegisterEvent("GROUP_LEFT","testLootPrompt")
-    self:RegisterEvent("PLAYER_ENTERING_WORLD","testLootPrompt")
+    self:RegisterEvent("GROUP_ROSTER_UPDATE","groupStatusRouter")
+    self:RegisterEvent("GROUP_JOINED","groupStatusRouter")
+    self:RegisterEvent("GROUP_LEFT","groupStatusRouter")
+    self:RegisterEvent("PLAYER_ENTERING_WORLD","groupStatusRouter")
+    self:RegisterEvent("PARTY_LOOT_METHOD_CHANGED","groupStatusRouter")
     -- set price system
     bepgp:SetPriceSystem()
     -- register whisper responder
@@ -3581,15 +3582,21 @@ function bepgp:AddTipInfo(tooltip,...)
       end
       if tipOptionGroup.mlinfo then
         if roll_admin and is_admin and mode_epgp then
-          if owner and (owner._bepgpclicks or owner.BGR) then
-            tooltip:AddDoubleLine(C:Yellow(L["Alt Click"]), C:Orange(L["Call for: MS/OS"]))
+          if owner then
+            local ownerName = owner.GetName and owner:GetName() or ""
+            if owner._bepgpclicks or owner.BGR or strfind(ownerName,"BetterBagsItemButton") then
+              tooltip:AddDoubleLine(C:Yellow(L["Alt Click"]), C:Orange(L["Call for: MS/OS"]))
+            end
           end
         end
       end
     end
     if tipOptionGroup.mlinfo and (roll_admin and mode_plusroll) then
-      if owner and (owner._bepgprollclicks or owner.BGR) then
-        tooltip:AddDoubleLine(C:Yellow(L["Alt Click"]), C:Orange(L["Call for Rolls"]))
+      if owner then
+        local ownerName = owner.GetName and owner:GetName() or ""
+        if owner._bepgprollclicks or owner.BGR or strfind(ownerName,"BetterBagsItemButton") then
+          tooltip:AddDoubleLine(C:Yellow(L["Alt Click"]), C:Orange(L["Call for Rolls"]))
+        end
       end
     end
     if tipOptionGroup.favinfo and (owner and (owner.encounterID and owner.itemID)) then -- encounter journal
@@ -5385,15 +5392,23 @@ function bepgp:testMain()
   end
 end
 
-function bepgp:testLootPrompt(event)
+function bepgp:groupStatusRouter(event)
   raidStatus = (self:GroupStatus() == "RAID") and true or false
   if (raidStatus == false) and (lastRaidStatus == nil or lastRaidStatus == true) then
     local hasLoothistory = #(self.db.char.loot)
-    if hasLoothistory > 0 then
+    if hasLoothistory > 0 and (event ~= "PARTY_LOOT_METHOD_CHANGED") then
       LD:Spawn(addonName.."DialogClearLoot",hasLoothistory)
     end
   end
   lastRaidStatus = raidStatus
+  if (event == "PLAYER_ENTERING_WORLD") or
+  (event == "PARTY_LOOT_METHOD_CHANGED") or
+  (event == "GROUP_ROSTER_UPDATE") then
+    if raidStatus and self:lootMaster() then
+      local addonMsg = string.format("MODE;%s;%s",self.db.char.mode,self._playerName)
+      self:addonMessage(addonMsg,"RAID")
+    end
+  end
 end
 
 -- parse potential Alt (in-guild) officernote, return Main (in-guild)

@@ -606,6 +606,17 @@ function bepgp_loot:bidCall(frame, button, context) -- context is one of "master
       if bagID and slotID then
         itemLink = GetContainerItemLink(bagID, slotID)
       end
+    else -- BetterBags?
+      if frame.GetParent then
+        local bag = frame:GetParent()
+        if bag.GetID then
+          bagID = bag:GetID()
+        end
+        slotID = frame.GetID and frame:GetID() or nil
+        if slotID and (bagID >= BACKPACK_CONTAINER and bagID <= NUM_BAG_SLOTS) then
+          itemLink = GetContainerItemLink(bagID, slotID)
+        end
+      end
     end
   end
   if not itemLink then return end
@@ -637,6 +648,7 @@ local bag_addons = {
   ["tdBag2"] = false,
   ["Tukui"] = false,
   ["Baganator"] = false,
+  ["BetterBags"] = false,
 }
 function bepgp_loot:hookBagAddons()
   local hook_install = false
@@ -675,6 +687,14 @@ function bepgp_loot:bagginsHook()
 end
 
 function bepgp_loot:baganatorHook()
+  if not self:IsHooked("ContainerFrameItemButton_OnModifiedClick") then
+    self:SecureHook("ContainerFrameItemButton_OnModifiedClick", function(frame, button)
+      bepgp_loot:bidCall(frame, button, "container")
+    end)
+  end
+end
+
+function bepgp_loot:betterbagsHook()
   if not self:IsHooked("ContainerFrameItemButton_OnModifiedClick") then
     self:SecureHook("ContainerFrameItemButton_OnModifiedClick", function(frame, button)
       bepgp_loot:bidCall(frame, button, "container")
@@ -757,6 +777,9 @@ function bepgp_loot:clickHandlerBags(id)
       bag_addons[addon] = true
     elseif addon == "Baganator" then
       self:baganatorHook()
+      bag_addons[addon] = true
+    elseif addon == "BetterBags" then
+      self:betterbagsHook()
       bag_addons[addon] = true
     end
   end
