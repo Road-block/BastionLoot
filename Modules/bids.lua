@@ -154,6 +154,7 @@ function bepgp_bids:OnEnable()
   self.qtip:SetClampRectInsets(-100,100,50,-50)
   self.qtip:SetPoint("TOP",UIParent,"TOP",0,-50)
   LD:Register(addonName.."DialogMemberBid", bepgp:templateCache("DialogMemberBid"))
+  RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
 end
 
 function bepgp_bids:announceWinner(data)

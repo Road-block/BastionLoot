@@ -32,6 +32,7 @@ function bepgp_standby:OnEnable()
     LD:Register(addonName.."DialogStandbyCheck", bepgp:templateCache("DialogStandbyCheck"))
     self._channelTimer = self:ScheduleTimer("injectOptions",10)
   end
+  RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
 end
 
 function bepgp_standby:injectOptions()

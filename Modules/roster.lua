@@ -50,6 +50,7 @@ function bepgp_roster:OnEnable()
   end)
   container:AddChild(export)
   bepgp:make_escable(container,"add")
+  RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
 end
 
 function bepgp_roster:Toggle()

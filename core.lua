@@ -3242,6 +3242,7 @@ function bepgp:OnEnable(reset) -- 2. PLAYER_LOGIN
     bepgp.VARS.minlevel = GetMaxPlayerLevel()
   end
   if reset then self._initdone = nil end
+  RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
   if IsInGuild() then
     local guildname = GetGuildInfo("player")
     if not guildname then

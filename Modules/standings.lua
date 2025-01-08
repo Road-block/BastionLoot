@@ -194,6 +194,7 @@ function bepgp_standings:OnEnable()
 
   bepgp:make_escable(container,"add")
   self:RegisterMessage(addonName.."_EPGPCACHE","CacheUpdate")
+  RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
 end
 
 function bepgp_standings:Toggle()
