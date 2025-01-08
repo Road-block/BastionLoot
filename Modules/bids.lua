@@ -402,6 +402,7 @@ function bepgp_bids:Toggle(anchor)
 end
 
 function bepgp_bids:SetItemRef(link, text, button, chatFrame)
+  if bepgp.db.char.mode ~= "epgp" then return end
   local linktype, addon, bid, masterlooter = strsplit(":",link)
   if linktype == "addon" and addon == addonName then
     if bid == "1" or bid == "5" then

@@ -267,6 +267,7 @@ function bepgp_plusroll_bids:Toggle(anchor)
 end
 
 function bepgp_plusroll_bids:SetItemRef(link, text, button, chatFrame)
+  if bepgp.db.char.mode ~= "plusroll" then return end
   local linktype, addon, bid, masterlooter = strsplit(":",link)
   if linktype == "addon" and addon == addonName then
     if bid == "1" then
