@@ -226,7 +226,7 @@ function bepgp_comms:OnCommReceived(prefix, payload, distribution, sender)
     local _, _epoch = payload:match("^(_epoch:)(%d+)$")
     _epoch = _epoch and tonumber(_epoch)
     if _epoch then
-      if not self.db.profile.epgp._epoch or (_epoch > self.db.profile.epgp._epoch) then
+      if (not self.db.profile.epgp._epoch) or (_epoch > tonumber(self.db.profile.epgp._epoch)) then
         if incoming[sender] then
           wipe(self.db.profile.epgp)
           self.db.profile.epgp._epoch = _epoch

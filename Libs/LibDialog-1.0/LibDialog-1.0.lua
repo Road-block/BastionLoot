@@ -262,6 +262,11 @@ local function _Dialog_OnHide(dialog)
     _RecycleWidget(dialog, active_dialogs, dialog_heap)
 
     local delegate = dialog.delegate
+
+    if not delegate then
+        return
+    end
+
     if delegate.on_hide then
         delegate.on_hide(dialog, dialog.data)
     end
