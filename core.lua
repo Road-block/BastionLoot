@@ -1456,7 +1456,11 @@ function bepgp:options(force)
      desc = string.format(L["Resets everyone\'s EPGP to 0/%d (Guild Leader only)."],bepgp.VARS.basegp),
      order = 125,
      hidden = function() return not (IsGuildLeader()) end,
-     func = function() LD:Spawn(addonName.."DialogResetPoints") end
+     func = function()
+        if bepgp:checkDialog(addonName.."DialogResetPoints") then
+          LD:Spawn(addonName.."DialogResetPoints")
+        end
+      end
     }
     self._options.args.general.args.main.args["system"] = {
       type = "select",
@@ -1779,7 +1783,9 @@ function bepgp:ddoptions(refresh)
       desc = L["Award EPs to all raid members."],
       order = 10,
       func = function(info)
-        LD:Spawn(addonName.."DialogGroupPoints", {"ep", C:Green(L["Effort Points"]), _G.RAID})
+        if bepgp:checkDialog(addonName.."DialogGroupPoints") then
+          LD:Spawn(addonName.."DialogGroupPoints", {"ep", C:Green(L["Effort Points"]), _G.RAID})
+        end
       end,
     }
     self._dda_options.args["ep"] = {
@@ -2107,6 +2113,18 @@ function bepgp.OnLDBTooltipShow(tooltip)
     hint = L["|cffff7f00Middle Click|r for %s"]:format(L["Member Options"])
     tooltip:AddLine(hint)
   end
+end
+
+function bepgp:checkDialog(delegate)
+  if LD and LD.Spawn then
+    if LD.delegates and LD.delegates[delegate] then
+      return true
+    end
+    self:debugPrint(L["Dialogs not initialized, restarting addon"])
+    self:OnEnable(true)
+    return false
+  end
+  return false
 end
 
 function bepgp:templateCache(id)
@@ -3442,7 +3460,6 @@ function bepgp:deferredInit(guildname)
     self:SendMessage(addonName.."_INIT_DONE")
   else
     local profilekey = realmname
-    local profilekey = realmname
     self._options.name = self._labelfull
     self._options.args.general.name = panelHeader
     self.db:SetProfile(profilekey)
@@ -4091,7 +4108,6 @@ function bepgp:officerNoteTamper(name,index,prevnote)
   elseif oldtype == "epgp" then
     ep, gp = t1, t2
   end
-  local datatype, _, epgpdata, _, t1, t2, t3, t4 = bepgp:parseNote(note)
   if oldmain then
     admin_msg = string.format(L["Manually modified %s\'s note. Previous main was %s"],name,oldmain)
     msg = string.format(L["|cffff0000Manually modified %s\'s note. Previous main was %s|r"],name,oldmain)
@@ -4579,7 +4595,9 @@ function bepgp:GrantLootAdmin(name, threshold)
       return
     end
   else
-    LD:Spawn(addonName.."DialogWhitelist",{"GrantLootAdmin",name,threshold})
+    if bepgp:checkDialog(addonName.."DialogWhitelist") then
+      LD:Spawn(addonName.."DialogWhitelist",{"GrantLootAdmin",name,threshold})
+    end
     return
   end
 end
@@ -4620,7 +4638,9 @@ function bepgp:GrantSizeToggle(name)
       return
     end
   else
-    LD:Spawn(addonName.."DialogWhitelist",{"GrantSizeToggle",name})
+    if bepgp:checkDialog(addonName.."DialogWhitelist") then
+      LD:Spawn(addonName.."DialogWhitelist",{"GrantSizeToggle",name})
+    end
     return
   end
 end
@@ -4661,7 +4681,9 @@ function bepgp:GrantDiffToggle(name)
       return
     end
   else
-    LD:Spawn(addonName.."DialogWhitelist",{"GrantDiffToggle",name})
+    if bepgp:checkDialog(addonName.."DialogWhitelist") then
+      LD:Spawn(addonName.."DialogWhitelist",{"GrantDiffToggle",name})
+    end
     return
   end
 end
@@ -4783,7 +4805,8 @@ function bepgp:checkPendingLoot(event, lootSlot)
 end
 
 function bepgp:GUILD_ROSTER_UPDATE(event)
-  if GuildFrame and GuildFrame:IsShown() then return end
+  local guildFrame = (CommunitiesFrame or GuildFrame)
+  if guildFrame and guildFrame:IsShown() then return end
   if InCombatLockdown() then
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
     return
@@ -5339,7 +5362,8 @@ end
 
 function bepgp:safeGuildRoster()
   if not IsInGuild() then return end
-  if GuildFrame and GuildFrame:IsShown() then return end
+  local guildFrame = (CommunitiesFrame or GuildFrame)
+  if guildFrame and guildFrame:IsShown() then return end
   if InCombatLockdown() then return end
   local now = GetTime()
   if not self._lastgRosterUpdate or (now - self._lastgRosterUpdate) >= 10 then
@@ -5388,7 +5412,9 @@ function bepgp:testMain()
     if self._playerLevel and (self._playerLevel < bepgp.VARS.minlevel) then
       return
     else
-      LD:Spawn(addonName.."DialogSetMain")
+      if bepgp:checkDialog(addonName.."DialogSetMain") then
+        LD:Spawn(addonName.."DialogSetMain")
+      end
     end
   end
 end
@@ -5398,7 +5424,9 @@ function bepgp:groupStatusRouter(event)
   if (raidStatus == false) and (lastRaidStatus == nil or lastRaidStatus == true) then
     local hasLoothistory = #(self.db.char.loot)
     if hasLoothistory > 0 and (event ~= "PARTY_LOOT_METHOD_CHANGED") then
-      LD:Spawn(addonName.."DialogClearLoot",hasLoothistory)
+      if bepgp:checkDialog(addonName.."DialogClearLoot") then
+        LD:Spawn(addonName.."DialogClearLoot",hasLoothistory)
+      end
     end
   end
   lastRaidStatus = raidStatus
@@ -5736,7 +5764,9 @@ function bepgp:buildClassMemberTable(roster,epgp)
           c[key].args[initial].args[name].desc = string.format(desc,name)
           c[key].args[initial].args[name].func = function(info)
             local what = epgp == "ep" and C:Green(L["Effort Points"]) or C:Red(L["Gear Points"])
-            LD:Spawn(addonName.."DialogMemberPoints", {epgp, what, name})
+            if bepgp:checkDialog(addonName.."DialogMemberPoints") then
+              LD:Spawn(addonName.."DialogMemberPoints", {epgp, what, name})
+            end
           end
         end
       elseif key == "ALLIES" then
@@ -5748,7 +5778,9 @@ function bepgp:buildClassMemberTable(roster,epgp)
           c[key].args[name].desc = L["standin: "] .. is_standin
           c[key].args[name].func = function(info)
             local what = epgp == "ep" and C:Green(L["Effort Points"]) or C:Red(L["Gear Points"])
-            LD:Spawn(addonName.."DialogMemberPoints", {epgp, what, name})
+            if bepgp:checkDialog(addonName.."DialogMemberPoints") then
+              LD:Spawn(addonName.."DialogMemberPoints", {epgp, what, name})
+            end
           end
         end
       else
@@ -5759,7 +5791,9 @@ function bepgp:buildClassMemberTable(roster,epgp)
           c[key].args[name].desc = string.format(desc,name)
           c[key].args[name].func = function(info)
             local what = epgp == "ep" and C:Green(L["Effort Points"]) or C:Red(L["Gear Points"])
-            LD:Spawn(addonName.."DialogMemberPoints", {epgp, what, name})
+            if bepgp:checkDialog(addonName.."DialogMemberPoints") then
+              LD:Spawn(addonName.."DialogMemberPoints", {epgp, what, name})
+            end
           end
         end
       end

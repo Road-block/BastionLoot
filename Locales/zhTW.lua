@@ -586,5 +586,6 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Use GP Button to Set"] = "Use GP Button to Set" -- needs translation
   L["%s removed from Favorites"] = "%s removed from Favorites" -- needs translation
   L["|cff00ff00Upgradeable:|r"] = "|cff00ff00Upgradeable:|r" -- needs translation
+  L["Dialogs not initialized, restarting addon"] = "Dialogs not initialized, restarting addon" -- needs translation
 
   bepgp.L = L

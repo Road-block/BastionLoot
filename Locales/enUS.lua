@@ -592,5 +592,6 @@ You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back i
   L["Use GP Button to Set"] = true
   L["%s removed from Favorites"] = true
   L["|cff00ff00Upgradeable:|r"] = true
+  L["Dialogs not initialized, restarting addon"] = true
 
 bepgp.L = L
