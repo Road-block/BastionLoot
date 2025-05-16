@@ -16,12 +16,12 @@ local T = LibStub("LibQTip-1.0")
 local wowver, wowbuild, wowbuildate, wowtocver = GetBuildInfo()
 bepgp._DEBUG = false
 bepgp._SUSPEND = false
+bepgp._mists = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_MISTS_CLASSIC) or false
 bepgp._cata = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CATACLYSM_CLASSIC) or false
-if not bepgp._cata then -- cata beta workaround build 53750, wow_project_id not updated yet
-  bepgp._classic = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC) or false
-  bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) or false
-  bepgp._wrath = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC) or false
-end
+bepgp._wrath = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC) or false
+bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC) or false
+bepgp._classic = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC) or false
+
 local RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
 bepgp._network = {}
 
@@ -41,20 +41,20 @@ bepgp.VARS = {
   minep = 0,
   baseaward_ep = 100,
   minilvl = 0,
-  maxilvl = 416,
+  maxilvl = 572,
   prveto = false,
   decay = 0.8,
   max = 1000,
   timeout = 60,
   rosterthrottle = 10,
-  minlevel = 85,
+  minlevel = 90,
   maxloglines = 500,
   priorank = 100,
   standinrank = 100,
   maxreserves = 1,
   prefix = "BASTIONLOOT_PFX",
-  pricesystem = "BastionEPGP_CC-1.0",
-  progress = "T11",
+  pricesystem = "BastionEPGP_MOPC-1.0",
+  progress = "T14",
   bop = C:Red(L["BoP"]),
   boe = C:Yellow(L["BoE"]),
   nobind = C:White(L["NoBind"]),
@@ -62,7 +62,6 @@ bepgp.VARS = {
   osgp = L["Offspec GP"],
   bankde = L["Bank-D/E"],
   unassigned = C:Red(L["Unassigned"]),
-  crystalfirestone = 71617,
   autoloot = {
     [40752] = "BadgeHero",
     [101] = "currency",
@@ -151,6 +150,100 @@ bepgp.VARS = {
     [22708] = "Ramaladni",    
   },
 }
+if bepgp._cata then
+  bepgp.VARS.maxilvl = 416
+  bepgp.VARS.minlevel = 85
+  bepgp.VARS.pricesystem = "BastionEPGP_CC-1.0"
+  bepgp.VARS.progress = "T11"
+  bepgp.VARS.crystalfirestone = 71617
+  autoloot = {
+    [40752] = "BadgeHero",
+    [101] = "currency",
+    [40753] = "BadgeValor",
+    [102] = "currency",
+    [45624] = "BadgeConquest",
+    [221] = "currency",
+    [47241] = "BadgeTriumph",
+    [301] = "currency",
+    [49426] = "BadgeFrost",
+    [341] = "currency",
+    [241] = "currency",
+    [2589] = "currency", -- sidereal essence
+    [2711] = "currency", -- defiler's scourgestone
+    [22484] = "Necrotic",
+    [43494] = "Watcher",
+    [43670] = "Tiki",
+    [43697] = "Nathrezim",
+    [43726] = "Crown",
+    [43693] = "Mojo",
+    [43668] = "Tuner",
+    [43665] = "Heart",
+    [43669] = "Locket",
+    [43823] = "Cyanigosa",
+    [43724] = "CelestialRuby",
+    [43699] = "FleshDisc",
+    [43821] = "Withered",
+    [43662] = "PlundererAxe",
+    [48418] = "SoulFragment",
+    [202269] = "BountyAlpha",
+    [208157] = "BountyBeta",
+    [211206] = "DefilerMedallion",
+    [211207] = "MysteriousArtifact",
+    --[0] = "BountyGamma", -- unknown yet
+    [45788] = "FreyaSigil",
+    [45786] = "HodirSigil",
+    [45787] = "MimironSigil",
+    [45784] = "ThorimSigil",
+    [45814] = "FreyaSigilH",
+    [45815] = "HodirSigilH",
+    [45816] = "MimironSigilH",
+    [45817] = "ThorimSigilH",
+    [51026] = "Sindragosa1",
+    [51027] = "Sindragosa2",
+    [52006] = "FrostySack",
+    [52676] = "LeyCache",
+    -- bcc
+    [29434] = "Badge",
+    [42] = "currency",
+    [28558] = "SpiritShard",
+    [29425] = "MarkKJ",
+    [30809] = "MarkSG",
+    [29426] = "SignetFW",
+    [30810] = "SignetSF",
+    [24368] = "Coilfang",
+    [25433] = "Warbead",
+    [29209] = "Zaxxis",
+    [25463] = "IvoryTusk",
+    [26042] = "OshuPowder",
+    [32569] = "ApexisShard",
+    [32572] = "ApexisCrystal",
+    [32388] = "ShadowDust",
+    [32620] = "TimeLostScroll",
+    [30436] = "MechBlue",
+    [30437] = "MechRed",
+    [24514] = "Karafrag1",
+    [24487] = "Karafrag2",
+    [24488] = "Karafrag3",
+    [31239] = "Shhkeymold",
+    [31750] = "Gruulsignet",
+    [23933] = "Medivjournal",
+    [25461] = "Sythbook",
+    [25462] = "KurseTome",
+    [31751] = "NightBsignet",
+    [31716] = "ShhAxe",
+    [31721] = "SVtrident",
+    [31722] = "SLessence",
+    [29906] = "VashVial",
+    [29905] = "KaelVial",
+    [31307] = "HeartFury",
+    [32459] = "Timephylactery",
+    -- classic
+    [21229] = "Insignia",
+    [21230] = "Artifact",
+    [23055] = "Thawing",
+    [22708] = "Ramaladni",
+  }
+end
 if bepgp._wrath then
   bepgp.VARS.maxilvl = 284
   bepgp.VARS.minlevel = 80
@@ -408,6 +501,12 @@ do
       Fire = CreateAtlasMarkup("GarrMission_ClassIcon-Mage-Fire"),
       Frost = CreateAtlasMarkup("GarrMission_ClassIcon-Mage-Frost")
     },
+    MONK = {
+      Icon = CreateAtlasMarkup("classicon-monk"),
+      Brewmaster = CreateAtlasMarkup("GarrMission_ClassIcon-Monk-Brewmaster"),
+      Mistweaver = CreateAtlasMarkup("GarrMission_ClassIcon-Monk-Mistweaver"),
+      Windwalker = CreateAtlasMarkup("GarrMission_ClassIcon-Monk-Windwalker"),
+    },
     PALADIN = {
       Icon = CreateAtlasMarkup("classicon-paladin"),
       Holy = CreateAtlasMarkup("GarrMission_ClassIcon-Paladin-Holy"),
@@ -448,6 +547,33 @@ do
 end
 do
   bepgp._progsets = {
+    _mists = {
+      progress_values = {
+        ["T16"]  = L["3.Siege of Org"],
+        ["T15"]  = L["2.Throne of Thunder"],
+        ["T14"]  = L["1.MV, ToES, HoF"],
+      },
+      progress_sorting = {"T16", "T15", "T14"},
+      progressmap = {
+        ["T16.5"] = {"T16.5","T16","T15.5"},
+        ["T16"]   = {"T16.5","T16"},
+        ["T15.5"] = {"T15.5","T15","T14.5"},
+        ["T15"]   = {"T15.5", "T15"},
+        ["T14.5"] = {"T14.5","T14"},
+        ["T14"]   = {"T14.5","T14"},
+      },
+      tierlist = {["T16.5"]="560+",["T16"]="540-559",["T15.5"]="529-539",["T15"]="510-528",["T14.5"]="497-509",["T14"]="476-496"},
+      tiersort = {"T16.5","T16","T15.5","T15","T14.5","T14"},
+      modlist = {["T16"]="T16",["T15"]="T15",["T14"]="T14"},
+      modsort = {"T16","T15","T14"},
+      bench_values = {["T16"]=L["3.Siege of Org"], ["T15"]=L["2.Throne of Thunder"], ["T14"]=L["1.MV, ToES, HoF"]},
+      bench_sorting = {"T14", "T15", "T16"},
+      raidLimits = {
+        ["T14"] = {total = 25,[_G.TANK] = 2,[_G.HEALER] = 6,},
+        ["T15"] = {total = 25,[_G.TANK] = 2,[_G.HEALER] = 6,},
+        ["T16"] = {total = 25,[_G.TANK] = 3,[_G.HEALER] = 6,},
+      },
+    },
     _cata = {
       progress_values = {
         ["T13"]  = L["3.Deathwing"],
@@ -677,6 +803,44 @@ local object_names = {
   [209896] = L["Greater Cache of the Aspects"],
   [209897] = L["Greater Cache of the Aspects"],
   [210222] = L["Greater Cache of the Aspects"],
+  [214383] = L["Cache of Pure Energy"],
+  [214384] = L["Cache of Pure Energy"],
+  [214385] = L["Cache of Pure Energy"],
+  [214386] = L["Cache of Pure Energy"],
+  [214387] = L["Cache of Pure Energy"],
+  [212922] = L["Cache of Tsulong"],
+  [215355] = L["Cache of Tsulong"],
+  [215356] = L["Cache of Tsulong"],
+  [215357] = L["Cache of Tsulong"],
+  [215358] = L["Cache of Tsulong"],
+  [297837] = L["Cache of Ancient Treasures"],
+  [218805] = L["Cache of Ancient Treasures"],
+  [218806] = L["Cache of Ancient Treasures"],
+  [218807] = L["Cache of Ancient Treasures"],
+  [218808] = L["Cache of Ancient Treasures"],
+  [218997] = L["Cache of Storms"],
+  [218998] = L["Cache of Storms"],
+  [221776] = L["Tears of the Vale"],
+  [223236] = L["Tears of the Vale"],
+  [223237] = L["Tears of the Vale"],
+  [223238] = L["Tears of the Vale"],
+  [232092] = L["Tears of the Vale"],
+  [232093] = L["Tears of the Vale"],
+  [233028] = L["Tears of the Vale"],
+  [222749] = L["Unlocked Stockpile of Pandaren Spoils"],
+  [222750] = L["Unlocked Stockpile of Pandaren Spoils"],
+  [222751] = L["Unlocked Stockpile of Pandaren Spoils"],
+  [222752] = L["Unlocked Stockpile of Pandaren Spoils"],
+  [232165] = L["Unlocked Stockpile of Pandaren Spoils"],
+  [232166] = L["Unlocked Stockpile of Pandaren Spoils"],
+  [233030] = L["Unlocked Stockpile of Pandaren Spoils"],
+  [221739] = L["Vault of Forbidden Treasures"],
+  [221740] = L["Vault of Forbidden Treasures"],
+  [221741] = L["Vault of Forbidden Treasures"],
+  [221742] = L["Vault of Forbidden Treasures"],
+  [232163] = L["Vault of Forbidden Treasures"],
+  [232164] = L["Vault of Forbidden Treasures"],
+  [233029] = L["Vault of Forbidden Treasures"],
   [179564] = L["Gordok Tribute"], -- DEBUG
 }
 local class_to_firestoneitems = {
@@ -3222,10 +3386,10 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
   self._versionString = bepgp.GetAddOnMetadata(addonName,"Version")
   self._websiteString = bepgp.GetAddOnMetadata(addonName,"X-Website")
   self._labelfull = string.format("%s %s",label,self._versionString)
-  if self._cata or self._wrath or self._bcc then
-    self.db = LibStub("AceDB-3.0"):New("BastionLootDB", defaults)
-  elseif self._classic then
+  if self._classic then
     self.db = LibStub("AceDB-3.0"):New("BastionEPGPDB", defaults)
+  else
+    self.db = LibStub("AceDB-3.0"):New("BastionLootDB", defaults)
   end
   self:options()
   self._options.args.profile = ADBO:GetOptionsTable(self.db)
@@ -4361,7 +4525,7 @@ function bepgp:debugPrint(msg,onlyWhenDebug)
     for i=1,NUM_CHAT_WINDOWS do
       local tab = _G["ChatFrame"..i.."Tab"]
       local cf = _G["ChatFrame"..i]
-      local tabName = tab:GetText()
+      local tabName = tab and tab:GetText() or ""
       if tab ~= nil and (tabName:lower() == "debug") then
         self._debugchat = cf
         ChatFrame_RemoveAllMessageGroups(self._debugchat)

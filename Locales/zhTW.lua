@@ -587,5 +587,15 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["%s removed from Favorites"] = "%s removed from Favorites" -- needs translation
   L["|cff00ff00Upgradeable:|r"] = "|cff00ff00Upgradeable:|r" -- needs translation
   L["Dialogs not initialized, restarting addon"] = "Dialogs not initialized, restarting addon" -- needs translation
+  L["3.Siege of Org"] = "3.Siege of Org" -- needs translation
+  L["2.Throne of Thunder"] = "2.Throne of Thunder" -- needs translation
+  L["1.MV, ToES, HoF"] = "1.MV, ToES, HoF" -- needs translation
+  L["Cache of Pure Energy"] = "Cache of Pure Energy" -- needs translation
+  L["Cache of Tsulong"] = "Cache of Tsulong" -- needs translation
+  L["Cache of Ancient Treasures"] = "Cache of Ancient Treasures" -- needs translation
+  L["Cache of Storms"] = "Cache of Storms" -- needs translation
+  L["Tears of the Vale"] = "Tears of the Vale" -- needs translation
+  L["Unlocked Stockpile of Pandaren Spoils"] = "Unlocked Stockpile of Pandaren Spoils" -- needs translation
+  L["Vault of Forbidden Treasures"] = "Vault of Forbidden Treasures" -- needs translation
 
   bepgp.L = L

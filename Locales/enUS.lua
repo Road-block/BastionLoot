@@ -593,5 +593,15 @@ You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back i
   L["%s removed from Favorites"] = true
   L["|cff00ff00Upgradeable:|r"] = true
   L["Dialogs not initialized, restarting addon"] = true
+  L["3.Siege of Org"] = true
+  L["2.Throne of Thunder"] = true
+  L["1.MV, ToES, HoF"] = true
+  L["Cache of Pure Energy"] = true -- 214383,214384,214385,214386,214387
+  L["Cache of Tsulong"] = true -- 212922,215355,215356,215357,215358
+  L["Cache of Ancient Treasures"] = true -- 297837,218805,218806,218807,218808
+  L["Cache of Storms"] = true -- 218997,218998
+  L["Tears of the Vale"] = true -- 221776,223236,223237,223238,232092,232093,233028
+  L["Unlocked Stockpile of Pandaren Spoils"] = true -- 222749,222750,222751,222752,232165,232166,233030
+  L["Vault of Forbidden Treasures"] = true -- 221739,221740,221741,221742,232163,232164,233029
 
 bepgp.L = L

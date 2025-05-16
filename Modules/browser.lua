@@ -608,7 +608,7 @@ function bepgp_browser:CoreInit()
       self._container._filtertier:SetItemValue(option,true)
     end    
     self._container._modpreview:SetValue(progress)
-    if bepgp._cata then
+    if bepgp._cata or bepgp._mists then
       hookEJLoot()
     end
     self._initDone = true
@@ -659,18 +659,18 @@ function bepgp_browser:PriceListData(redo)
   end
 end
 
-local priceModLookup = {_classic={"_prices","_tokens"},_bcc={"_prices_bc","_tokens_bc"},_wrath={"_prices_wrath","_tokens_lk"},_cata={"_prices_cata","_tokens_cata"}}
+local priceModLookup = {_classic={"_prices","_tokens"},_bcc={"_prices_bc","_tokens_bc"},_wrath={"_prices_wrath","_tokens_lk"},_cata={"_prices_cata","_tokens_cata"},_mists={"_prices_mists","_tokens_mists"}}
 function bepgp_browser:PriceListLookups()
   local system = bepgp:GetPriceSystem(bepgp.db.profile.system)
   local flavor = system and system.flavor
   local bepgp_prices
   if bepgp._classic then
     bepgp_prices = bepgp:GetModule(addonName..priceModLookup._classic[1])
-    tokens = bepgp:GetModule(addonName..priceModLookup._classic[2])
+    tokens = bepgp:GetModule(addonName..priceModLookup._classic[2],true)
   end
   if bepgp._bcc then
     bepgp_prices = bepgp:GetModule(addonName..priceModLookup._bcc[1])
-    tokens = bepgp:GetModule(addonName..priceModLookup._bcc[2])
+    tokens = bepgp:GetModule(addonName..priceModLookup._bcc[2],true)
   end
   if bepgp._wrath then
     bepgp_prices = bepgp:GetModule(addonName..priceModLookup._wrath[1])
@@ -679,6 +679,10 @@ function bepgp_browser:PriceListLookups()
   if bepgp._cata then
     bepgp_prices = bepgp:GetModule(addonName..priceModLookup._cata[1])
     tokens = bepgp:GetModule(addonName..priceModLookup._cata[2],true) or {}
+  end
+  if bepgp._mists then
+    bepgp_prices = bepgp:GetModule(addonName..priceModLookup._mists[1])
+    tokens = bepgp:GetModule(addonName..priceModLookup._mists[2],true) or {}
   end
   if flavor then
     bepgp_prices = bepgp:GetModule(addonName..priceModLookup[flavor][1])
@@ -700,6 +704,12 @@ function bepgp_browser:PriceSystemUpdate()
     tiersort = bepgp._progsets[flavor].tiersort
     modlist = bepgp._progsets[flavor].modlist
     modsort = bepgp._progsets[flavor].modsort
+  elseif bepgp._mists then
+    progressmap = bepgp._progsets._mists.progressmap
+    tierlist = bepgp._progsets._mists.tierlist
+    tiersort = bepgp._progsets._mists.tiersort
+    modlist = bepgp._progsets._mists.modlist
+    modsort = bepgp._progsets._mists.modsort
   elseif bepgp._cata then
     progressmap = bepgp._progsets._cata.progressmap
     tierlist = bepgp._progsets._cata.tierlist
