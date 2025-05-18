@@ -20,11 +20,11 @@ local table = _G.table
 -- Library namespace.
 -----------------------------------------------------------------------
 local LibStub = _G.LibStub
-local MAJOR = "LibDialog-1.0"
+local MAJOR = "LibDialog-1.0_Roadblock"
 
 _G.assert(LibStub, MAJOR .. " requires LibStub")
 
-local MINOR = 11 -- Should be manually increased
+local MINOR = 1 -- Should be manually increased
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not lib then
@@ -76,7 +76,7 @@ local DEFAULT_ICON_SIZE = 36
 local DEFAULT_DIALOG_TEXT_WIDTH = 290
 
 local MAX_DIALOGS = 4
-local MAX_BUTTONS = 3
+local MAX_BUTTONS = 4
 
 local DEFAULT_DIALOG_BACKDROP = {
     bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]],
@@ -655,15 +655,17 @@ local function _BuildDialog(delegate, data)
             local button = dialog.buttons[index]
 
             if index == 1 then
-                if NUM_BUTTONS == 3 then
-                    button:SetPoint("BOTTOMRIGHT", dialog, "BOTTOM", -72, 16)
-                elseif NUM_BUTTONS == 2 then
-                    button:SetPoint("BOTTOMRIGHT", dialog, "BOTTOM", -6, 16)
-                elseif NUM_BUTTONS == 1 then
+                if NUM_BUTTONS == 1 then
                     button:SetPoint("BOTTOM", dialog, "BOTTOM", 0, 16)
+                else
+                    button:SetPoint("BOTTOMRIGHT", dialog, "BOTTOM", -6, 16)
                 end
             else
-                button:SetPoint("LEFT", dialog.buttons[index - 1], "RIGHT", 13, 0)
+                if index % 2 == 0 then
+                    button:SetPoint("LEFT", dialog.buttons[index - 1], "RIGHT", 13, 0)
+                else
+                    button:SetPoint("TOPLEFT", dialog.buttons[index - 2], "BOTTOMLEFT", 0, -2)
+                end
             end
             local width = button:GetTextWidth()
 
@@ -960,8 +962,9 @@ function dialog_prototype:Resize()
     if self.buttons and #self.buttons > 0 then
         height = height + 8 + DEFAULT_BUTTON_HEIGHT
 
-        if #self.buttons == MAX_BUTTONS then
-            width = 440
+        if #self.buttons > 2 then
+            height = height + 2 + DEFAULT_BUTTON_HEIGHT
+            self.buttons[1]:SetPoint("BOTTOMRIGHT", self, "BOTTOM", -6, 16 + 2 + DEFAULT_BUTTON_HEIGHT)
         end
     end
 

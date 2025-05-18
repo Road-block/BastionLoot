@@ -74,21 +74,27 @@ local autoroll = {
     [22376] = true, --Cloth
   },
 }
-if bepgp._bcc or bepgp._wrath or bepgp._cata then
+if bepgp._bcc or bepgp._wrath or bepgp._cata or bepgp._mists then
   autoroll["dark_heart"] = {[32428] = true} -- Heart of Darkness
   autoroll["illi_mark"]  = {[32897] = true} -- Mark of the Illidari
   autoroll["sunmote"]    = {[34664] = true} -- Sunmote
 end
-if bepgp._wrath or bepgp._cata then
+if bepgp._wrath or bepgp._cata or bepgp._mists then
   autoroll["frozen_orb"]          = {[43102] = true} -- Frozen Orb
   autoroll["runed_orb"]           = {[45087] = true} -- Runed Orb
   autoroll["crusader_orb"]        = {[47556] = true} -- Crusader Orb
   autoroll["primordial_saronite"] = {[49908] = true} -- Primordial Saronite
 end
-if bepgp._cata then
+if bepgp._cata or bepgp._mists then
   autoroll["chaos_orb"]              = {[52078] = true} -- Chaos Orb
   autoroll["living_ember"]           = {[69237] = true} -- Living Ember
   autoroll["essence_of_destruction"] = {[71998] = true} -- Essence of Destruction
+end
+if bepgp._mists then
+  autoroll["mote_of_harmony"] = {[89112] = true} -- Mote of Harmony
+  autoroll["blood_spirit"]    = {[80433] = true} -- Blood Spirit
+  autoroll["haunting_spirit"] = {[94289] = true} -- Haunting Spirit
+  autoroll["spirit_of_war"]   = {[102218] = true} -- Spirit of War
 end
 
 function bepgp_autoroll:getAction(itemID)
@@ -265,7 +271,7 @@ local options = {
     },
   }
 }
-if bepgp._bcc or bepgp._wrath or bepgp._cata then
+if bepgp._bcc or bepgp._wrath or bepgp._cata or bepgp._mists then
   options.args["tbc"] = {
     type = "header",
     name = "Burning Crusade",
@@ -302,7 +308,7 @@ if bepgp._bcc or bepgp._wrath or bepgp._cata then
     sorting = {-1, 1, 2, 0}
   }
 end
-if bepgp._wrath or bepgp._cata then
+if bepgp._wrath or bepgp._cata or bepgp._mists then
   options.args["wrath"] = {
     type = "header",
     name = "Wrath",
@@ -349,11 +355,11 @@ if bepgp._wrath or bepgp._cata then
     sorting = {-1, 1, 2, 0}
   }
 end
-if bepgp._cata then
+if bepgp._cata or bepgp._mists then
   options.args["cata"] = {
     type = "header",
     name = "Cataclysm",
-    order = 5,
+    order = 9,
   }
   options.args["chaos_orb"] = {
     type = "select",
@@ -386,6 +392,53 @@ if bepgp._cata then
     sorting = {-1, 1, 2, 0}
   }
 end
+if bepgp._mists then
+  options.args["mists"] = {
+    type = "header",
+    name = "Mists",
+    order = 1,
+  }
+  options.args["mote_of_harmony"] = {
+    type = "select",
+    name = "Mote of Harmony",
+    desc = "Mote of Harmony",
+    order = 2,
+    get = function() return bepgp.db.char.autoroll.mote_of_harmony end,
+    set = function(info,val) bepgp.db.autoroll.mote_of_harmony = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0},
+  }
+  options.args["blood_spirit"] = {
+    type = "select",
+    name = "Blood Spirit",
+    desc = "Blood Spirit",
+    order = 3,
+    get = function() return bepgp.db.char.autoroll.blood_spirit end,
+    set = function(info,val) bepgp.db.autoroll.blood_spirit = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0},
+  }
+  options.args["haunting_spirit"] = {
+    type = "select",
+    name = "Haunting Spirit",
+    desc = "Haunting Spirit",
+    order = 4,
+    get = function() return bepgp.db.char.autoroll.haunting_spirit end,
+    set = function(info,val) bepgp.db.autoroll.haunting_spirit = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0},
+  }
+  options.args["spirit_of_war"] = {
+    type = "select",
+    name = "Spirit of War",
+    desc = "Spirit of War",
+    order = 5,
+    get = function() return bepgp.db.char.autoroll.spirit_of_war end,
+    set = function(info,val) bepgp.db.autoroll.spirit_of_war = val end,
+    values = { [-1]=_G.TRACKER_SORT_MANUAL, [0]=_G.PASS, [1]=_G.NEED, [2]=_G.GREED },
+    sorting = {-1, 1, 2, 0},
+  }
+end
 function bepgp_autoroll:injectOptions() -- .general.args.main.args
   bepgp.db.char.autoroll = bepgp.db.char.autoroll or {
     ["zg_coin"] = 1,
@@ -404,7 +457,7 @@ function bepgp_autoroll:injectOptions() -- .general.args.main.args
     ["class"] = 1,
     ["other"] = 2,
   }
-  if bepgp._bcc or bepgp._wrath or bepgp._cata then
+  if bepgp._bcc or bepgp._wrath or bepgp._cata or bepgp._mists then
     self:ScheduleTimer("cacheItemOptions",20)
     if bepgp.db.char.autoroll.dark_heart == nil then
       bepgp.db.char.autoroll.dark_heart = -1
@@ -416,7 +469,7 @@ function bepgp_autoroll:injectOptions() -- .general.args.main.args
       bepgp.db.char.autoroll.sunmote = 1
     end
   end
-  if bepgp._wrath or bepgp._cata then
+  if bepgp._wrath or bepgp._cata or bepgp._mists then
     if bepgp.db.char.autoroll.frozen_orb == nil then
       bepgp.db.char.autoroll.frozen_orb = -1
     end
@@ -429,6 +482,8 @@ function bepgp_autoroll:injectOptions() -- .general.args.main.args
     if bepgp.db.char.autoroll.primordial_saronite == nil then
       bepgp.db.char.autoroll.primordial_saronite = -1
     end
+  end
+  if bepgp._cata or bepgp._mists then
     if bepgp.db.char.autoroll.chaos_orb == nil then
       bepgp.db.char.autoroll.chaos_orb = -1
     end
@@ -437,6 +492,20 @@ function bepgp_autoroll:injectOptions() -- .general.args.main.args
     end
     if bepgp.db.char.autoroll.essence_of_destruction == nil then
       bepgp.db.char.autoroll.essence_of_destruction = -1
+    end
+  end
+  if bepgp._mists then
+    if bepgp.db.char.autoroll.mote_of_harmony == nil then
+      bepgp.db.char.autoroll.mote_of_harmony = 1
+    end
+    if bepgp.db.char.autoroll.blood_spirit == nil then
+      bepgp.db.char.autoroll.blood_spirit = 1
+    end
+    if bepgp.db.char.autoroll.haunting_spirit == nil then
+      bepgp.db.char.autoroll.haunting_spirit = 1
+    end
+    if bepgp.db.char.autoroll.spirit_of_war == nil then
+      bepgp.db.char.autoroll.spirit_of_war = 1
     end
   end
   bepgp._options.args.general.args.autoroll = options
@@ -454,6 +523,10 @@ local items_to_cache = {
   chaos_orb              = 52078,
   living_ember           = 69237,
   essence_of_destruction = 71998,
+  mote_of_harmony        = 89112,
+  blood_spirit           = 80433,
+  haunting_spirit        = 94289,
+  spirit_of_war          = 102218,
 }
 function bepgp_autoroll:cacheItemOptions()
   for option, itemid in pairs(items_to_cache) do

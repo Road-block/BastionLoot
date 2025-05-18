@@ -113,7 +113,9 @@ local options = {
         if system and system.flavor then
           return bepgp._progsets[system.flavor].bench_values
         end
-        if bepgp._cata then
+        if bepgp._mists then
+          return bepgp._progsets._mists.bench_values
+        elseif bepgp._cata then
           return bepgp._progsets._cata.bench_values
         elseif bepgp._wrath then
           return bepgp._progsets._wrath.bench_values
@@ -128,7 +130,9 @@ local options = {
         if system and system.flavor then
           return bepgp._progsets[system.flavor].bench_sorting
         end
-        if bepgp._cata then
+        if bepgp._mists then
+          return bepgp._progsets._mists.bench_sorting
+        elseif bepgp._cata then
           return bepgp._progsets._cata.bench_sorting
         elseif bepgp._wrath then
           return bepgp._progsets._wrath.bench_sorting
@@ -286,6 +290,10 @@ function bepgp_bench:Limits()
   local progress = bepgp.db.profile.progress
   if flavor then
     limits.raidLimits = bepgp._progsets[flavor].raidLimits
+    return limits
+  end
+  if bepgp._mists then
+    limits.raidLimits = bepgp._progsets._mists.raidLimits
     return limits
   end
   if bepgp._cata then

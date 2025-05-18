@@ -15,7 +15,7 @@ local defaults = {
 }
 
 function bepgp_comms:OnEnable()
-  if not bepgp._cata then return end
+  if not (bepgp._cata or bepgp._mists) then return end
   if IsInGuild() then
     guildName = GetGuildInfo("player")
     if not guildName then

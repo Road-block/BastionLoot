@@ -2,7 +2,7 @@ local addonName, bepgp = ...
 local moduleName = addonName.."_loot"
 local bepgp_loot = bepgp:NewModule(moduleName,"AceEvent-3.0","AceHook-3.0","AceTimer-3.0")
 local ST = LibStub("ScrollingTable")
-local LD = LibStub("LibDialog-1.0")
+local LD = LibStub("LibDialog-1.0_Roadblock")
 local LDD = LibStub("LibDropdown-1.0")
 local C = LibStub("LibCrayon-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
@@ -570,6 +570,7 @@ function bepgp_loot:bidCall(frame, button, context) -- context is one of "master
   if not self:raidLootAdmin() then return end
   if not context then return end
   local prvetoOpt = bepgp.db.char.prveto
+  local xmogOpt = bepgp.db.char.xmogbid
   local itemLink,slot,hasItem,bagID,slotID
   if context == "lootframe" or context == "masterloot" then
     slot = frame.slot
@@ -629,9 +630,17 @@ function bepgp_loot:bidCall(frame, button, context) -- context is one of "master
     bepgp:widestAudience(string.format(L["Whisper %s a + or - for %s (MS or OS)"],bepgp._playerName,itemLink))
   else
     if prvetoOpt then
-      bepgp:widestAudience(string.format(L["'/roll' (MS) or '/roll 50' (OS). You can also whisper %s a + to use PR for %s"],bepgp._playerName,itemLink))
+      if xmogOpt then
+        bepgp:widestAudience(string.format(L["'/roll'(MS) '/roll 99'(OS) 'roll 69'(xmog). You can also whisper %s a + to use PR for %s"],bepgp._playerName,itemLink))
+      else
+        bepgp:widestAudience(string.format(L["'/roll' (MS) or '/roll 99' (OS). You can also whisper %s a + to use PR for %s"],bepgp._playerName,itemLink))
+      end
     else
-      bepgp:widestAudience(string.format(L["'/roll' (MS) or '/roll 50' (OS) for %s"],itemLink))
+      if xmogOpt then
+        bepgp:widestAudience(string.format(L["'/roll'(MS) '/roll 99'(OS) '/roll 69'(xmog) for %s"],itemLink))
+      else
+        bepgp:widestAudience(string.format(L["'/roll' (MS) or '/roll 99' (OS) for %s"],itemLink))
+      end
     end
   end
 end

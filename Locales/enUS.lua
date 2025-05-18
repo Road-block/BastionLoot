@@ -603,5 +603,22 @@ You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back i
   L["Tears of the Vale"] = true -- 221776,223236,223237,223238,232092,232093,233028
   L["Unlocked Stockpile of Pandaren Spoils"] = true -- 222749,222750,222751,222752,232165,232166,233030
   L["Vault of Forbidden Treasures"] = true -- 221739,221740,221741,221742,232163,232164,233029
+  L["Transmog"] = true
+  L["Winning Transmog Roll: %s (%s)%s"] = true
+  L["Winning Transmog Roll: %s (%s)"] = true
+  L["Transmog Rolls"] = true
+  L["Click $MS $OS or $X for %s"] = true
+  L["'/roll'(ms,res) '/roll 99'(os) 'roll 69'(xmog) for %s"] = true
+  L["'/roll' (ms,res) or '/roll 99' (os) for %s"] = true
+  L["Click $MS, $OS $X or $PR for %s"] = true
+  L["Click $MS, $OS or $PR for %s"] = true
+  L["'/roll'(MS) '/roll 99'(OS) 'roll 69'(xmog). You can also whisper %s a + to use PR for %s"] = true
+  L["'/roll' (MS) or '/roll 99' (OS). You can also whisper %s a + to use PR for %s"] = true
+  L["'/roll'(MS) '/roll 99'(OS) '/roll 69'(xmog) for %s"] = true
+  L["'/roll' (MS) or '/roll 99' (OS) for %s"] = true
+  L["|cffD2B48CTransmog|r"] = true
+  L["Allow transmog Bids"] = true
+  L["Call and Accept transmog Bids for items that award no GP"] = true
+  L["says.. Nice!"] = true
 
 bepgp.L = L

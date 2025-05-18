@@ -597,5 +597,22 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Tears of the Vale"] = "Tears of the Vale" -- needs translation
   L["Unlocked Stockpile of Pandaren Spoils"] = "Unlocked Stockpile of Pandaren Spoils" -- needs translation
   L["Vault of Forbidden Treasures"] = "Vault of Forbidden Treasures" -- needs translation
+  L["Transmog"] = "Transmog" -- needs translation
+  L["Winning Transmog Roll: %s (%s)%s"] = "Winning Transmog Roll: %s (%s)%s" -- needs translation
+  L["Winning Transmog Roll: %s (%s)"] = "Winning Transmog Roll: %s (%s)" -- needs translation
+  L["Transmog Rolls"] = "Transmog Rolls" -- needs translation
+  L["Click $MS $OS or $X for %s"] = "Click $MS $OS or $X for %s" -- needs translation
+  L["'/roll'(ms,res) '/roll 99'(os) 'roll 69'(xmog) for %s"] = "'/roll'(ms,res) '/roll 99'(os) 'roll 69'(xmog) for %s" -- needs translation
+  L["'/roll' (ms,res) or '/roll 99' (os) for %s"] = "'/roll' (ms,res) or '/roll 99' (os) for %s" -- needs translation
+  L["Click $MS, $OS $X or $PR for %s"] = "Click $MS, $OS $X or $PR for %s" -- needs translation
+  L["Click $MS, $OS or $PR for %s"] = "Click $MS, $OS or $PR for %s" -- needs translation
+  L["'/roll'(MS) '/roll 99'(OS) 'roll 69'(xmog). You can also whisper %s a + to use PR for %s"] = "'/roll'(MS) '/roll  -- needs translation99'(OS) 'roll 69'(xmog). You can also whisper %s a + to use PR for %s" -- needs translation
+  L["'/roll' (MS) or '/roll 99' (OS). You can also whisper %s a + to use PR for %s"] = "'/roll' (MS) or '/roll 99' ( -- needs translationOS). You can also whisper %s a + to use PR for %s" -- needs translation
+  L["'/roll'(MS) '/roll 99'(OS) '/roll 69'(xmog) for %s"] = "'/roll'(MS) '/roll 99'(OS) '/roll 69'(xmog) for %s" -- needs translation
+  L["'/roll' (MS) or '/roll 99' (OS) for %s"] = "'/roll' (MS) or '/roll 99' (OS) for %s" -- needs translation
+  L["|cffD2B48CTransmog|r"] = "|cffD2B48CTransmog|r" -- needs translation
+  L["Allow transmog Bids"] = "Allow transmog Bids" -- needs translation
+  L["Call and Accept transmog Bids for items that award no GP"] = "Call and Accept transmog Bids for items that award  -- needs translationno GP" -- needs translation
+  L["says.. Nice!"] = "says.. Nice!" -- needs translation
 
   bepgp.L = L

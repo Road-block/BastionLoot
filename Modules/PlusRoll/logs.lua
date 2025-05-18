@@ -5,7 +5,7 @@ local ST = LibStub("ScrollingTable")
 local C = LibStub("LibCrayon-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local GUI = LibStub("AceGUI-3.0")
-local LD = LibStub("LibDialog-1.0")
+local LD = LibStub("LibDialog-1.0_Roadblock")
 local LDD = LibStub("LibDropdown-1.0")
 
 local data = { }

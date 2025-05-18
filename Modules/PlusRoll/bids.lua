@@ -5,18 +5,19 @@ local C = LibStub("LibCrayon-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local DF = LibStub("LibDeformat-3.0")
 local T = LibStub("LibQTip-1.0")
-local LD = LibStub("LibDialog-1.0")
+local LD = LibStub("LibDialog-1.0_Roadblock")
 --/run BastionLoot:GetModule("BastionLoot_plusroll_bids"):Toggle()
 --/run BastionLoot:GetModule("BastionLoot_plusroll_bids").bid_item.itemid = 19915
 --/run BastionLoot:GetModule("BastionLoot_plusroll_bids").bid_item.itemlink = "\124cff0070dd\124Hitem:19915:0:0:0:0:0:0:0:0\124h[Zulian Defender]\124h\124r"
 --/run BastionLoot:GetModule("BastionLoot_plusroll_bids"):clearRolls()
 --/run BastionLoot:GetModule("BastionLoot_plusroll_bids"):bidPrint("\124cff0070dd\124Hitem:19915:0:0:0:0:0:0:0:0\124h[Zulian Defender]\124h\124r","Tankßoy",true)
 local colorUnknown = {r=.75, g=.75, b=.75, a=.9}
-bepgp_plusroll_bids.bids_res,bepgp_plusroll_bids.bids_main,bepgp_plusroll_bids.bids_off,bepgp_plusroll_bids.bid_item = {},{},{},{}
+bepgp_plusroll_bids.bids_res,bepgp_plusroll_bids.bids_main,bepgp_plusroll_bids.bids_off,bepgp_plusroll_bids.bids_xmog,bepgp_plusroll_bids.bid_item = {},{},{},{},{}
 local bids_blacklist = {}
 local bidlink = {
   ["ms"] = "|cff4DA6FF|Haddon:"..addonName..":1:$ML|h["..L["Reserve/Mainspec"].."]|h|r",
   ["os"] = "|cffB6FFA7|Haddon:"..addonName..":2:$ML|h["..L["Offspec/Sidegrade"].."]|h|r",
+  ["x"]  = "|cffD2B48C|Haddon:"..addonName..":3:$ML|h["..L["Transmog"].."]|h|r",
 }
 local out = "|cff9664c8"..addonName..":|r %s"
 bepgp_plusroll_bids.running_bid = false
@@ -84,6 +85,8 @@ function bepgp_plusroll_bids:announceWinner(data)
     out = L["Winning Mainspec Roll: %s (%s) (+%s)"]
   elseif msos == "os" then
     out = L["Winning Offspec Roll: %s (%s)%s"]
+  elseif msos == "x" then
+    out = L["Winning Transmog Roll: %s (%s)%s"]
   end
   if out then
     bepgp:widestAudience(out:format(name,roll,wincount))
@@ -107,6 +110,7 @@ function bepgp_plusroll_bids:updateBids()
   table.sort(self.bids_res, roll_sorter_bids)
   table.sort(self.bids_main, roll_sorter_bids)
   table.sort(self.bids_off, roll_sorter_bids)
+  table.sort(self.bids_xmog, roll_sorter_bids)
 end
 
 local pauseTex = {
@@ -240,6 +244,28 @@ function bepgp_plusroll_bids:Refresh()
         frame:SetLineScript(line, "OnMouseUp", bepgp_plusroll_bids.announceWinner, {name, roll, "os", wincount})
       end
     end
+    if #(self.bids_xmog) > 0 then
+      line = frame:AddLine(" ")
+      line = frame:AddHeader()
+      frame:SetCell(line,1,C:Copper(L["Transmog Rolls"]),nil,"LEFT",5)
+      line = frame:AddHeader()
+      frame:SetCell(line,1,C:Orange(L["Name"]),nil,"LEFT",2)
+      frame:SetCell(line,3,C:Orange(ROLL),nil,"RIGHT")
+      frame:SetCell(line,4,C:Orange(L["pr"]),nil,"RIGHT")
+      frame:SetCell(line,5,C:Orange(_G.RANK),nil,"RIGHT")
+      line = frame:AddSeparator(1)
+      for i,data in ipairs(self.bids_xmog) do
+        local name, color, roll, wincount, pr, rank = unpack(data)
+        local r,g,b = color.r, color.g, color.b
+        line = frame:AddLine()
+        frame:SetCell(line,1,name,nil,"LEFT",2)
+        frame:SetCellTextColor(line,1,r,g,b)
+        frame:SetCell(line,3,roll,nil,"RIGHT")
+        frame:SetCell(line,4,pr,nil,"RIGHT")
+        frame:SetCell(line,5,rank,nil,"RIGHT")
+        frame:SetLineScript(line, "OnMouseUp", bepgp_plusroll_bids.announceWinner, {name, roll, "x", wincount})
+      end
+    end
   end
   frame:UpdateScrolling()
 end
@@ -274,6 +300,8 @@ function bepgp_plusroll_bids:SetItemRef(link, text, button, chatFrame)
       bid = "+"
     elseif bid == "2" then
       bid = "-"
+    elseif bid == "3" then
+      bid = "x"
     else
       bid = nil
     end
@@ -284,7 +312,9 @@ function bepgp_plusroll_bids:SetItemRef(link, text, button, chatFrame)
       if bid == "+" then
         RandomRoll("1", "100")
       elseif bid == "-" then
-        RandomRoll("1", "50")
+        RandomRoll("1", "99")
+      elseif bid == "x" then
+        RandomRoll("1", "69")
       end
       if LD:ActiveDialog(addonName.."DialogMemberRoll") then
         LD:Dismiss(addonName.."DialogMemberRoll")
@@ -296,9 +326,12 @@ end
 
 local lootCall = {
   ["roll"] = { -- specifically ordered from narrow to broad
-    "^(roll 50)[%s%p%c]+.+",
-    ".+[%s%p%c]+(/roll 50)$",".*[%s%p%c]+(/roll 50)[%s%p%c]+.*",
-    ".+[%s%p%c]+(roll 50)$",".*[%s%p%c]+(roll 50)[%s%p%c]+.*",
+    "^roll (69)[%s%p%c]+.+",
+    ".+[%s%p%c]+/roll (69)$",".*[%s%p%c]+/roll (69)[%s%p%c]+.*",
+    ".+[%s%p%c]+roll (69)$",".*[%s%p%c]+roll (69)[%s%p%c]+.*",
+    "^roll (99)[%s%p%c]+.+",
+    ".+[%s%p%c]+/roll (99)$",".*[%s%p%c]+/roll (99)[%s%p%c]+.*",
+    ".+[%s%p%c]+roll (99)$",".*[%s%p%c]+roll (99)[%s%p%c]+.*",
     "^(roll)[%s%p%c]+.+",
     ".+[%s%p%c]+(/roll)$",".*[%s%p%c]+(/roll)[%s%p%c]+.*",
     ".+[%s%p%c]+(roll)$",".*[%s%p%c]+(roll)[%s%p%c]+.*",
@@ -310,11 +343,12 @@ function bepgp_plusroll_bids:captureLootCall(event, text, sender)
   local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
   if count > 1 then return end
   local lowtext = string.lower(linkstriptext)
-  local link_found, rollkw_found
+  local _, link_found, rollkw_found, keyword
   for _,f in ipairs(lootCall.roll) do
-    rollkw_found = string.find(lowtext,f)
+    rollkw_found,_,keyword = string.find(lowtext,f)
     if (rollkw_found) then break end
   end
+  local xmog_call = keyword and keyword == "69"
   sender = bepgp:Ambiguate(sender)
   local _, itemLink, itemColor, itemString, itemName, itemID
   if (rollkw_found) then
@@ -334,7 +368,7 @@ function bepgp_plusroll_bids:captureLootCall(event, text, sender)
         bepgp:debugPrint(L["Capturing Rolls for 2min."])
         self.qtip:Show()
       end
-      self:bidPrint(itemLink,sender,rollkw_found)
+      self:bidPrint(itemLink,sender,rollkw_found,xmog_call)
       if bepgp.db.char.favalert then
         if bepgp.db.char.favorites[itemID] then
           bepgp:Alert(string.format(L["BastionLoot Favorite: %s"],itemLink))
@@ -351,16 +385,17 @@ function bepgp_plusroll_bids:captureRoll(event, text)
   if not bepgp_plusroll_bids.bid_item.itemid then return end -- DEBUG
   local who, roll, low, high = DF.Deformat(text, RANDOM_ROLL_RESULT)
   roll, low, high = tonumber(roll),tonumber(low),tonumber(high)
-  local msroll, osroll
+  local msroll, osroll, xroll
   local inraid
   if who then
     who = bepgp:Ambiguate(who)
     inraid = bepgp:inRaid(who)
     if inraid then -- DEBUG
       msroll = (low == 1 and high == 100) and roll
-      osroll = (low == 1 and high < 100) and roll -- let's accomodate other offspec rolls in our tracker
+      osroll = (low == 1 and high < 100 and high ~= 69) and roll -- let's accomodate other offspec rolls in our tracker
+      xroll = bepgp.db.char.xmogbid and (low == 1 and high == 69) and roll
     end -- DEBUG
-    if (msroll) or (osroll) then
+    if (msroll) or (osroll) or (xroll) then
       if bids_blacklist[who] == nil then
         local cached = bepgp:groupCache(who)
         local color = cached and cached.color or colorUnknown
@@ -399,6 +434,9 @@ function bepgp_plusroll_bids:captureRoll(event, text)
         elseif (osroll) then
           bids_blacklist[who] = true
           table.insert(bepgp_plusroll_bids.bids_off,{who,color,osroll,nil,pr,rank})
+        elseif (xroll) then
+          bids_blacklist[who] = true
+          table.insert(bepgp_plusroll_bids.bids_xmog,{who,color,xroll,nil,pr,rank})
         end
         self:updateBids()
         self:Refresh()
@@ -418,6 +456,7 @@ function bepgp_plusroll_bids:clearRolls(reset)
   table.wipe(bepgp_plusroll_bids.bids_res) -- = {}
   table.wipe(bepgp_plusroll_bids.bids_main) -- = {}
   table.wipe(bepgp_plusroll_bids.bids_off) -- = {}
+  table.wipe(bepgp_plusroll_bids.bids_xmog)
   table.wipe(bids_blacklist) -- = {}
   if self._rollTimer then
     self:CancelTimer(self._rollTimer)
@@ -429,13 +468,20 @@ function bepgp_plusroll_bids:clearRolls(reset)
   self:Refresh()
 end
 
-function bepgp_plusroll_bids:bidPrint(link,masterlooter,bid)
+function bepgp_plusroll_bids:bidPrint(link,masterlooter,bid,xmog)
   local mslink = string.gsub(bidlink["ms"],"$ML",masterlooter)
   local oslink = string.gsub(bidlink["os"],"$ML",masterlooter)
+  local xlink  = string.gsub(bidlink["x"],"$ML",masterlooter)
   local msg = string.format(L["Click $MS or $OS for %s"],link)
+  if xmog then
+    msg = string.format(L["Click $MS $OS or $X for %s"],link)
+  end
   if (bid) then
     msg = string.gsub(msg,"$MS",mslink)
     msg = string.gsub(msg,"$OS",oslink)
+    if xmog then
+      msg = string.gsub(msg,"$X",xlink)
+    end
   end
   local _, count = string.gsub(msg,"%$","%$")
   if (count > 0) then return end
@@ -454,7 +500,7 @@ function bepgp_plusroll_bids:bidPrint(link,masterlooter,bid)
       chatframe:AddMessage(string.format(out,msg),NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b)
     end
     if bepgp.db.char.bidpopup then
-      LD:Spawn(addonName.."DialogMemberRoll", link)
+      LD:Spawn(addonName.."DialogMemberRoll", {link,xmog})
     end
   end
   self:updateBids()

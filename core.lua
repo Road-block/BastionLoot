@@ -7,7 +7,7 @@ local ADBO = LibStub("AceDBOptions-3.0")
 local LDBO = LibStub("LibDataBroker-1.1"):NewDataObject(addonName)
 local LDI = LibStub("LibDBIcon-1.0")
 local LDD = LibStub("LibDropdown-1.0")
-local LD = LibStub("LibDialog-1.0")
+local LD = LibStub("LibDialog-1.0_Roadblock")
 local C = LibStub("LibCrayon-3.0")
 local DF = LibStub("LibDeformat-3.0")
 local G = LibStub("LibGratuity-3.0")
@@ -63,6 +63,10 @@ bepgp.VARS = {
   bankde = L["Bank-D/E"],
   unassigned = C:Red(L["Unassigned"]),
   autoloot = {
+    [89112] = "MoteHarmony",
+    [80433] = "BloodSpirit",
+    [94289] = "HauntingSpirit",
+    [102218] = "SpiritOfWar",
     [40752] = "BadgeHero",
     [101] = "currency",
     [40753] = "BadgeValor",
@@ -430,6 +434,7 @@ local exportrost_icon = "|TInterface\\Buttons\\UI-GuildButton-PublicNote-Up:16|t
 local prveto_icon =  "|TInterface\\ICONS\\Spell_ChargePositive:16|t"..L["|cffFFF0A7Use PR|r"]
 local msbid_icon =  "|TInterface\\Buttons\\UI-GroupLoot-Dice-Up:16|t"..L["|cff4DA6FFMainspec|r"]
 local osbid_icon =  "|TInterface\\Buttons\\UI-GroupLoot-Coin-Up:16|t"..L["|cffB6FFA7Offspec|r"]
+local xbid_icon = "|TInterface\\GossipFrame\\transmogrifyGossipIcon:16|t"..L["|cffD2B48CTransmog|r"] -- CURSOR\\Transmogrify
 do
   for i=1,MAX_RAID_MEMBERS do
     raidUnit[i] = "raid"..i
@@ -911,6 +916,7 @@ local defaults = {
     wincountmanual = true,
     wincountignore = false,
     wincountepgp = false,
+    xmogbid = false,
     wincounttoken = true,
     wincountstack = true,
     plusrollepgp = false,
@@ -1426,7 +1432,9 @@ function bepgp:options(force)
             return bepgp._progsets[flavor].progress_values
           end
         end
-        if bepgp._cata then
+        if bepgp._mists then
+          return bepgp._progsets._mists.progress_values
+        elseif bepgp._cata then
           return bepgp._progsets._cata.progress_values
         elseif bepgp._wrath then
           return bepgp._progsets._wrath.progress_values
@@ -1444,7 +1452,9 @@ function bepgp:options(force)
             return bepgp._progsets[flavor].progress_sorting
           end
         end
-        if bepgp._cata then
+        if bepgp._mists then
+          return bepgp._progsets._mists.progress_sorting
+        elseif bepgp._cata then
           return bepgp._progsets._cata.progress_sorting
         elseif bepgp._wrath then
           return bepgp._progsets._wrath.progress_sorting
@@ -1542,6 +1552,7 @@ function bepgp:options(force)
         if minilvlopt and minilvlopt == 0 then
           bepgp.db.char.prveto = false
           bepgp.db.char.wincountepgp = false
+          bepgp.db.char.xmogbid = false
         end
       end,
       validate = function(info, val)
@@ -1553,7 +1564,7 @@ function bepgp:options(force)
         end
       end,
       hidden = function()
-        if not (bepgp._cata or bepgp._wrath) then return true end
+        if not (bepgp._mists or bepgp._cata or bepgp._wrath) then return true end
         if not bepgp:admin() then return true end
         return false
       end,
@@ -1568,7 +1579,8 @@ function bepgp:options(force)
         bepgp.db.char.prveto = not bepgp.db.char.prveto
       end,
       hidden = function()
-        if not (bepgp._cata or bepgp._wrath) then return true end
+        if not (bepgp._mists or bepgp._cata or bepgp._wrath) then return true end
+        if bepgp.db.char.mode ~= "epgp" then return true end
         if not bepgp:admin() then return true end
         local minilvlopt = tonumber(bepgp.db.char.minilvl)
         if not (minilvlopt and minilvlopt > 0) then return true end
@@ -1584,10 +1596,30 @@ function bepgp:options(force)
         bepgp.db.char.wincountepgp = not bepgp.db.char.wincountepgp
       end,
       hidden = function()
-        if not (bepgp._cata or bepgp._wrath) then return true end
+        if not (bepgp._mists or bepgp._cata or bepgp._wrath) then return true end
+        if bepgp.db.char.mode ~= "epgp" then return true end
         if not bepgp:admin() then return true end
         local minilvlopt = tonumber(bepgp.db.char.minilvl)
         if not (minilvlopt and minilvlopt > 0) then return true end
+      end,
+    }
+    self._options.args.general.args.main.args["allow_xmog"] = {
+      type = "toggle",
+      name = L["Allow transmog Bids"],
+      desc = L["Call and Accept transmog Bids for items that award no GP"],
+      order = 121,
+      get = function(info) return not not bepgp.db.char.xmogbid end,
+      set = function(info, val)
+        bepgp.db.char.xmogbid = not bepgp.db.char.xmogbid
+      end,
+      hidden = function()
+        if not (bepgp._mists or bepgp._cata) then return true end
+        local mode = bepgp.db.char.mode
+        local minilvlopt = tonumber(bepgp.db.char.minilvl)
+        local admin, lootMaster = bepgp:admin(), bepgp:lootMaster()
+        if mode == "plusroll" and not bepgp:lootMaster() then return true end
+        if mode == "epgp" and not bepgp:admin() then return true end
+        if mode == "epgp" and not (minilvlopt and minilvlopt > 0) then return true end
       end,
     }
     self._options.args.general.args.main.args["set_min_ep"] = {
@@ -1976,7 +2008,7 @@ function bepgp:ddoptions(refresh)
         bepgp:RequestLootAdmin()
       end,
     }
-    if (bepgp._cata or bepgp._wrath) then
+    if (bepgp._mists or bepgp._cata or bepgp._wrath) then
       self._dda_options.args["size_toggle"] = {
         type = "execute",
         name = sizereq_icon,
@@ -3065,12 +3097,18 @@ function bepgp:templateCache(id)
             end)
           end
           local prveto = data[4]
-          if not prveto then
+          local xmog = data[5]
+          if prveto then
+            self.buttons[3]:Show()
+          else
             self.buttons[3]:Hide()
-            self.buttons[3]=nil
-            self.buttons[1]:SetPoint("BOTTOMRIGHT", self, "BOTTOM", -6, 16)
-            self:Resize()
           end
+          if xmog then
+            self.buttons[4]:Show()
+          else
+            self.buttons[4]:Hide()
+          end
+          self:Resize()
         end,
         on_update = function(self,elapsed)
           local remain = self.time_remaining
@@ -3099,7 +3137,7 @@ function bepgp:templateCache(id)
               local masterlooter = data[2]
               local roll = data[3]
               if roll then
-                RandomRoll("1", "50")
+                RandomRoll("1", "99")
               else
                 SendChatMessage("-","WHISPER",nil,masterlooter)
               end
@@ -3118,6 +3156,17 @@ function bepgp:templateCache(id)
               LD:Dismiss(addonName.."DialogMemberBid")
             end,
           },
+          { -- Transmog
+            text = xbid_icon, -- [["Transmog"]]
+            on_click = function(self, button, down)
+              local data = self.data
+              local xmog = data[5]
+              if xmog then
+                RandomRoll("1", "69")
+              end
+              LD:Dismiss(addonName.."DialogMemberBid")
+            end,
+          }
         },
       }
     elseif id == "DialogMemberRoll" then
@@ -3129,7 +3178,7 @@ function bepgp:templateCache(id)
         text = L["Bid Call for %s [%ds]"],
         width = 360,
         on_show = function(self)
-          local link = self.data
+          local link, xmog = unpack(self.data)
           self.text:SetText(string.format(L["Bid Call for %s [%ds]"],link,self.duration))
           self:SetScript("OnEnter", function(f)
             GameTooltip:SetOwner(f, "ANCHOR_RIGHT")
@@ -3148,10 +3197,16 @@ function bepgp:templateCache(id)
               end
             end)
           end
+          if xmog then
+            self.buttons[3]:Show()
+          else
+            self.buttons[3]:Hide()
+          end
+          self:Resize()
         end,
         on_update = function(self,elapsed)
           local remain = self.time_remaining
-          local link = self.data
+          local link = unpack(self.data)
           self.text:SetText(string.format(L["Bid Call for %s [%ds]"],link,remain))
         end,
         buttons = {
@@ -3165,10 +3220,17 @@ function bepgp:templateCache(id)
           { -- OffSpec
             text = L["Roll OS/Sidegrade"],
             on_click = function(self, button, down)
-              RandomRoll("1", "50")
+              RandomRoll("1", "99")
               LD:Dismiss(addonName.."DialogMemberRoll")
             end,
           },
+          { -- Transmog
+            text = L["Transmog"],
+            on_click = function(self, button, down)
+              RandomRoll("1", "69")
+              LD:Dismiss(addonName.."DialogMemberRoll")
+            end,
+          }
         },
       }
     elseif id == "DialogSetMain" then
@@ -3460,7 +3522,7 @@ function bepgp:OnEnable(reset) -- 2. PLAYER_LOGIN
   end
   bepgp.cleuParser:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
   bepgp:RegisterEvent("LOOT_SLOT_CLEARED", "checkPendingLoot")
-
+  bepgp:RegisterEvent("CHAT_MSG_SYSTEM","funnyRoll")
 end
 
 function bepgp:OnDisable() -- ADHOC
@@ -3995,6 +4057,18 @@ function bepgp:autoLoot(event,auto)
         end
       end
     end
+  end
+end
+
+function bepgp:funnyRoll(event,...)
+  if not IsInRaid() then return end
+  local msg = ...
+  local who, roll, low, high = DF.Deformat(msg, RANDOM_ROLL_RESULT)
+  if not who or (who == "") then return end
+  who = bepgp:Ambiguate(who)
+  if who ~= self._playerName then return end
+  if roll and tonumber(roll) == 69 then
+    SendChatMessage(L["says.. Nice!"],"EMOTE")
   end
 end
 
@@ -4767,7 +4841,7 @@ function bepgp:GrantLootAdmin(name, threshold)
 end
 
 function bepgp:RequestSizeToggle()
-  if not (bepgp._cata or bepgp._wrath) then return end
+  if not (bepgp._mists or bepgp._cata or bepgp._wrath) then return end
   if bepgp:admin() and bepgp:GroupStatus() == "RAID" then
     bepgp:Print(L["Sending request for raid size change"])
     local addonMsg = string.format("SIZE;%s;%s",bepgp._playerName,1)
@@ -4776,7 +4850,7 @@ function bepgp:RequestSizeToggle()
 end
 
 function bepgp:GrantSizeToggle(name)
-  if not (bepgp._cata or bepgp._wrath) then return end
+  if not (bepgp._mists or bepgp._cata or bepgp._wrath) then return end
   if not name or name == "" then return end
   if not IsInRaid() then return end
   if not UnitIsGroupLeader("player") then return end
@@ -4810,7 +4884,7 @@ function bepgp:GrantSizeToggle(name)
 end
 
 function bepgp:RequestDiffToggle()
-  if not (bepgp._cata or bepgp._wrath) then return end
+  if not (bepgp._mists or bepgp._cata or bepgp._wrath) then return end
   if bepgp:admin() and bepgp.db.char.mode == "epgp" and bepgp:GroupStatus() == "RAID" then
     bepgp:Print(L["Sending request for raid difficulty change"])
     local addonMsg = string.format("DIFF;%s;%s",bepgp._playerName,1)
@@ -4819,7 +4893,7 @@ function bepgp:RequestDiffToggle()
 end
 
 function bepgp:GrantDiffToggle(name)
-  if not (bepgp._cata or bepgp._wrath) then return end
+  if not (bepgp._mists or bepgp._cata or bepgp._wrath) then return end
   if not name or name == "" then return end
   if not IsInRaid() then return end
   if not UnitIsGroupLeader("player") then return end
@@ -5048,6 +5122,21 @@ function bepgp:GroupStatus()
 end
 
 local raidZones, mapZones, tier_multipliers
+if bepgp._mists then
+  raidZones = {
+    [(GetRealZoneText(1008))] = "T14", -- Mogu'shan Vaults
+    [(GetRealZoneText(996))]  = "T14", -- Terrace of Endless Spring
+    [(GetRealZoneText(1009))] = "T14", -- Heart of Fear
+    [(GetRealZoneText(1098))] = "T15", -- Throne of Thunder
+    [(GetRealZoneText(1136))] = "T16", -- Siege of Orgrrimmar
+  }
+  mapZones = {}
+  tier_multipliers = {
+    ["T16"]  = {["T16"]=1,["T15"]=0.75,["T14"]=0.4},
+    ["T15"]  = {["T16"]=1,["T15"]=1,["T14"]=0.5},
+    ["T14"]  = {["T16"]=1,["T15"]=1,["T14"]=1},
+  }
+end
 if bepgp._cata then
   raidZones = {
     [(GetRealZoneText(669))] = "T11", -- Blackwing Descent

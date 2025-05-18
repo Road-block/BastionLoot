@@ -2,7 +2,7 @@ local addonName, bepgp = ...
 local moduleName = addonName.."_plusroll_loot"
 local bepgp_plusroll_loot = bepgp:NewModule(moduleName,"AceEvent-3.0","AceHook-3.0","AceTimer-3.0")
 local ST = LibStub("ScrollingTable")
-local LD = LibStub("LibDialog-1.0")
+local LD = LibStub("LibDialog-1.0_Roadblock")
 local C = LibStub("LibCrayon-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local GUI = LibStub("AceGUI-3.0")
@@ -457,7 +457,11 @@ function bepgp_plusroll_loot:bidCall(frame, button, context) -- context is one o
   end
   if not itemLink then return end
   local itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
-  bepgp:widestAudience(string.format(L["'/roll' (ms,res) or '/roll 50' (os) for %s"],itemLink))
+  if bepgp.db.char.xmogbid then
+    bepgp:widestAudience(string.format(L["'/roll'(ms,res) '/roll 99'(os) 'roll 69'(xmog) for %s"],itemLink))
+  else
+    bepgp:widestAudience(string.format(L["'/roll' (ms,res) or '/roll 99' (os) for %s"],itemLink))
+  end
 end
 
 -- new feature
