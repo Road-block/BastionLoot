@@ -11,16 +11,17 @@ local lastRequest, lastPush
 local PLATE, MAIL, LEATHER, CLOTH = 4,3,2,1
 local DPS, CASTER, HEALER, TANK = 4,3,2,1
 local class_to_armor = {
-  PALADIN = PLATE,
-  WARRIOR = PLATE,
   DEATHKNIGHT = PLATE,
-  HUNTER = MAIL,
-  SHAMAN = MAIL,
   DRUID = LEATHER,
-  ROGUE = LEATHER,
+  HUNTER = MAIL,
   MAGE = CLOTH,
+  MONK = LEATHER,
+  PALADIN = PLATE,
   PRIEST = CLOTH,
+  ROGUE = LEATHER,
+  SHAMAN = MAIL,
   WARLOCK = CLOTH,
+  WARRIOR = PLATE,
 }
 local armor_text = {
   [CLOTH] = L["CLOTH"],
@@ -29,15 +30,16 @@ local armor_text = {
   [PLATE] = L["PLATE"],
 }
 local class_to_role = {
+  DEATHKNIGHT = {TANK,DPS},
+  DRUID = {HEALER,TANK,DPS,CASTER},
+  HUNTER = {DPS},
+  MAGE = {CASTER},
+  MONK = {HEALER,DPS,TANK},
   PALADIN = {HEALER,DPS,TANK,CASTER},
   PRIEST = {HEALER,CASTER},
-  DRUID = {HEALER,TANK,DPS,CASTER},
-  DEATHKNIGHT = {TANK,DPS},
-  SHAMAN = {HEALER,DPS,CASTER},
-  MAGE = {CASTER},
-  WARLOCK = {CASTER},
   ROGUE = {DPS},
-  HUNTER = {DPS},
+  SHAMAN = {HEALER,DPS,CASTER},
+  WARLOCK = {CASTER},
   WARRIOR = {TANK,DPS},
 }
 local role_text = {

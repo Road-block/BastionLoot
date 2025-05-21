@@ -3497,6 +3497,10 @@ function bepgp:OnEnable(reset) -- 2. PLAYER_LOGIN
       self:RegisterEvent("PLAYER_LEVEL_UP")
     end
     self._bucketGuildRoster = self:RegisterBucketEvent("GUILD_ROSTER_UPDATE",(bepgp.db.char.rosterthrottle or bepgp.VARS.rosterthrottle))
+    local comms = self:GetModule(addonName.."_comms",true)
+    if comms and reset then
+      comms:Init(guildName)
+    end
   else
     bepgp:RegisterEvent("PLAYER_GUILD_UPDATE")
     -- TODO: Refactor parts that shouldn't be reliant on guild to initialize properly without a guild
