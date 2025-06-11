@@ -614,5 +614,6 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Allow transmog Bids"] = "Allow transmog Bids" -- needs translation
   L["Call and Accept transmog Bids for items that award no GP"] = "Call and Accept transmog Bids for items that award  -- needs translationno GP" -- needs translation
   L["says.. Nice!"] = "says.. Nice!" -- needs translation
+  L["Select the Chattynator tab to print Extra Informational messages to.\nBastionLoot must be whitelisted in Chattynator tab options."] = "Select the Chattynator tab to print Extra Informational messages to.\nBastionLoot must be whitelisted in Chattynator tab options." -- needs translation
 
   bepgp.L = L

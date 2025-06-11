@@ -1395,6 +1395,23 @@ function bepgp:options(force)
             chatframes[i] = name
           end
         end
+        EventUtil.ContinueOnAddOnLoaded("Chattynator",function()
+          if Chattynator and Chattynator.API and Chattynator.API.GetWindowsAndTabs then
+            wipe(chatframes)
+            local windowtabs = Chattynator.API.GetWindowsAndTabs()
+            local id
+            bepgp._options.args.general.args.main.args["debugchat"].desc = L["Select the Chattynator tab to print Extra Informational messages to.\nBastionLoot must be whitelisted in Chattynator tab options."]
+            for window,tabs in pairs(windowtabs) do
+              id = window * 100
+              for tab,tabName in pairs(tabs) do
+                id = id + tab
+                if not (window == 1 and tab == 1) then
+                  chatframes[id] = _G[tabName] or tabName
+                end
+              end
+            end
+          end
+        end)
         return chatframes
       end,
     }
@@ -4597,6 +4614,15 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
   end
 end
 
+local function GetDebugPrintChattynator()
+  local debugchat = bepgp.db.char.debugchat
+  if debugchat and debugchat > 100 and Chattynator and Chattynator.API and Chattynator.API.AddMessageToWindowAndTab then
+    local window,tab = floor(debugchat/100), debugchat%100
+    return Chattynator.API.AddMessageToWindowAndTab, window, tab
+  end
+  return false
+end
+
 function bepgp:debugPrint(msg,onlyWhenDebug)
   if onlyWhenDebug and not self._DEBUG then return end
   if not self._debugchat then
@@ -4613,18 +4639,27 @@ function bepgp:debugPrint(msg,onlyWhenDebug)
       end
     end
   end
+  local AddMessageToWindowAndTab, window, tab = GetDebugPrintChattynator()
   if self._optDebugChat==nil then
-    local _, _, _, _, _, _, isShown, _, isDocked, _ = GetChatWindowInfo(self.db.char.debugchat or 0)
-    if isShown or isDocked then
-      self._optDebugChat = _G["ChatFrame"..self.db.char.debugchat]
+    if not AddMessageToWindowAndTab then
+      local _, _, _, _, _, _, isShown, _, isDocked, _ = GetChatWindowInfo(self.db.char.debugchat or 0)
+      if isShown or isDocked then
+        self._optDebugChat = _G["ChatFrame"..self.db.char.debugchat]
+      else
+        self._optDebugChat = false
+      end
     else
-      self._optDebugChat = false
+      self._optDebugChat = {window,tab}
     end
   end
   if self._debugchat then
     self:Print(self._debugchat,msg)
   elseif self._optDebugChat then
-    self:Print(self._optDebugChat,msg)
+    if AddMessageToWindowAndTab then
+      AddMessageToWindowAndTab(self._optDebugChat[1],self._optDebugChat[2],"|cff33ff99"..addonName.."|r:"..msg)
+    else
+      self:Print(self._optDebugChat,msg)
+    end
   else
     self:Print(msg)
   end
