@@ -3516,7 +3516,7 @@ function bepgp:OnEnable(reset) -- 2. PLAYER_LOGIN
     self._bucketGuildRoster = self:RegisterBucketEvent("GUILD_ROSTER_UPDATE",(bepgp.db.char.rosterthrottle or bepgp.VARS.rosterthrottle))
     local comms = self:GetModule(addonName.."_comms",true)
     if comms and reset then
-      comms:Init(guildName)
+      comms:Init(guildname)
     end
   else
     bepgp:RegisterEvent("PLAYER_GUILD_UPDATE")
