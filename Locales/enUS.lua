@@ -621,5 +621,6 @@ You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back i
   L["Call and Accept transmog Bids for items that award no GP"] = true
   L["says.. Nice!"] = true
   L["Select the Chattynator tab to print Extra Informational messages to.\nBastionLoot must be whitelisted in Chattynator tab options."] = true
+  L["Price System: %s"] = true
 
 bepgp.L = L

@@ -1675,6 +1675,12 @@ function bepgp:options(force)
         end
       end
     }
+    self._options.args.general.args.main.args["system_header"] = {
+      type = "header",
+      name = string.format(L["Price System: %s"],(bepgp.db.profile.system or _G.NOT_APPLICABLE)),
+      order = 127,
+      hidden = function() return bepgp:admin() end,
+    }
     self._options.args.general.args.main.args["system"] = {
       type = "select",
       name = L["Select Price Scheme"],
