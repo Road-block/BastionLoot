@@ -622,5 +622,7 @@ You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back i
   L["says.. Nice!"] = true
   L["Select the Chattynator tab to print Extra Informational messages to.\nBastionLoot must be whitelisted in Chattynator tab options."] = true
   L["Price System: %s"] = true
+  L["ChatLink *Fix*"] = true
+  L["|cffff0000Workaround for MoP Prepatch ItemLink Bug|r\nDisable when fixed."] = true
 
 bepgp.L = L

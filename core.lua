@@ -923,6 +923,7 @@ local defaults = {
     rollfilter = false,
     favalert = true,
     lootannounce = true,
+    customlinks = true, -- MoP prepatch bug workaround
     groupcache = {},
     whitelist = {},
     patches = {},
@@ -1418,20 +1419,20 @@ function bepgp:options(force)
     self._options.args.general.args.main.args["admin_options_header"] = {
       type = "header",
       name = L["Admin Options"],
-      order = 90,
+      order = 91,
       hidden = function() return (not bepgp:admin()) end,
     }
     self._options.args.general.args.main.args["progress_tier_header"] = {
       type = "header",
       name = string.format(L["Progress Setting: %s"],bepgp.db.profile.progress),
-      order = 91,
+      order = 92,
       hidden = function() return bepgp:admin() end,
     }
     self._options.args.general.args.main.args["progress_tier"] = {
       type = "select",
       name = L["Raid Progress"],
       desc = L["Highest Tier the Guild is raiding.\nUsed to adjust GP Prices.\nUsed for suggested EP awards."],
-      order = 92,
+      order = 93,
       hidden = function() return not (bepgp:admin()) end,
       get = function() return bepgp.db.profile.progress end,
       set = function(info, val)
@@ -5578,6 +5579,36 @@ function bepgp:getClassData(class) -- CLASS, class, classColor
   elseif lClass then
     return class, lClass, hexClassColor[lClass]
   end
+end
+
+function bepgp:getAnyItemLink(text)
+  if (string.find(text, "|Hitem:", 1, true)) then
+    return true
+  else
+    local bastionlinks = bepgp:GetModule(addonName.."_chatlinks")
+    if bastionlinks then
+      return bastionlinks:getAnyItemLink(text)
+    end
+  end
+  return false
+end
+
+function bepgp:getStrippedLinkText(text)
+  local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
+  local bastionlinks = bepgp:GetModule(addonName.."_chatlinks",true)
+  if bastionlinks and count == 0 then
+    linkstriptext, count = bastionlinks:getStrippedLinkText(text)
+  end
+  return string.lower(linkstriptext), count
+end
+
+function bepgp:getItemLinkText(text)
+  local _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r)")
+  local bastionlinks = bepgp:GetModule(addonName.."_chatlinks",true)
+  if bastionlinks and not itemLink then
+    itemLink = bastionlinks:getItemLinkText(text)
+  end
+  return itemLink
 end
 
 function bepgp:getItemData(itemLink) -- itemcolor, itemstring, itemname, itemid

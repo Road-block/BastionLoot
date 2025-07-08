@@ -338,11 +338,13 @@ local lootCall = {
   },
 }
 function bepgp_plusroll_bids:captureLootCall(event, text, sender)
-  if not (string.find(text, "|Hitem:", 1, true)) then return end
+--  if not (string.find(text, "|Hitem:", 1, true)) then return end
+  if not bepgp:getAnyItemLink(text) then return end
   if bepgp.db.char.mode ~= "plusroll" then return end
-  local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
+--  local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
+  local lowtext,count = bepgp:getStrippedLinkText(text)
   if count > 1 then return end
-  local lowtext = string.lower(linkstriptext)
+--  local lowtext = string.lower(linkstriptext)
   local _, link_found, rollkw_found, keyword
   for _,f in ipairs(lootCall.roll) do
     rollkw_found,_,keyword = string.find(lowtext,f)
@@ -352,7 +354,8 @@ function bepgp_plusroll_bids:captureLootCall(event, text, sender)
   sender = bepgp:Ambiguate(sender)
   local _, itemLink, itemColor, itemString, itemName, itemID
   if (rollkw_found) then
-    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r)")
+--    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r)")
+    itemLink = bepgp:getItemLinkText(text)
     if (itemLink) and (itemLink ~= "") then
       itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
     end

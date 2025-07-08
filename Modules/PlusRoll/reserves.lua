@@ -273,18 +273,21 @@ function bepgp_plusroll_reserves:captureRes(fromfilter, event, text, sender)
       end
     end
   end
-  if not (string.find(text, "|Hitem:", 1, true)) then return false end
-  local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
+--  if not (string.find(text, "|Hitem:", 1, true)) then return false end
+  if not bepgp:getAnyItemLink(text) then return end
+--  local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
+  local lowtext, count = bepgp:getStrippedLinkText(text)
   if count > 1 then return false end
   local reskw_found
-  local lowtext = string.lower(linkstriptext)
+--  local lowtext = string.lower(linkstriptext)
   for _,f in ipairs(lootRes.res) do
     reskw_found = string.find(lowtext,f)
     if (reskw_found) then break end
   end
   if (reskw_found) then
     local _, itemLink, itemColor, itemString, itemName, itemID
-    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r)")
+--    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r)")
+    itemLink = bepgp:getItemLinkText(text)
     if (itemLink) and (itemLink ~= "") then
       itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
     end
@@ -368,11 +371,14 @@ function bepgp_plusroll_reserves:resRemove(text, sender)
     if rem_query then break end
   end
   if rem_query then
-    if not (string.find(text, "|Hitem:", 1, true)) then return false end
-    local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
+--    if not (string.find(text, "|Hitem:", 1, true)) then return false end
+    if not bepgp:getAnyItemLink(text) then return end
+--    local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
+    local lowtext, count = bepgp:getStrippedLinkText(text)
     if count > 1 then return false end
     local _, itemLink, itemColor, itemString, itemName, itemID
-    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r)")
+--    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r)")
+    itemLink = bepgp:getItemLinkText(text)
     if (itemLink) and (itemLink ~= "") then
       itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
     end

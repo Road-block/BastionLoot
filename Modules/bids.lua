@@ -507,12 +507,14 @@ local lootCall = {
   },
 }
 function bepgp_bids:captureLootCall(event, text, sender)
-  if not (string.find(text, "|Hitem:", 1, true)) then return end
+--  if not (string.find(text, "|Hitem:", 1, true)) then return end
+  if not bepgp:getAnyItemLink(text) then return end
   if bepgp.db.char.mode ~= "epgp" then return end
-  local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
+--  local linkstriptext, count = string.gsub(text,"|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r"," ; ")
+  local lowtext, count = bepgp:getStrippedLinkText(text)
   if count > 1 then return end
   local prvetoOpt = bepgp.db.char.prveto
-  local lowtext = string.lower(linkstriptext)
+--  local lowtext = string.lower(linkstriptext)
   local whisperkw_found, mskw_found, oskw_found, link_found, rollkw_found, keyword
   sender = bepgp:Ambiguate(sender)
   local _, itemLink, itemColor, itemString, itemName, itemID
@@ -535,7 +537,8 @@ function bepgp_bids:captureLootCall(event, text, sender)
   local prveto = (mskw_found or whisperkw_found) and rollkw_found
   local xmog = rollkw_found and keyword == "69"
   if (whisperkw_found) or (mskw_found) or (oskw_found) then
-    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r)")
+--    _,_,itemLink = string.find(text,"(|c%x+|H[eimt:%-%d]+|h%[.-%]|h|r)")
+    itemLink = bepgp:getItemLinkText(text)
     if (itemLink) and (itemLink ~= "") then
       itemColor, itemString, itemName, itemID = bepgp:getItemData(itemLink)
     end
