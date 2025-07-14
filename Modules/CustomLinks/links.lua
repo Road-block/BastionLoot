@@ -29,11 +29,22 @@ local chatTypesSend = {
 }
 
 local itemLinkCache = { }
+local helperPrint = { }
 local function preCache(itemID)
   local itemAsync = Item:CreateFromItemID(itemID)
+  local cached = itemAsync:IsItemDataCached()
   itemAsync:ContinueOnItemLoad(function()
     local itemName = itemAsync:GetItemName()
     local itemColor = itemAsync:GetItemQualityColor()
+    if not cached then
+      local itemLink = itemAsync:GetItemLink()
+      local now = GetTime()
+      local lastPrint = helperPrint[itemLink]
+      if not lastPrint or (now - lastPrint > 1.0) then
+        helperPrint[itemLink] = now
+        bepgp:Print(itemLink)
+      end
+    end
     itemLinkCache[itemID] = format("%s|Haddon:bastionlootlinks:%d|h[%s]|h|r",itemColor.hex,itemID,itemName)
   end)
 end
@@ -83,6 +94,13 @@ function bepgp_chatlinks:setupLinkFilters()
   end
 end
 
+function bepgp_chatlinks:OnHyperlinkLeave(...)
+  if GameTooltip._bastionlootlinks then
+    GameTooltip._bastionlootlinks = nil
+    GameTooltip:Hide()
+  end
+end
+
 function bepgp_chatlinks:setupLinkClicks()
   self._cbID = EventRegistry:RegisterCallback("SetItemRef", function(_, link, text, button, chatFrame)
     local linkType, addonName, linkData = strsplit(":", link)
@@ -92,7 +110,11 @@ function bepgp_chatlinks:setupLinkClicks()
           GameTooltip:SetOwner(UIParent,"ANCHOR_CURSOR_RIGHT")
           --GameTooltip:SetOwner(chatFrame,"ANCHOR_TOP")
           GameTooltip:SetHyperlink(format("item:%d",itemID))
+          GameTooltip._bastionlootlinks = itemID
           GameTooltip:Show()
+          if not bepgp_chatlinks:IsHooked(chatFrame,"OnHyperlinkLeave") then
+            bepgp_chatlinks:HookScript(chatFrame,"OnHyperlinkLeave")
+          end
         end
     end
   end)
