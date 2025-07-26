@@ -421,6 +421,7 @@ function bepgp_browser:captureSoftResCall(event, text, sender)
 end
 
 local function populate(data,link,subtype,price,tier,favrank,id,locdesc,slotvalue)
+  tier = tier or NOT_APPLICABLE -- probably outside our pricelist
   table.insert(data,{["cols"]={
     {["value"]=link},
     {["value"]=subtype},
