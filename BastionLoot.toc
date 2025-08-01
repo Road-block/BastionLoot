@@ -2,7 +2,7 @@
 ## Author: Roadblock
 ## Title: BastionLoot
 ## Notes: In-game EPGP loot helper, supports standby, main/alt shared pool, minEP, offpecGP. Pluggable price list. Alternative +wincount mode.
-## Version: 5.0.7
+## Version: 5.0.8
 ## X-Alpha:
 ## X-Website: https://github.com/Road-block/BastionLoot/releases/latest
 ## OptionalDeps: Ace3, MizusRaidTracker
@@ -18,7 +18,7 @@ compat.lua
 core.lua
 
 # blizzard mop fuckery
-Modules\CustomLinks\links.lua
+# Modules\CustomLinks\links.lua
 
 Modules\prices_mists.lua
 Modules\tokens_mists.lua

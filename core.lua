@@ -936,7 +936,7 @@ local admincmd, membercmd =
       name = L["Bids"],
       desc = L["Show Bids Table."],
       func = function()
-        local bids = bepgp:GetModule(addonName.."_bids")
+        local bids = bepgp:GetModule(addonName.."_bids",true)
         if bids then
           bids:Toggle()
         end
@@ -948,7 +948,7 @@ local admincmd, membercmd =
       name = L["Standings"],
       desc = L["Show Standings Table."],
       func = function()
-        local standings = bepgp:GetModule(addonName.."_standings")
+        local standings = bepgp:GetModule(addonName.."_standings",true)
         if standings then
           standings:Toggle()
         end
@@ -960,7 +960,7 @@ local admincmd, membercmd =
       name = L["Favorites"],
       desc = L["Show Favorites Table."],
       func = function()
-        local browser = bepgp:GetModule(addonName.."_browser")
+        local browser = bepgp:GetModule(addonName.."_browser",true)
         if browser then
           browser:Toggle()
         end
@@ -972,7 +972,7 @@ local admincmd, membercmd =
       name = L["ClearLoot"],
       desc = L["Clear Loot Table."],
       func = function()
-        local loot = bepgp:GetModule(addonName.."_loot")
+        local loot = bepgp:GetModule(addonName.."_loot",true)
         if loot then
           loot:Clear()
         end
@@ -984,7 +984,7 @@ local admincmd, membercmd =
       name = L["ClearLogs"],
       desc = L["Clear Logs Table."],
       func = function()
-        local logs = bepgp:GetModule(addonName.."_logs")
+        local logs = bepgp:GetModule(addonName.."_logs",true)
         if logs then
           logs:Clear()
         end
@@ -1064,7 +1064,7 @@ local admincmd, membercmd =
       name = L["Standings"],
       desc = L["Show Standings Table."],
       func = function()
-        local standings = bepgp:GetModule(addonName.."_standings")
+        local standings = bepgp:GetModule(addonName.."_standings",true)
         if standings then
           standings:Toggle()
         end
@@ -1076,7 +1076,7 @@ local admincmd, membercmd =
       name = L["Favorites"],
       desc = L["Show Favorites Table."],
       func = function()
-        local browser = bepgp:GetModule(addonName.."_browser")
+        local browser = bepgp:GetModule(addonName.."_browser",true)
         if browser then
           browser:Toggle()
         end
@@ -1275,7 +1275,7 @@ function bepgp:options(force)
       get = function() return not not bepgp.db.char.raidonly end,
       set = function(info, val)
         bepgp.db.char.raidonly = not bepgp.db.char.raidonly
-        local standings = bepgp:GetModule(addonName.."_standings")
+        local standings = bepgp:GetModule(addonName.."_standings",true)
         if standings then
           standings._widgetraid_only:SetValue(bepgp.db.char.raidonly)
         end
@@ -1290,7 +1290,7 @@ function bepgp:options(force)
       get = function() return not not bepgp.db.char.classgroup end,
       set = function(info, val)
         bepgp.db.char.classgroup = not bepgp.db.char.classgroup
-        local standings = bepgp:GetModule(addonName.."_standings")
+        local standings = bepgp:GetModule(addonName.."_standings",true)
         if standings then
           standings._widgetclass_grouping:SetValue(bepgp.db.char.classgroup)
         end
@@ -1831,7 +1831,7 @@ function bepgp:options(force)
       desc = L["Clear Loot"],
       order = 146,
       func = function()
-        local loot = bepgp:GetModule(addonName.."_loot")
+        local loot = bepgp:GetModule(addonName.."_loot",true)
         if loot then
           loot:Clear()
           loot:Toggle()
@@ -1845,7 +1845,7 @@ function bepgp:options(force)
       desc = L["Clear Wincount"],
       order = 147,
       func = function()
-        local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot")
+        local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot",true)
         if plusroll_loot then
           plusroll_loot:Clear()
           plusroll_loot:Toggle()
@@ -1866,7 +1866,7 @@ function bepgp:options(force)
       desc = L["Clear reserves"],
       order = 148,
       func = function()
-        local plusroll_reserves = bepgp:GetModule(addonName.."_plusroll_reserves")
+        local plusroll_reserves = bepgp:GetModule(addonName.."_plusroll_reserves",true)
         if plusroll_reserves then
           plusroll_reserves:Clear()
           plusroll_reserves:Toggle()
@@ -2058,7 +2058,7 @@ function bepgp:ddoptions(refresh)
       desc = L["Export Raid Roster"],
       order = 55,
       func = function(info)
-        local roster = bepgp:GetModule(addonName.."_roster")
+        local roster = bepgp:GetModule(addonName.."_roster",true)
         if roster then
           roster:Toggle()
         end
@@ -2104,7 +2104,7 @@ function bepgp:ddoptions(refresh)
       desc = L["Export Raid Roster"],
       order = 10,
       func = function(info)
-        local roster = bepgp:GetModule(addonName.."_roster")
+        local roster = bepgp:GetModule(addonName.."_roster",true)
         if roster then
           roster:Toggle()
         end
@@ -2138,18 +2138,18 @@ end
 function bepgp.OnLDBClick(obj,button)
   local is_admin = bepgp:admin()
   local mode = bepgp.db.char.mode
-  local logs = bepgp:GetModule(addonName.."_logs")
-  local alts = bepgp:GetModule(addonName.."_alts")
-  local browser = bepgp:GetModule(addonName.."_browser")
-  local standby = bepgp:GetModule(addonName.."_standby")
-  local loot = bepgp:GetModule(addonName.."_loot")
-  local bids = bepgp:GetModule(addonName.."_bids")
-  local standings = bepgp:GetModule(addonName.."_standings")
+  local logs = bepgp:GetModule(addonName.."_logs",true)
+  local alts = bepgp:GetModule(addonName.."_alts",true)
+  local browser = bepgp:GetModule(addonName.."_browser",true)
+  local standby = bepgp:GetModule(addonName.."_standby",true)
+  local loot = bepgp:GetModule(addonName.."_loot",true)
+  local bids = bepgp:GetModule(addonName.."_bids",true)
+  local standings = bepgp:GetModule(addonName.."_standings",true)
   -- plusroll
-  local reserves = bepgp:GetModule(addonName.."_plusroll_reserves")
-  local rollbids = bepgp:GetModule(addonName.."_plusroll_bids")
-  local rollloot = bepgp:GetModule(addonName.."_plusroll_loot")
-  local rolllogs = bepgp:GetModule(addonName.."_plusroll_logs")
+  local reserves = bepgp:GetModule(addonName.."_plusroll_reserves",true)
+  local rollbids = bepgp:GetModule(addonName.."_plusroll_bids",true)
+  local rollloot = bepgp:GetModule(addonName.."_plusroll_loot",true)
+  local rolllogs = bepgp:GetModule(addonName.."_plusroll_logs",true)
   local roll_admin = rollloot and rollloot:raidLootAdmin() or false
   if is_admin then
     if button == "LeftButton" then
@@ -2282,7 +2282,7 @@ function bepgp.OnLDBTooltipShow(tooltip)
   if bepgp._SUSPEND then
     title = string.format("%s [%s]",label,modes.suspend)
   end
-  local rollloot = bepgp:GetModule(addonName.."_plusroll_loot")
+  local rollloot = bepgp:GetModule(addonName.."_plusroll_loot",true)
   local roll_admin = rollloot and rollloot:raidLootAdmin() or false
   tooltip:SetText(title)
   tooltip:AddLine(" ")
@@ -2589,7 +2589,7 @@ function bepgp:templateCache(id)
                 if loot_indices and loot_indices.action then
                   data[loot_indices.action] = bepgp.VARS.unassigned
                   local update = data[loot_indices.update] ~= nil
-                  local loot = bepgp:GetModule(addonName.."_loot")
+                  local loot = bepgp:GetModule(addonName.."_loot",true)
                   if loot then
                     loot:addOrUpdateLoot(data, update)
                   end
@@ -2603,7 +2603,7 @@ function bepgp:templateCache(id)
           local loot_indices = data.loot_indices
           data[loot_indices.action] = bepgp.VARS.unassigned
           local update = data[loot_indices.update] ~= nil
-          local loot = bepgp:GetModule(addonName.."_loot")
+          local loot = bepgp:GetModule(addonName.."_loot",true)
           if loot then
             loot:addOrUpdateLoot(data, update)
           end
@@ -2669,7 +2669,7 @@ function bepgp:templateCache(id)
                 end
               end
               local update = data[loot_indices.update] ~= nil
-              local loot = bepgp:GetModule(addonName.."_loot")
+              local loot = bepgp:GetModule(addonName.."_loot",true)
               if loot then
                 loot:addOrUpdateLoot(data, update)
               end
@@ -2703,7 +2703,7 @@ function bepgp:templateCache(id)
                 end
               end
               local update = data[loot_indices.update] ~= nil
-              local loot = bepgp:GetModule(addonName.."_loot")
+              local loot = bepgp:GetModule(addonName.."_loot",true)
               if loot then
                 loot:addOrUpdateLoot(data, update)
               end
@@ -2723,7 +2723,7 @@ function bepgp:templateCache(id)
               local loot_indices = data.loot_indices
               data[loot_indices.action] = bepgp.VARS.bankde
               local update = data[loot_indices.update] ~= nil
-              local loot = bepgp:GetModule(addonName.."_loot")
+              local loot = bepgp:GetModule(addonName.."_loot",true)
               if loot then
                 loot:addOrUpdateLoot(data, update)
               end
@@ -2910,8 +2910,8 @@ function bepgp:templateCache(id)
           local item = data[loot_indices.item]
           local item_id = data[loot_indices.item_id]
           local from_log = data[loot_indices.log]
-          local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot")
-          local plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs")
+          local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot",true)
+          local plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs",true)
           if from_log then -- update from log
             local log_indices = data.log_indices
             local log_entry = bepgp.db.char.plusroll_logs[from_log]
@@ -2955,9 +2955,9 @@ function bepgp:templateCache(id)
               local item = data[loot_indices.item]
               local item_id = data[loot_indices.item_id]
               local from_log = data[loot_indices.log]
-              local reserves = bepgp:GetModule(addonName.."_plusroll_reserves")
-              local plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs")
-              local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot")
+              local reserves = bepgp:GetModule(addonName.."_plusroll_reserves",true)
+              local plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs",true)
+              local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot",true)
               if from_log then -- update
                 local log_entry = bepgp.db.char.plusroll_logs[from_log]
                 local log_indices = data.log_indices
@@ -3011,8 +3011,8 @@ function bepgp:templateCache(id)
               local item = data[loot_indices.item]
               local item_id = data[loot_indices.item_id]
               local from_log = data[loot_indices.log]
-              local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot")
-              local plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs")
+              local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot",true)
+              local plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs",true)
               if from_log then
                 local log_entry = bepgp.db.char.plusroll_logs[from_log]
                 local log_indices = data.log_indices
@@ -3057,8 +3057,8 @@ function bepgp:templateCache(id)
               local item = data[loot_indices.item]
               local item_id = data[loot_indices.item_id]
               local from_log = data[loot_indices.log]
-              local plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs")
-              local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot")
+              local plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs",true)
+              local plusroll_loot = bepgp:GetModule(addonName.."_plusroll_loot",true)
               if from_log then
                 local log_entry = bepgp.db.char.plusroll_logs[from_log]
                 local log_indices = data.log_indices
@@ -3384,7 +3384,7 @@ function bepgp:templateCache(id)
           {
             text = _G.YES,
             on_click = function(self, button, down)
-              local loot = bepgp:GetModule(addonName.."_loot")
+              local loot = bepgp:GetModule(addonName.."_loot",true)
               if loot then
                 loot:Clear()
               end
@@ -3394,7 +3394,7 @@ function bepgp:templateCache(id)
           {
             text = L["Show me"],
             on_click = function(self, button, down)
-              local loot = bepgp:GetModule(addonName.."_loot")
+              local loot = bepgp:GetModule(addonName.."_loot",true)
               if loot then
                 loot:Toggle()
               end
@@ -3425,7 +3425,7 @@ function bepgp:templateCache(id)
           {
             text = _G.YES,
             on_click = function(self, button, down)
-              local standby = bepgp:GetModule(addonName.."_standby")
+              local standby = bepgp:GetModule(addonName.."_standby",true)
               if standby then
                 standby:sendCheckResponse()
               end
@@ -4043,7 +4043,7 @@ function bepgp:favCheckRemove(event, slotid, emptied)
     local itemID = GetInventoryItemID("player", slotid)
     local itemLink = GetInventoryItemLink("player", slotid)
     if itemID and bepgp.db.char.favorites[itemID] then
-      local browser = self:GetModule(addonName.."_browser")
+      local browser = self:GetModule(addonName.."_browser",true)
       if browser then
         browser:favoriteClear(itemID)
         local msg = string.format(L["%s removed from Favorites"],itemLink)
@@ -5585,7 +5585,7 @@ function bepgp:getAnyItemLink(text)
   if (string.find(text, "|Hitem:", 1, true)) then
     return true
   else
-    local bastionlinks = bepgp:GetModule(addonName.."_chatlinks")
+    local bastionlinks = bepgp:GetModule(addonName.."_chatlinks",true)
     if bastionlinks then
       return bastionlinks:getAnyItemLink(text)
     end
@@ -6272,7 +6272,7 @@ function bepgp:award_raid_ep(ep) -- awards ep to raid members in zone
       end
     end
     self:simpleSay(string.format(L["Giving %d ep to all raidmembers"],ep))
-    local logs = self:GetModule(addonName.."_logs")
+    local logs = self:GetModule(addonName.."_logs",true)
     if logs then
       logs:addToLog(string.format(L["Giving %d ep to all raidmembers"],ep))
     end
@@ -6288,7 +6288,7 @@ function bepgp:award_raid_ep(ep) -- awards ep to raid members in zone
 end
 
 function bepgp:award_standby_ep(ep) -- awards ep to reserve list
-  local standby = self:GetModule(addonName.."_standby")
+  local standby = self:GetModule(addonName.."_standby",true)
   if standby then
     if #(standby.roster) > 0 then
       self:guildCache()
@@ -6297,7 +6297,7 @@ function bepgp:award_standby_ep(ep) -- awards ep to reserve list
         self:givename_ep(name, ep)
       end
       self:simpleSay(string.format(L["Giving %d ep to active standby"],ep))
-      local logs = self:GetModule(addonName.."_logs")
+      local logs = self:GetModule(addonName.."_logs",true)
       if logs then
         logs:addToLog(string.format(L["Giving %d ep to active standby"],ep))
       end
@@ -6306,7 +6306,7 @@ function bepgp:award_standby_ep(ep) -- awards ep to reserve list
       table.wipe(standby.roster)
       table.wipe(standby.blacklist)
       self:refreshPRTablets()
-      local standby = self:GetModule(addonName.."_standby")
+      local standby = self:GetModule(addonName.."_standby",true)
       if standby then
         standby:Refresh()
       end
@@ -6330,7 +6330,7 @@ function bepgp:decay_epgp()
   local msg = string.format(L["All EP and GP decayed by %s%%"],(1-decay)*100)
   self:simpleSay(msg)
   if not (announce=="OFFICER") then self:adminSay(msg) end
-  local logs = self:GetModule(addonName.."_logs")
+  local logs = self:GetModule(addonName.."_logs",true)
   if logs then
     logs:addToLog(msg)
   end
@@ -6356,7 +6356,7 @@ function bepgp:wipe_epgp()
   local msg = L["All EP and GP data has been reset."]
   self:simpleSay(msg)
   if not (announce=="OFFICER") then self:adminSay(msg) end
-  local logs = self:GetModule(addonName.."_logs")
+  local logs = self:GetModule(addonName.."_logs",true)
   if logs then
     logs:addToLog(msg)
   end
@@ -6509,7 +6509,7 @@ function bepgp:givename_ep(getname,ep,single) -- awards ep to a single character
   local postfix, alt, ally = ""
   local guildcache = self.db.profile.guildcache
   local main = guildcache[getname] and guildcache[getname].m or false
-  local logs = self:GetModule(addonName.."_logs")
+  local logs = self:GetModule(addonName.."_logs",true)
   if (main) then
     if self.db.profile.altspool then
       alt = getname
@@ -6575,7 +6575,7 @@ function bepgp:givename_gp(getname,gp) -- assigns gp to a single character
   local postfix, alt, ally = ""
   local guildcache = self.db.profile.guildcache
   local main = guildcache[getname] and guildcache[getname].m or false
-  local logs = self:GetModule(addonName.."_logs")
+  local logs = self:GetModule(addonName.."_logs",true)
   if (main) then
     if self.db.profile.altspool then
       alt = getname
@@ -6664,19 +6664,19 @@ function bepgp:capcalc(ep,gp,gain)
 end
 
 function bepgp:refreshPRTablets()
-  local standings = self:GetModule(addonName.."_standings")
+  local standings = self:GetModule(addonName.."_standings",true)
   if standings then
     standings:Refresh()
   end
-  local bids = self:GetModule(addonName.."_bids")
+  local bids = self:GetModule(addonName.."_bids",true)
   if bids then
     bids:Refresh()
   end
-  local plusroll_bids = self:GetModule(addonName.."_plusroll_bids")
+  local plusroll_bids = self:GetModule(addonName.."_plusroll_bids",true)
   if plusroll_bids then
     plusroll_bids:Refresh()
   end
-  local browser = self:GetModule(addonName.."_browser")
+  local browser = self:GetModule(addonName.."_browser",true)
   if browser then
     browser:Refresh()
   end

@@ -167,7 +167,7 @@ function bepgp_plusroll_reserves:OnEnable()
   export:SetWidth(100)
   export:SetText(L["Export"])
   export:SetCallback("OnClick",function()
-    local iof = bepgp:GetModule(addonName.."_io")
+    local iof = bepgp:GetModule(addonName.."_io",true)
     if iof then
       iof:Reserves(data)
     end
@@ -545,14 +545,14 @@ end
 
 function bepgp_plusroll_reserves:CoreInit()
   if not self._initDone then
-    bepgp_plusroll_bids = bepgp:GetModule(addonName.."_plusroll_bids")
+    bepgp_plusroll_bids = bepgp:GetModule(addonName.."_plusroll_bids",true)
     players = bepgp.db.char.reserves.players
     items = bepgp.db.char.reserves.items
     self:ToggleLock(bepgp.db.char.reserves.locked)
     self:RegisterEvent("CHAT_MSG_WHISPER", "captureRes")
     ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER", filterCapture)
     ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM", filterResponse)
-    bepgp_plusroll_bids = bepgp:GetModule(addonName.."_plusroll_bids")
+    bepgp_plusroll_bids = bepgp:GetModule(addonName.."_plusroll_bids",true)
     self._initDone = true
   end
 end

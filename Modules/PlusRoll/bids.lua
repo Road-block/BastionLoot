@@ -99,7 +99,7 @@ function bepgp_plusroll_bids:announcedisench(data)
 end
 
 function bepgp_plusroll_bids:showReserves()
-  reserves = reserves or bepgp:GetModule(addonName.."_plusroll_reserves")
+  reserves = reserves or bepgp:GetModule(addonName.."_plusroll_reserves",true)
   if reserves then
     reserves:Toggle(true)
   end
@@ -157,7 +157,7 @@ function bepgp_plusroll_bids:Refresh()
     line = frame:AddHeader()
     --SetCell spec : lineNum, colNum, value, font, justification, colSpan, provider
     local num_reserves, names = 0
-    reserves = reserves or bepgp:GetModule(addonName.."_plusroll_reserves")
+    reserves = reserves or bepgp:GetModule(addonName.."_plusroll_reserves",true)
     if reserves then
       num_reserves, names = reserves:IsReserved(self.bid_item.itemid)
     end
@@ -426,11 +426,11 @@ function bepgp_plusroll_bids:captureRoll(event, text)
         end
         if (msroll) then
           bids_blacklist[who] = true
-          reserves = reserves or bepgp:GetModule(addonName.."_plusroll_reserves")
+          reserves = reserves or bepgp:GetModule(addonName.."_plusroll_reserves",true)
           if reserves and (reserves:IsReservedExact(bepgp_plusroll_bids.bid_item.itemid, who)) then
             table.insert(bepgp_plusroll_bids.bids_res,{who,color,msroll,nil,pr,rank})
           else
-            plusroll_loot = plusroll_loot or bepgp:GetModule(addonName.."_plusroll_loot")
+            plusroll_loot = plusroll_loot or bepgp:GetModule(addonName.."_plusroll_loot",true)
             local wincount = plusroll_loot and plusroll_loot:getWincount(who) or 0
             table.insert(bepgp_plusroll_bids.bids_main,{who,color,msroll,wincount,pr,rank})
           end

@@ -152,9 +152,9 @@ function bepgp_plusroll_loot:OnEnable()
   self._bagsTimer = self:ScheduleTimer("hookBagAddons",30)
   self._lootTimer = self:ScheduleTimer("hookLootAddons",20)
 
-  autoroll = bepgp:GetModule(addonName.."_autoroll")
+  autoroll = bepgp:GetModule(addonName.."_autoroll",true)
   autoroll_data = autoroll and autoroll:ItemsHash()
-  plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs")
+  plusroll_logs = bepgp:GetModule(addonName.."_plusroll_logs",true)
 end
 
 function bepgp_plusroll_loot:Toggle(show)

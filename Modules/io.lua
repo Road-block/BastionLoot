@@ -269,7 +269,7 @@ function bepgp_io:Roster(roster)
 end
 
 function bepgp_io:BrowserImport(text)
-  local browser = bepgp:GetModule(addonName.."_browser")
+  local browser = bepgp:GetModule(addonName.."_browser",true)
   local retOK, data = pcall(Parse.JSONDecode,Parse,text)
   local change = false
   if retOK then -- sixty/seventy/eightyupgrades

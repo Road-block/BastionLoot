@@ -43,7 +43,7 @@ function bepgp_roster:OnEnable()
   export:SetAutoWidth(true)
   export:SetText(L["Export"])
   export:SetCallback("OnClick",function()
-    local iof = bepgp:GetModule(addonName.."_io")
+    local iof = bepgp:GetModule(addonName.."_io",true)
     if iof then
       iof:Roster(roster)
     end
