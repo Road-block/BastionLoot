@@ -411,6 +411,7 @@ local price_systems = {}
 local special_frames = {}
 local pendingLoot, pendingLooters = {}, {}
 local label = string.format("|cff33ff99%s|r",addonName)
+local shortLabel = "|cff33ff99BL|r"
 local out_chat = string.format("%s: %%s",addonName)
 local icons = {
   epgp = "Interface\\PetitionFrame\\GuildCharter-Icon",
@@ -3872,7 +3873,9 @@ function bepgp:AddTipInfo(tooltip,...)
       end
     end
     if tipOptionGroup.favinfo and (owner and (owner.encounterID and owner.itemID)) then -- encounter journal
-      tooltip:AddDoubleLine(C:Yellow(L["Alt Click"]), C:Orange(L["Add Favorite"]))
+      if not self.db.char.favorites[itemid] then
+        tooltip:AddDoubleLine(C:Yellow(L["Alt Click"]), C:Orange(L["Add Favorite"]))
+      end
     end
     local favorite = self.db.char.favorites[itemid]
     if tipOptionGroup.favinfo and favorite then
@@ -5658,6 +5661,14 @@ function bepgp:itemBinding(itemString)
     end
   end
   return
+end
+
+function bepgp:GetFavorite(itemID)
+  local favorites = self.db.char.favorites
+  local rank = favorites[itemID]
+  if rank then
+    return format("%s:%s",shortLabel,self._favmap[rank])
+  end
 end
 
 function bepgp:getItemQualityData(quality) -- id, name, qualityColor
