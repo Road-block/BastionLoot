@@ -4874,7 +4874,7 @@ function bepgp:GrantLootAdmin(name, threshold)
     whitelist[name] = nil
     local g_name = bepgp:verifyGuildMember(name, true)
     if g_name then
-      SetLootMethod("master",g_name,threshold)
+      bepgp.SetLootMethod("master",g_name,threshold)
       bepgp:Print(string.format(L["Granting Loot Admin to %s."],name))
       if not (UnitIsGroupAssistant(g_name) or IsEveryoneAssistant()) then
         PromoteToAssistant(g_name, true)
@@ -5115,7 +5115,7 @@ end
 
 function bepgp:lootMaster()
   if not IsInRaid() then return false end
-  local method, partyidx, raididx = GetLootMethod()
+  local method, partyidx, raididx = bepgp.GetLootMethod()
   if method == "master" then
     if raididx and UnitIsUnit("player", "raid"..raididx) then
       return true

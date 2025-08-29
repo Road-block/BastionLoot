@@ -526,7 +526,7 @@ function bepgp_browser:CheckStatus()
   if not (IsInRaid() and GetNumGroupMembers() > 1) then
     bepgp._ML = nil
   end
-  local method, partyidx, raididx = GetLootMethod()
+  local method, partyidx, raididx = bepgp.GetLootMethod()
   if method == "master" then
     if raididx then
       local name = GetUnitName("raid"..raididx, bepgp.db.profile.fullnames)
