@@ -105,6 +105,7 @@ function bepgp_standings:OnEnable()
     {["name"]=C:Orange(L["gp"]:upper()),["width"]=50,["comparesort"]=st_sorter_numeric}, --gp
     {["name"]=C:Orange(L["pr"]:upper()),["width"]=50,["comparesort"]=st_sorter_numeric,["sortnext"]=1,["sort"]=ST.SORT_DSC}, --pr
   }
+  self._headers = headers
   self._standings_table = ST:CreateST(headers,15,nil,colorHighlight,container.frame) -- cols, numRows, rowHeight, highlight, parent
   self._standings_table.frame:SetPoint("BOTTOMRIGHT",self._container.frame,"BOTTOMRIGHT", -10, 10)
   container:SetCallback("OnShow", function()
@@ -196,6 +197,7 @@ function bepgp_standings:OnEnable()
 
   bepgp:make_escable(container,"add")
   self:RegisterMessage(addonName.."_EPGPCACHE","CacheUpdate")
+  self:RefreshDisplay()
   RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
 end
 
@@ -228,6 +230,21 @@ function bepgp_standings:CacheUpdate()
   if not bepgp.CanViewOfficerNote() then
     self:Refresh()
   end
+end
+
+function bepgp_standings:RefreshDisplay()
+  if not self._container then return end
+  local container_width, container_height, name_column_width, overlay_width = 430, 290, 100, 250
+  if bepgp.db.profile.fullnames then
+    container_width = container_width+50
+    name_column_width = name_column_width+50
+    overlay_width = overlay_width+50
+  end
+  self._container:SetWidth(container_width)
+  self._container:SetHeight(container_height)
+  self._headers[1]["width"] = name_column_width
+  self._standings_table:SetDisplayCols(self._headers)
+  self._widgetoverlaylabel:SetWidth(overlay_width)
 end
 
 function bepgp_standings:Refresh()

@@ -24,7 +24,7 @@ local MAJOR = "LibDialog-1.0_Roadblock"
 
 _G.assert(LibStub, MAJOR .. " requires LibStub")
 
-local MINOR = 1 -- Should be manually increased
+local MINOR = 2 -- Should be manually increased
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not lib then
@@ -128,7 +128,13 @@ local function _SetupAnchor(dialog)
     local default_dialog
     if _G.StaticPopup_DisplayedFrames then
         default_dialog = _G.StaticPopup_DisplayedFrames[#_G.StaticPopup_DisplayedFrames]
-    elseif (_G.StaticPopup_HasDisplayedFrames and _G.StaticPopup_IsLastDisplayedFrame) then
+    elseif (_G.StaticPopup_ForEachShownDialog and _G.StaticPopup_IsLastDisplayedFrame) then
+        StaticPopup_ForEachShownDialog(function(dialog)
+            if StaticPopup_IsLastDisplayedFrame(dialog) then
+                default_dialog = dialog
+            end
+        end)
+    elseif (_G.StaticPopup_HasDisplayedFrames and _G.StaticPopup_IsLastDisplayedFrame and _G.STATICPOPUP_NUMDIALOGS) then
         if StaticPopup_HasDisplayedFrames() then
             for idx = STATICPOPUP_NUMDIALOGS,1,-1 do
                 local test_dialog = _G["StaticPopup"..idx]

@@ -930,6 +930,9 @@ local defaults = {
     patches = {},
   },
 }
+if bepgp._classic or bepgp._mists then
+  defaults.profile.fullnames = true
+end
 local admincmd, membercmd =
 {type = "group", handler = bepgp, args = {
     bids = {
@@ -1712,6 +1715,7 @@ function bepgp:options(force)
       set = function(info, val)
         bepgp.db.profile.fullnames = not bepgp.db.profile.fullnames
         bepgp:refreshUnitCaches()
+        bepgp:refreshUnitDisplays()
         if IsGuildLeader() then
           bepgp:shareSettings()
         end
@@ -4083,7 +4087,15 @@ function bepgp:autoLoot(event,auto)
             LootSlot(slot)
             ConfirmLootSlot(slot)
             local dialog = StaticPopup_FindVisible("LOOT_BIND")
-            if dialog then _G[dialog:GetName().."Button1"]:Click() end
+            if dialog then
+              if dialog.GetButton1 then
+                dialog:GetButton1():Click()
+              else
+                if _G[dialog:GetName().."Button1"] then
+                  _G[dialog:GetName().."Button1"]:Click()
+                end
+              end
+            end
           end
         end
       end
@@ -4598,6 +4610,8 @@ function bepgp:OnCommReceived(prefix, msg, distro, sender)
         end
         if fullnames ~= nil and fullnames ~= bepgp.db.profile.fullnames then
           bepgp.db.profile.fullnames = fullnames
+          bepgp:refreshUnitCaches()
+          bepgp:refreshUnitDisplays()
           if (is_admin) then
             if (settings_notice) then
               settings_notice = settings_notice..L[", fullnames"]
@@ -6202,6 +6216,13 @@ function bepgp:refreshUnitCaches(force)
     end
   end
   self:buildRosterTable()
+end
+
+function bepgp:refreshUnitDisplays()
+  local standings = self:GetModule(addonName.."_standings",true)
+  if standings and standings.RefreshDisplay then
+    standings:RefreshDisplay()
+  end
 end
 
 function bepgp:sanitizeNote(epgp,postfix)
