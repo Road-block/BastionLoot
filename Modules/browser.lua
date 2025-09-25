@@ -527,7 +527,7 @@ function bepgp_browser:CheckStatus()
     bepgp._ML = nil
   end
   local method, partyidx, raididx = bepgp.GetLootMethod()
-  if method == "master" then
+  if (method == "master") or (Enum.LootMethod.Masterlooter and method == Enum.LootMethod.Masterlooter) then
     if raididx then
       local name = GetUnitName("raid"..raididx, bepgp.db.profile.fullnames)
       if name and name ~= _G.UNKNOWNOBJECT then

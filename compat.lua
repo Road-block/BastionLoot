@@ -100,11 +100,38 @@ local GetLootMethod = function(...)
     return _G.GetLootMethod(...)
   end
 end
+local loot_old_to_new = {
+  freeforall      = (Enum.LootMethod.Freeforall or 0),
+  roundrobin      = (Enum.LootMethod.Roundrobin or 1),
+  master          = (Enum.LootMethod.Masterlooter or 2),
+  group           = (Enum.LootMethod.Group or 3),
+  needbeforegreed = (Enum.LootMethod.Needbeforegreed or 4),
+}
+local loot_new_to_old = {
+  [(Enum.LootMethod.Freeforall or 0)]      = "master",
+  [(Enum.LootMethod.Roundrobin or 1)]      = "roundrobin",
+  [(Enum.LootMethod.Masterlooter or 2)]    = "master",
+  [(Enum.LootMethod.Group or 3)]           = "group",
+  [(Enum.LootMethod.Needbeforegreed or 4)] = "needbeforegreed",
+}
 local SetLootMethod = function(...)
+  local loot_method, unit, threshold = ...
   if C_PartyInfo and C_PartyInfo.SetLootMethod then
-    return C_PartyInfo.SetLootMethod(...)
+    if type(loot_method) == "string" then
+      local new_method = loot_old_to_new[loot_method:lower()]
+      if new_method then
+        loot_method = new_method
+      end
+    end
+    return C_PartyInfo.SetLootMethod(loot_method,unit,threshold)
   elseif _G.SetLootMethod then
-    return _G.SetLootMethod(...)
+    if type(loot_method) == "number" then
+      local old_method = loot_new_to_old[loot_method]
+      if old_method then
+        loot_method = old_method
+      end
+    end
+    return _G.SetLootMethod(loot_method,unit,threshold)
   end
 end
 

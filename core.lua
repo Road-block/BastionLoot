@@ -5130,7 +5130,7 @@ end
 function bepgp:lootMaster()
   if not IsInRaid() then return false end
   local method, partyidx, raididx = bepgp.GetLootMethod()
-  if method == "master" then
+  if (method == "master") or (Enum.LootMethod.Masterlooter and method == Enum.LootMethod.Masterlooter) then
     if raididx and UnitIsUnit("player", "raid"..raididx) then
       return true
     elseif partyidx and (partyidx == 0) then
