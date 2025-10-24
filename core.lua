@@ -151,7 +151,7 @@ bepgp.VARS = {
     [21229] = "Insignia",
     [21230] = "Artifact",
     [23055] = "Thawing",
-    [22708] = "Ramaladni",    
+    [22708] = "Ramaladni",
   },
 }
 if bepgp._cata then
@@ -681,9 +681,9 @@ do
         ["T2"] = {"T2","T1.5","T1"},
         ["T1"] = {"T1.5","T1"},
       },
-      tierlist = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1.5"]="T1.5",["T1"]="T1"}, 
+      tierlist = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1.5"]="T1.5",["T1"]="T1"},
       tiersort = {"T3","T2.5","T2","T1.5","T1"},
-      modlist = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1"]="T1"}, 
+      modlist = {["T3"]="T3",["T2.5"]="T2.5",["T2"]="T2",["T1"]="T1"},
       modsort = {"T3","T2.5","T2","T1"},
       bench_values = { ["T3"]=L["4.Naxxramas"], ["T2.5"]=L["3.Temple of Ahn\'Qiraj"], ["T2"]=L["2.Blackwing Lair"], ["T1"]=L["1.Molten Core"]},
       bench_sorting = {"T1", "T2", "T2.5", "T3"},
@@ -695,7 +695,7 @@ do
       },
     },
   }
-end  
+end
 local item_bind_patterns = {
   CRAFT = "("..USE_COLON..")",
   BOP = "("..ITEM_BIND_ON_PICKUP..")",
@@ -1061,6 +1061,60 @@ local admincmd, membercmd =
       end,
       order = 12,
     },
+    gp = {
+      type = "input",
+      name = L["GP"],
+      desc = L["Assign GP to a member. Usage: /bastionloot gp <player> <gp>"],
+      usage = "<player> <gp>",
+      order = 13,
+      set = function(info, val)
+        if not val then
+          bepgp:Print("Usage: /bastionloot gp <player> <gp>")
+          return
+        end
+        local who, amt = val:match("^%s*(%S+)%s*(%-?%d+)%s*$")
+        amt = tonumber(amt)
+        if not who or not amt then
+          bepgp:Print("Usage: /bastionloot gp <player> <gp>")
+          return
+        end
+        bepgp:safeGuildRoster()
+        who = bepgp:Ambiguate(who)
+        local name = bepgp:verifyGuildMember(who, false, true)
+        if not name then
+          bepgp:Print(string.format(L["Unknown member %s"], who))
+          return
+        end
+        bepgp:givename_gp(name, amt)
+      end,
+    },
+    ep = {
+      type = "input",
+      name = L["EP"],
+      desc = L["Assign EP to a member. Usage: /bastionloot ep <player> <ep>"],
+      usage = "<player> <ep>",
+      order = 14,
+      set = function(info, val)
+        if not val then
+          bepgp:Print("Usage: /bastionloot ep <player> <ep>")
+          return
+        end
+        local who, amt = val:match("^%s*(%S+)%s*(%-?%d+)%s*$")
+        amt = tonumber(amt)
+        if not who or not amt then
+          bepgp:Print("Usage: /bastionloot ep <player> <ep>")
+          return
+        end
+        bepgp:safeGuildRoster()
+        who = bepgp:Ambiguate(who)
+        local name = bepgp:verifyGuildMember(who, false, true)
+        if not name then
+          bepgp:Print(string.format(L["Unknown member %s"], who))
+          return
+        end
+        bepgp:givename_ep(name, amt, true)
+      end,
+    },
   }},
 {type = "group", handler = bepgp, args = {
     show = {
@@ -1157,7 +1211,7 @@ end
 
 function bepgp:options(force)
   if not (self._options) or force then
-    self._options = 
+    self._options =
     {
       type = "group",
       handler = bepgp,
@@ -2655,7 +2709,7 @@ function bepgp:templateCache(id)
         },
         buttons = {
           { -- MainSpec GP
-            text = L["Add MainSpec GP"], 
+            text = L["Add MainSpec GP"],
             on_click = function(self, button, down) -- docs lie: it's dialog, dialog.data, "clicked"
               local data = self.data
               local loot_indices = data.loot_indices
@@ -2736,7 +2790,7 @@ function bepgp:templateCache(id)
               LD:Dismiss(addonName.."DialogItemWinCount")
             end,
           },
-        },        
+        },
       }
     elseif id == "DialogItemWinCount" then
       self._dialogTemplates[key] = {
@@ -2905,7 +2959,7 @@ function bepgp:templateCache(id)
                 if twohand_discount and twohand_discount:match(enClass) then data.use_discount = true end
               end
             end
-          end          
+          end
         end,
         on_cancel = function(self)
           local data = self.data
@@ -2948,7 +3002,7 @@ function bepgp:templateCache(id)
               data.use_discount = not data.use_discount
             end,
           },
-        },        
+        },
         buttons = {
           { -- Won as reserve
             text = L["Reserve"],
@@ -3500,6 +3554,59 @@ function bepgp:OnInitialize() -- 1. ADDON_LOADED
   LDBO.OnClick = bepgp.OnLDBClick
   LDBO.OnTooltipShow = bepgp.OnLDBTooltipShow
   LDI:Register(addonName, LDBO, bepgp.db.profile.minimap)
+
+  -- Register simplified /gp and /ep commands
+  SLASH_GP1 = "/gp"
+  SlashCmdList["GP"] = function(input)
+    if not bepgp:admin() then
+      bepgp:Print(L["This command is for admins only."])
+      return
+    end
+    if not input or input:trim() == "" then
+      bepgp:Print("Usage: /gp <player> <gp>")
+      return
+    end
+    local who, amt = input:match("^%s*(%S+)%s*(%-?%d+)%s*$")
+    amt = tonumber(amt)
+    if not who or not amt then
+      bepgp:Print("Usage: /gp <player> <gp>")
+      return
+    end
+    bepgp:safeGuildRoster()
+    who = bepgp:Ambiguate(who)
+    local name = bepgp:verifyGuildMember(who, false, true)
+    if not name then
+      bepgp:Print(string.format(L["Unknown member %s"], who))
+      return
+    end
+    bepgp:givename_gp(name, amt)
+  end
+
+  SLASH_EP1 = "/ep"
+  SlashCmdList["EP"] = function(input)
+    if not bepgp:admin() then
+      bepgp:Print(L["This command is for admins only."])
+      return
+    end
+    if not input or input:trim() == "" then
+      bepgp:Print("Usage: /ep <player> <ep>")
+      return
+    end
+    local who, amt = input:match("^%s*(%S+)%s*(%-?%d+)%s*$")
+    amt = tonumber(amt)
+    if not who or not amt then
+      bepgp:Print("Usage: /ep <player> <ep>")
+      return
+    end
+    bepgp:safeGuildRoster()
+    who = bepgp:Ambiguate(who)
+    local name = bepgp:verifyGuildMember(who, false, true)
+    if not name then
+      bepgp:Print(string.format(L["Unknown member %s"], who))
+      return
+    end
+    bepgp:givename_ep(name, amt, true)
+  end
 
   -- upgrade patches
   self:applyUpgradePatch("3.4.2-groupcache")
