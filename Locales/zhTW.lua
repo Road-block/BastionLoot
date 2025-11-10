@@ -590,6 +590,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["3.Siege of Org"] = "3.Siege of Org" -- needs translation
   L["2.Throne of Thunder"] = "2.Throne of Thunder" -- needs translation
   L["1.MV, ToES, HoF"] = "1.MV, ToES, HoF" -- needs translation
+  L["Box of Fancy Stuff"] = "Box of Fancy Stuff" -- needs translation
   L["Cache of Pure Energy"] = "Cache of Pure Energy" -- needs translation
   L["Cache of Tsulong"] = "Cache of Tsulong" -- needs translation
   L["Cache of Ancient Treasures"] = "Cache of Ancient Treasures" -- needs translation

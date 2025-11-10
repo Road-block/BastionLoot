@@ -596,6 +596,7 @@ You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back i
   L["3.Siege of Org"] = true
   L["2.Throne of Thunder"] = true
   L["1.MV, ToES, HoF"] = true
+  L["Box of Fancy Stuff"] = true -- 213073,213074,213075,213076
   L["Cache of Pure Energy"] = true -- 214383,214384,214385,214386,214387
   L["Cache of Tsulong"] = true -- 212922,215355,215356,215357,215358
   L["Cache of Ancient Treasures"] = true -- 297837,218805,218806,218807,218808

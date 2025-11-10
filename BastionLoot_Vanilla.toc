@@ -1,4 +1,4 @@
-## Interface: 11507
+## Interface: 11508
 ## Author: Roadblock
 ## Title: BastionLoot
 ## Notes: In-game EPGP loot helper, supports standby, main/alt shared pool, minEP, offpecGP. Pluggable price list. Alternative +wincount mode.
