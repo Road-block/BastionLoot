@@ -5801,10 +5801,12 @@ end
 -- parse potential Alt (in-guild) officernote, return Main (in-guild)
 function bepgp:parseAlt(name,officernote)
   if (officernote) then
-    local _,_,_,main,_ = string.find(officernote or "","(.*){([^%c%s%d{}][^%c%s%d{}][^%c%s%d{}]*%-?[^%c%s%d{}]*)}(.*)")
+    --local _,_,_,main,_ = string.find(officernote or "","(.*){([^%c%s%d{}][^%c%s%d{}][^%c%s%d{}]*%-?[^%c%s%d{}]*)}(.*)")
+    -- allow numbers in realmname part so it works on ptr1/2 etc
+    local _,_,_,main,_ = string.find(officernote or "","(.*){([^%c%s%d{}:][^%c%s%d{}:][^%c%s%d{}:]*%-?[^%c%s{}:]*)}(.*)")
     local namelimit = 13
     if main and main:match("%-") == "-" then
-      namelimit = 30
+      namelimit = 31
     end
     if type(main)=="string" and (strlen(main) < namelimit) then
       main = self:Capitalize(main)

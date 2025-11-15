@@ -12,6 +12,25 @@ local volatile = {
   mainranks = {},
 }
 
+local row_onenter = function(rowFrame, cellFrame, data, cols, row, realrow, column, table, ...)
+  if not realrow then return false end
+  local main, altstring = data[realrow].cols[1].value, data[realrow].cols[2].value
+  if main and altstring then
+    altstring = altstring:gsub(", ","\n")
+    GameTooltip:SetOwner(rowFrame,"ANCHOR_TOP")
+    GameTooltip:SetText(format("%s: %s",L["Main"],main))
+    GameTooltip:AddDoubleLine(" ",L["Alts"])
+    GameTooltip:AddLine(altstring,nil,nil,nil,true)
+    GameTooltip:Show()
+  end
+end
+local row_onleave = function(rowFrame, cellFrame, data, cols, row, realrow, column, table, ...)
+  if not realrow then return false end
+  if GameTooltip:IsOwned(rowFrame) then
+    GameTooltip_Hide()
+  end
+end
+
 function bepgp_alts:OnEnable()
   local container = GUI:Create("Window")
   container:SetTitle(L["BastionLoot alts"])
@@ -26,6 +45,10 @@ function bepgp_alts:OnEnable()
     {["name"]=C:Orange(L["Alts"]),["width"]=445}, --alts
   }
   self._alts_table = ST:CreateST(headers,15,nil,colorHighlight,container.frame) -- cols, numRows, rowHeight, highlight, parent
+  self._alts_table:RegisterEvents({
+    ["OnEnter"] = row_onenter,
+    ["OnLeave"] = row_onleave,
+  })
   self._alts_table.frame:SetPoint("BOTTOMRIGHT",self._container.frame,"BOTTOMRIGHT", -10, 10)
   container:SetCallback("OnShow", function() bepgp_alts._alts_table:Show() end)
   container:SetCallback("OnClose", function() bepgp_alts._alts_table:Hide() end)
