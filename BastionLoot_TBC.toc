@@ -1,8 +1,8 @@
-## Interface: 40402
+## Interface: 20504
 ## Author: Roadblock
 ## Title: BastionLoot
 ## Notes: In-game EPGP loot helper, supports standby, main/alt shared pool, minEP, offpecGP.|nPluggable price list.|nAlternative +wincount mode.
-## Version: 4.4.8
+## Version: 2.8.2
 ## X-Alpha:
 ## X-Website: https://www.curseforge.com/wow/addons/bastionloot
 ## OptionalDeps: Ace3, MizusRaidTracker
@@ -17,8 +17,8 @@ Locales\locales.xml
 compat.lua
 core.lua
 
-GearPoints\prices_cata.lua
-GearPoints\tokens_cata.lua
+GearPoints\prices_bc.lua
+GearPoints\tokens_bc.lua
 Modules\alts.lua
 Modules\allies.lua
 Modules\autoroll.lua

@@ -1,8 +1,8 @@
-## Interface: 50502,40402,11508
+## Interface: 50503,40402,11508
 ## Author: Roadblock
 ## Title: BastionLoot
-## Notes: In-game EPGP loot helper, supports standby, main/alt shared pool, minEP, offpecGP. Pluggable price list. Alternative +wincount mode.
-## Version: 5.1.2
+## Notes: In-game EPGP loot helper, supports standby, main/alt shared pool, minEP, offpecGP.|nPluggable price list.|nAlternative +wincount mode.
+## Version: 5.1.3
 ## X-Alpha:
 ## X-Website: https://www.curseforge.com/wow/addons/bastionloot
 ## OptionalDeps: Ace3, MizusRaidTracker
@@ -20,12 +20,17 @@ core.lua
 # blizzard mop fuckery
 # Modules\CustomLinks\links.lua
 
-Modules\prices_mists.lua
-Modules\tokens_mists.lua
-Modules\prices_cata.lua
-Modules\tokens_cata.lua
-Modules\prices.lua
-Modules\tokens.lua
+GearPoints\prices_mists.lua
+GearPoints\tokens_mists.lua
+GearPoints\prices_cata.lua
+GearPoints\tokens_cata.lua
+GearPoints\prices_wrath.lua
+GearPoints\tokens_wrath.lua
+GearPoints\prices_bc.lua
+GearPoints\tokens_bc.lua
+GearPoints\prices.lua
+GearPoints\tokens.lua
+
 Modules\alts.lua
 Modules\allies.lua
 Modules\autoroll.lua
