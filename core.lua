@@ -160,7 +160,7 @@ if bepgp._cata then
   bepgp.VARS.pricesystem = "BastionEPGP_CC-1.0"
   bepgp.VARS.progress = "T11"
   bepgp.VARS.crystalfirestone = 71617
-  autoloot = {
+  bepgp.VARS.autoloot = {
     [40752] = "BadgeHero",
     [101] = "currency",
     [40753] = "BadgeValor",
