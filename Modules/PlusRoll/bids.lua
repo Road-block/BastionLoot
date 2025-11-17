@@ -391,6 +391,7 @@ function bepgp_plusroll_bids:captureRoll(event, text)
   local msroll, osroll, xroll
   local inraid
   if who then
+    who = bepgp:ResolveRoller(who)
     who = bepgp:Ambiguate(who)
     inraid = bepgp:inRaid(who)
     if inraid then -- DEBUG
