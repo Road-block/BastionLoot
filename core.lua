@@ -896,6 +896,7 @@ local defaults = {
       favinfo = true,
       useinfo = false,
       tkninfo = true,
+      looterinfo = false,
     },
     classgroup = false,
     standby = false,
@@ -1258,6 +1259,17 @@ function bepgp:options(force)
       get = function() return not not bepgp.db.char.tooltip.tkninfo end,
       set = function(info, val)
         bepgp.db.char.tooltip.tkninfo = not bepgp.db.char.tooltip.tkninfo
+        bepgp:tooltipHook()
+      end,
+    }
+    self._options.args.general.args.ttip.args["looterinfo"] = {
+      type = "toggle",
+      name = L["Pending Looters"],
+      desc = L["Show players eligible to loot the corpse 'loot the dogs'"],
+      order = 15,
+      get = function() return not not bepgp.db.char.tooltip.looterinfo end,
+      set = function(info, val)
+        bepgp.db.char.tooltip.looterinfo = not bepgp.db.char.tooltip.looterinfo
         bepgp:tooltipHook()
       end,
     }
@@ -3753,7 +3765,7 @@ end
 
 function bepgp:tooltipHook()
   local tipOptionGroup = bepgp.db.char.tooltip
-  local status = tipOptionGroup.prinfo or tipOptionGroup.mlinfo or tipOptionGroup.favinfo or tipOptionGroup.useinfo or tipOptionGroup.tkninfo
+  local status = tipOptionGroup.prinfo or tipOptionGroup.mlinfo or tipOptionGroup.favinfo or tipOptionGroup.useinfo or tipOptionGroup.tkninfo or tipOptionGroup.looterinfo
   if status then
     -- tooltip
     if not self:IsHooked(GameTooltip, "OnTooltipSetItem") then
@@ -3776,8 +3788,14 @@ function bepgp:tooltipHook()
   else
     self:UnregisterEvent("MODIFIER_STATE_CHANGED")
   end
-  if not self:IsHooked(GameTooltip, "OnTooltipSetUnit") then
-    self:HookScript(GameTooltip, "OnTooltipSetUnit", "AddTipLootInfo")
+  if tipOptionGroup.looterinfo then
+    if not self:IsHooked(GameTooltip, "OnTooltipSetUnit") then
+      self:HookScript(GameTooltip, "OnTooltipSetUnit", "AddTipLootInfo")
+    end
+  else
+    if self:IsHooked(GameTooltip, "OnTooltipSetUnit") then
+      self:Unhook(GameTooltip, "OnTooltipSetUnit")
+    end
   end
 end
 
@@ -3807,6 +3825,8 @@ function bepgp:TipItemSwap(event,button,state)
 end
 
 function bepgp:AddTipLootInfo(tooltip,...)
+  local tipOptionGroup = bepgp.db.char.tooltip
+  if not tipOptionGroup.looterinfo then return end
   local name, unitid = tooltip:GetUnit()
   local guid
   if name and unitid then
@@ -3825,7 +3845,10 @@ function bepgp:AddTipLootInfo(tooltip,...)
     end
   end
   if looters then
-    tooltip:AddDoubleLine(L["|cff33ff99Pending Loot:|r"], looters)
+    tooltip:AddLine(L["|cff33ff99Pending Loot:|r"])
+    tooltip:AddLine("    "..looters, nil,nil,nil, true)
+    -- AddDoubleLine does not respect Wrap parameter in 5.5.3 build 65302 last one checked
+    --tooltip:AddDoubleLine(L["|cff33ff99Pending Loot:|r"], looters, nil,nil,nil, nil,nil,nil, true)
   end
 end
 

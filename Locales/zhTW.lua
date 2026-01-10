@@ -619,5 +619,7 @@ You can whisper |cffffd200!PR Name|r to any higher rank guild member with the ad
   L["Price System: %s"] = "Price System: %s" -- needs translation
   L["ChatLink *Fix*"] = "ChatLink *Fix*" -- needs translation
   L["|cffff0000Workaround for MoP Prepatch ItemLink Bug|r\nDisable when fixed."] = "|cffff0000Workaround for MoP Prepatch ItemLink Bug|r\nDisable when fixed." -- needs translation
+  L["Pending Looters"] = "Pending Looters" -- needs translation
+  L["Show players eligible to loot the corpse 'loot the dogs'"] = "Show players eligible to loot the corpse 'loot the dogs'" -- needs translation
 
   bepgp.L = L

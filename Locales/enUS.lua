@@ -625,5 +625,7 @@ You can also whisper |cffffd200!PR Name|r to any EPGP admin online to get back i
   L["Price System: %s"] = true
   L["ChatLink *Fix*"] = true
   L["|cffff0000Workaround for MoP Prepatch ItemLink Bug|r\nDisable when fixed."] = true
+  L["Pending Looters"] = true
+  L["Show players eligible to loot the corpse 'loot the dogs'"] = true
 
 bepgp.L = L
