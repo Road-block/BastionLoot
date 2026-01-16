@@ -134,6 +134,27 @@ local SetLootMethod = function(...)
     return _G.SetLootMethod(loot_method,unit,threshold)
   end
 end
+local GetMessageEventFilters = function(...)
+  if ChatFrameUtil and ChatFrameUtil.GetMessageEventFilters then
+    return ChatFrameUtil.GetMessageEventFilters(...)
+  elseif _G.ChatFrame_GetMessageEventFilters then
+    return _G.ChatFrame_GetMessageEventFilters(...)
+  end
+end
+local AddMessageEventFilter = function(...)
+  if ChatFrameUtil and ChatFrameUtil.AddMessageEventFilter then
+    return ChatFrameUtil.AddMessageEventFilter(...)
+  elseif _G.ChatFrame_AddMessageEventFilter then
+    return _G.ChatFrame_AddMessageEventFilter(...)
+  end
+end
+local RemoveMessageEventFilter = function(...)
+  if ChatFrameUtil and ChatFrameUtil.RemoveMessageEventFilter then
+    return ChatFrameUtil.RemoveMessageEventFilter(...)
+  elseif _G.ChatFrame_RemoveMessageEventFilter then
+    return _G.ChatFrame_RemoveMessageEventFilter(...)
+  end
+end
 
 bepgp.GetGuildTabardFileNames = GetGuildTabardFileNames
 bepgp.GuildRoster = GuildRoster
@@ -151,3 +172,6 @@ bepgp.GetItemInventoryTypeByID = GetItemInventoryTypeByID
 bepgp.GetItemStats = GetItemStats
 bepgp.GetLootMethod = GetLootMethod
 bepgp.SetLootMethod = SetLootMethod
+bepgp.GetMessageEventFilters = GetMessageEventFilters
+bepgp.AddMessageEventFilter = AddMessageEventFilter
+bepgp.RemoveMessageEventFilter = RemoveMessageEventFilter

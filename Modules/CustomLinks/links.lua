@@ -80,7 +80,7 @@ function bepgp_chatlinks:setupLinkFilters()
   -- Hopefully anyone that can think of doing this
   -- also knows enough to not cause side-effects for filters coming after their own.
   for chatType,_ in pairs(chatTypesToFix) do
-    local filters = ChatFrame_GetMessageEventFilters(chatType)
+    local filters = bepgp.GetMessageEventFilters(chatType)
     if filters and #(filters) > 0 then
       for index, filterFunc in next, filters do
         if ( filterFunc == itemLinkFilter ) then
@@ -89,7 +89,7 @@ function bepgp_chatlinks:setupLinkFilters()
       end
       tinsert(filters,1,itemLinkFilter)
     else
-      ChatFrame_AddMessageEventFilter(chatType, itemLinkFilter)
+      bepgp.AddMessageEventFilter(chatType, itemLinkFilter)
     end
   end
 end
@@ -174,7 +174,7 @@ end
 
 function bepgp_chatlinks:OnDisable()
   for chatType,_ in pairs(chatTypesToFix) do
-    ChatFrame_RemoveMessageEventFilter(chatType, itemLinkFilter)
+    bepgp.RemoveMessageEventFilter(chatType, itemLinkFilter)
   end
   EventRegistry:UnregisterCallback("SetItemRef",bepgp_chatlinks._cbID)
   self:UnhookAll()

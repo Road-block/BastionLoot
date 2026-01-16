@@ -550,8 +550,8 @@ function bepgp_plusroll_reserves:CoreInit()
     items = bepgp.db.char.reserves.items
     self:ToggleLock(bepgp.db.char.reserves.locked)
     self:RegisterEvent("CHAT_MSG_WHISPER", "captureRes")
-    ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER", filterCapture)
-    ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM", filterResponse)
+    bepgp.AddMessageEventFilter("CHAT_MSG_WHISPER", filterCapture)
+    bepgp.AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM", filterResponse)
     bepgp_plusroll_bids = bepgp:GetModule(addonName.."_plusroll_bids",true)
     self._initDone = true
   end

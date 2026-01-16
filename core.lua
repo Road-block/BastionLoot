@@ -4235,7 +4235,7 @@ end
 function bepgp:setupResponder()
   -- Hopefully anyone that can think of doing this
   -- also knows enough to not cause side-effects for filters coming after their own.
-  local filters_incoming = ChatFrame_GetMessageEventFilters("CHAT_MSG_WHISPER")
+  local filters_incoming = bepgp.GetMessageEventFilters("CHAT_MSG_WHISPER")
   if filters_incoming and #(filters_incoming) > 0 then
     for index, filterFunc in next, filters_incoming do
       if ( filterFunc == epgpResponder ) then
@@ -4244,9 +4244,9 @@ function bepgp:setupResponder()
     end
     tinsert(filters_incoming,1,epgpResponder)
   else
-    ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER", epgpResponder)
+    bepgp.AddMessageEventFilter("CHAT_MSG_WHISPER", epgpResponder)
   end
-  local filters_outgoing = ChatFrame_GetMessageEventFilters("CHAT_MSG_WHISPER_INFORM")
+  local filters_outgoing = bepgp.GetMessageEventFilters("CHAT_MSG_WHISPER_INFORM")
   if filters_outgoing and #(filters_outgoing) > 0 then
     for index, filterFunc in next, filters_outgoing do
       if ( filterFunc == epgpResponder ) then
@@ -4255,7 +4255,7 @@ function bepgp:setupResponder()
     end
     tinsert(filters_outgoing,1,epgpResponder)
   else
-    ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM", epgpResponder)
+    bepgp.AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM", epgpResponder)
   end
 end
 
@@ -4279,7 +4279,7 @@ local function rollfilter(frame, event, text, sender, ...)
 end
 
 function bepgp:setupRollFilter()
-  ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", rollfilter)
+  bepgp.AddMessageEventFilter("CHAT_MSG_SYSTEM", rollfilter)
 end
 
 function bepgp:guildBranding()
@@ -4472,14 +4472,14 @@ end
 
 function bepgp:AddPlayerNotFoundFilter()
   if not bepgp._playerNotFoundfilterActive then
-    ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", playerNotFoundFilter)
+    bepgp.AddMessageEventFilter("CHAT_MSG_SYSTEM", playerNotFoundFilter)
     bepgp._playerNotFoundfilterActive = true
   end
 end
 
 function bepgp:RemovePlayerNotFoundFilter()
   if bepgp._playerNotFoundfilterActive then
-    ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", playerNotFoundFilter)
+    bepgp.RemoveMessageEventFilter("CHAT_MSG_SYSTEM", playerNotFoundFilter)
     bepgp._playerNotFoundfilterActive = nil
   end
 end
