@@ -95,7 +95,7 @@ local item_interact = function(rowFrame, cellFrame, data, cols, row, realrow, co
       if IsModifiedClick("DRESSUP") then
         return DressUpItemLink(link)
       elseif IsModifiedClick("CHATLINK") then
-        if ( ChatEdit_InsertLink(link) ) then
+        if ( bepgp.ChatEdit_InsertLink(link) ) then
           return true
         end
       else
@@ -356,7 +356,7 @@ function bepgp_plusroll_reserves:resReply(text,sender)
             first = false
           end
           msg = msg .. names
-          SendChatMessage(string.format("%s:%s",addonName,msg),"WHISPER",nil,sender)
+          bepgp.SendChatMessage(string.format("%s:%s",addonName,msg),"WHISPER",nil,sender)
         end
       end
     end
@@ -416,7 +416,7 @@ function bepgp_plusroll_reserves:RemoveReserve(player, item, masterlooter)
       end
     end
     if masterlooter and (player ~= bepgp._playerName) and bepgp:inRaid(player) then
-      SendChatMessage(string.format("%s:%s",addonName,L["Reserve removed."]),"WHISPER",nil,player)
+      bepgp.SendChatMessage(string.format("%s:%s",addonName,L["Reserve removed."]),"WHISPER",nil,player)
     end
   end
   self:Refresh()
@@ -432,14 +432,14 @@ function bepgp_plusroll_reserves:AddReserve(player,item)
   if reserved and index then return end
   local inform = player ~= bepgp._playerName
   if bepgp.db.char.reserves.locked and not unlocks[player] then
-    SendChatMessage(string.format("%s:%s",addonName,L["Reserves are locked."]),"WHISPER",nil,player)
+    bepgp.SendChatMessage(string.format("%s:%s",addonName,L["Reserves are locked."]),"WHISPER",nil,player)
     return
   end
   local count = bepgp_plusroll_reserves:NumReserves(player)
   local max_reserves = bepgp.db.char.maxreserves
   if count == max_reserves and max_reserves > 1 then
     if inform then
-      SendChatMessage(string.format("%s:%s",addonName,string.format(L["You already have %s/%s reserves. Whisper \'rem [itemlink]\' to remove one."],count,max_reserves)),"WHISPER",nil,player)
+      bepgp.SendChatMessage(string.format("%s:%s",addonName,string.format(L["You already have %s/%s reserves. Whisper \'rem [itemlink]\' to remove one."],count,max_reserves)),"WHISPER",nil,player)
     end
     return
   end
@@ -461,9 +461,9 @@ function bepgp_plusroll_reserves:AddReserve(player,item)
     end
     if inform then
       if prev_item then
-        SendChatMessage(string.format("%s:%s",addonName,L["Reserve updated."]),"WHISPER",nil,player)
+        bepgp.SendChatMessage(string.format("%s:%s",addonName,L["Reserve updated."]),"WHISPER",nil,player)
       else
-        SendChatMessage(string.format("%s:%s",addonName,L["Reserve added."]),"WHISPER",nil,player)
+        bepgp.SendChatMessage(string.format("%s:%s",addonName,L["Reserve added."]),"WHISPER",nil,player)
       end
     end
   end

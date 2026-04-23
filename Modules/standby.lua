@@ -118,7 +118,7 @@ end
 function bepgp_standby:sendStandbyCheck()
   if not (self._standbyID and self._standbyID > 0) then return end
   if bepgp:GroupStatus() == "RAID" and bepgp:admin() then
-    SendChatMessage(standbycall, "CHANNEL", nil, self._standbyID)
+    bepgp.SendChatMessage(standbycall, "CHANNEL", nil, self._standbyID)
     table.wipe(self.roster)
     table.wipe(self.blacklist)
     self._runningcheck = true
@@ -199,9 +199,9 @@ function bepgp_standby:sendCheckResponse()
     local main = bepgp.db.profile.main
     if main then
       if bepgp._playerName == main then
-        SendChatMessage("+", "CHANNEL", nil, self._standbyID)
+        bepgp.SendChatMessage("+", "CHANNEL", nil, self._standbyID)
       else
-        SendChatMessage(string.format("+%s",main),"CHANNEL", nil, self._standbyID)
+        bepgp.SendChatMessage(string.format("+%s",main),"CHANNEL", nil, self._standbyID)
       end
     end
   end

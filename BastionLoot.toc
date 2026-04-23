@@ -1,8 +1,10 @@
-## Interface: 50503,20505,11508
+## Interface: 50503,20505,11508,50504
 ## Author: Roadblock
 ## Title: BastionLoot
 ## Notes: In-game EPGP loot helper, supports standby, main/alt shared pool, minEP, offpecGP.|nPluggable price list.|nAlternative +wincount mode.
-## Version: 5.1.7
+## Version: 5.1.8
+## Category: Loot
+## IconTexture: 133473
 ## X-Alpha:
 ## X-Website: https://www.curseforge.com/wow/addons/bastionloot
 ## OptionalDeps: Ace3, MizusRaidTracker

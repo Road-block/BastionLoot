@@ -23,6 +23,12 @@ bepgp._bcc = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_
 bepgp._classic = _G.WOW_PROJECT_ID and (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC) or false
 
 local RAID_CLASS_COLORS = (_G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS)
+local NUM_CHAT_WINDOWS = 10
+if Constants and Constants.ChatFrameConstants and Constants.ChatFrameConstants.MaxChatWindows then
+  NUM_CHAT_WINDOWS = Constants.ChatFrameConstants.MaxChatWindows
+elseif _G.NUM_CHAT_WINDOWS then
+  NUM_CHAT_WINDOWS = _G.NUM_CHAT_WINDOWS
+end
 bepgp._network = {}
 
 -- Upvalue some API
@@ -3170,7 +3176,7 @@ function bepgp:templateCache(id)
               if roll then
                 RandomRoll("1", "100")
               else
-                SendChatMessage("+","WHISPER",nil,masterlooter)
+                bepgp.SendChatMessage("+","WHISPER",nil,masterlooter)
               end
               LD:Dismiss(addonName.."DialogMemberBid")
             end,
@@ -3184,7 +3190,7 @@ function bepgp:templateCache(id)
               if roll then
                 RandomRoll("1", "99")
               else
-                SendChatMessage("-","WHISPER",nil,masterlooter)
+                bepgp.SendChatMessage("-","WHISPER",nil,masterlooter)
               end
               LD:Dismiss(addonName.."DialogMemberBid")
             end,
@@ -3196,7 +3202,7 @@ function bepgp:templateCache(id)
               local masterlooter = data[2]
               local prveto = data[4]
               if prveto then
-                SendChatMessage("+","WHISPER",nil,masterlooter)
+                bepgp.SendChatMessage("+","WHISPER",nil,masterlooter)
               end
               LD:Dismiss(addonName.."DialogMemberBid")
             end,
@@ -3702,8 +3708,10 @@ function bepgp:deferredInit(guildname)
     bepgp:RegisterComm(bepgp.VARS.prefix)
     -- monitor officernote changes
     if self:admin() then
-      if not self:IsHooked("GuildRosterSetOfficerNote") then
-        self:RawHook("GuildRosterSetOfficerNote",true)
+      if _G.GuildRosterSetOfficerNote then
+        if not self:IsHooked("GuildRosterSetOfficerNote") then
+          self:RawHook("GuildRosterSetOfficerNote", "SetOfficerNote", true)
+        end
       end
       if C_GuildInfo and C_GuildInfo.SetNote then
         if not self:IsHooked(C_GuildInfo, "SetNote") then
@@ -4138,7 +4146,7 @@ function bepgp:funnyRoll(event,...)
   who = bepgp:Ambiguate(who)
   if who ~= self._playerName then return end
   if roll and tonumber(roll) == 69 then
-    SendChatMessage(L["says.. Nice!"],"EMOTE")
+    bepgp.SendChatMessage(L["says.. Nice!"],"EMOTE")
   end
 end
 
@@ -4178,7 +4186,7 @@ local function epgpResponder(frame, event, text, sender, ...)
               local pr = ep/gp
               local msg = string.format(L["{bepgp}%s has: %d EP %d GP %.03f PR."], name, ep,gp,pr)
               if not bepgp:sendThrottle(sender_stripped) then
-                SendChatMessage(msg,"WHISPER",nil,sender_stripped)
+                bepgp.SendChatMessage(msg,"WHISPER",nil,sender_stripped)
               end
               return true
             end
@@ -4189,7 +4197,7 @@ local function epgpResponder(frame, event, text, sender, ...)
               local pr = ep/gp
               local msg = string.format(L["{bepgp}%s has: %d EP %d GP %.03f PR."], name, ep,gp,pr)
               if not bepgp:sendThrottle(sender_stripped) then
-                SendChatMessage(msg,"WHISPER",nil,sender_stripped)
+                bepgp.SendChatMessage(msg,"WHISPER",nil,sender_stripped)
               end
               return true
             end
@@ -4202,7 +4210,7 @@ local function epgpResponder(frame, event, text, sender, ...)
               local pr = ep/gp
               local msg = string.format(L["{bepgp}You have: %d EP %d GP %.03f PR"], ep,gp,pr)
               if not bepgp:sendThrottle(sender_stripped) then
-                SendChatMessage(msg,"WHISPER",nil,sender_stripped)
+                bepgp.SendChatMessage(msg,"WHISPER",nil,sender_stripped)
               end
               return true
             end
@@ -4213,7 +4221,7 @@ local function epgpResponder(frame, event, text, sender, ...)
               local pr = ep/gp
               local msg = string.format(L["{bepgp}You have: %d EP %d GP %.03f PR"], ep,gp,pr)
               if not bepgp:sendThrottle(sender_stripped) then
-                SendChatMessage(msg,"WHISPER",nil,sender_stripped)
+                bepgp.SendChatMessage(msg,"WHISPER",nil,sender_stripped)
               end
               return true
             end
@@ -4435,8 +4443,8 @@ function bepgp:officerNoteTamper(name,index,prevnote)
   end
 end
 
-function bepgp:C_GuildInfo_SetNote(guid,note,isPublicNote)
-  if not isPublicNote then
+function bepgp:C_GuildInfo_SetNote(guid,note,isPublicNote,fromAddon)
+  if not isPublicNote and not fromAddon then
     for index=1,GetNumGuildMembers(1) do
       local name, _, _, _, _, _, _, prevnote, _, _, _, _, _, _, _, _, g_GUID = GetGuildRosterInfo(index)
       if guid == g_GUID then
@@ -4447,7 +4455,7 @@ function bepgp:C_GuildInfo_SetNote(guid,note,isPublicNote)
   end
 end
 
-function bepgp:GuildRosterSetOfficerNote(index,note,fromAddon)
+function bepgp:SetOfficerNote(index,note,fromAddon)
   if (fromAddon) then
     self.hooks["GuildRosterSetOfficerNote"](index,note)
   else
@@ -4683,8 +4691,8 @@ function bepgp:debugPrint(msg,onlyWhenDebug)
       local tabName = tab and tab:GetText() or ""
       if tab ~= nil and (tabName:lower() == "debug") then
         self._debugchat = cf
-        ChatFrame_RemoveAllMessageGroups(self._debugchat)
-        ChatFrame_RemoveAllChannels(self._debugchat)
+        bepgp.ChatFrame_RemoveAllMessageGroups(self._debugchat)
+        bepgp.ChatFrame_RemoveAllChannels(self._debugchat)
         self._debugchat:SetMaxLines(1024)
         break
       end
@@ -4719,7 +4727,7 @@ end
 function bepgp:simpleSay(msg)
   local perms = self:getGuildPermissions()
   if perms[self.db.profile.announce] then
-    SendChatMessage(out_chat:format(msg), self.db.profile.announce)
+    bepgp.SendChatMessage(out_chat:format(msg), self.db.profile.announce)
   else
     self:Print(msg)
   end
@@ -4728,7 +4736,7 @@ end
 function bepgp:adminSay(msg)
   local perms = self:getGuildPermissions()
   if perms.OFFICER then
-    SendChatMessage(out_chat:format(msg),"OFFICER")
+    bepgp.SendChatMessage(out_chat:format(msg),"OFFICER")
   end
 end
 
@@ -4842,7 +4850,7 @@ function bepgp:safeAudience(msg)
     channel = "SAY"
   end
   if channel then
-    SendChatMessage(msg, channel)
+    bepgp.SendChatMessage(msg, channel)
   else
     self:debugPrint(msg)
   end
@@ -4861,7 +4869,7 @@ function bepgp:widestAudience(msg)
     channel = "PARTY"
   end
   if channel then
-    SendChatMessage(msg, channel)
+    bepgp.SendChatMessage(msg, channel)
   end
 end
 
@@ -5347,6 +5355,11 @@ function bepgp:suggestEPAward(debug)
   return tostring(self.VARS.baseaward_ep)
 end
 
+-- we'll overwrite this later
+function bepgp:GetPrice()
+  bepgp:SetPriceSystem()
+end
+
 function bepgp:SetPriceSystem(context)
   local system = self.db.profile.system
   if not price_systems[system] then
@@ -5470,7 +5483,7 @@ function bepgp:getFirestoneItems(enClass, dialogData)
             order = i,
             func = function(info)
               if ( IsModifiedClick("CHATLINK") ) then
-                ChatEdit_LinkItem(itemID, itemLink)
+                bepgp.ChatEdit_LinkItem(itemID, itemLink)
                 return
               end
               dialogData.firestoneData.gp = price1
@@ -5987,7 +6000,7 @@ function bepgp:linkAlt(main, alt)
       end
     end
     if newnote then
-      GuildRosterSetOfficerNote(roster_index,newnote,true)
+      bepgp.GuildRosterSetOfficerNote(roster_index,newnote,true)
       self:Print(string.format(L["%s set as an Alt of %s"],alt, main))
       self:safeGuildRoster()
     end
@@ -6014,7 +6027,7 @@ function bepgp:linkStandin(ally, standin, ally_classid)
       end
     end
     if newnote then
-      GuildRosterSetOfficerNote(roster_index,newnote,true)
+      bepgp.GuildRosterSetOfficerNote(roster_index,newnote,true)
       self:Print(string.format(L["%s set as the Stand-in for %s"],standin,ally))
       self:safeGuildRoster()
     end
@@ -6038,7 +6051,7 @@ function bepgp:removeAlt(alt)
       -- notify warning
     end
     if newnote then
-      GuildRosterSetOfficerNote(roster_index,newnote,true)
+      bepgp.GuildRosterSetOfficerNote(roster_index,newnote,true)
       self:Print(string.format(L["%s removed as an Alt of %s"],alt,main))
       self:safeGuildRoster()
     end
@@ -6059,7 +6072,7 @@ function bepgp:removeStandin(standin)
       -- notify warning
     end
     if newnote then
-      GuildRosterSetOfficerNote(roster_index,newnote,true)
+      bepgp.GuildRosterSetOfficerNote(roster_index,newnote,true)
       self:Print(string.format(L["%s removed as a Stand-in for %s"],standin,ally))
       self:safeGuildRoster()
     end
@@ -6604,7 +6617,7 @@ function bepgp:init_notes(guild_index,name,officernote)
     newnote = string.gsub(newnote,"(.*)({%d+:%d+})(.*)",self.sanitizeNote)
     officernote = newnote
   end
-  GuildRosterSetOfficerNote(guild_index,officernote,true)
+  bepgp.GuildRosterSetOfficerNote(guild_index,officernote,true)
   return officernote, datatype
 end
 
@@ -6631,7 +6644,7 @@ function bepgp:update_epgp(ep,gp,guild_index,name,officernote,special_action)
   end
   if (newnote) then
     newnote = string.gsub(newnote,"(.*)(%b{})(.*)",bepgp.sanitizeNote)
-    GuildRosterSetOfficerNote(guild_index,newnote,true)
+    bepgp.GuildRosterSetOfficerNote(guild_index,newnote,true)
   end
 end
 

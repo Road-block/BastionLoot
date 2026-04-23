@@ -468,7 +468,7 @@ function bepgp_bids:SetItemRef(link, text, button, chatFrame)
       if tonumber(bid) then
         RandomRoll("1", bid)
       else
-        SendChatMessage(bid,"WHISPER",nil,masterlooter)
+        bepgp.SendChatMessage(bid,"WHISPER",nil,masterlooter)
       end
       if LD:ActiveDialog(addonName.."DialogMemberBid") then
         LD:Dismiss(addonName.."DialogMemberBid")

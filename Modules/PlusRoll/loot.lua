@@ -297,10 +297,10 @@ function bepgp_plusroll_loot:announceWincount(name, row)
     if row then
       local count, items = data[row].cols[2].value, data[row].cols[3].value
       out = string.format("%s: %s (%s)",out,count,items)
-      SendChatMessage(out,channel)
+      bepgp.SendChatMessage(out,channel)
     else
       out = self:getWincount(channel)
-      SendChatMessage(out,"WHISPER",nil,channel)
+      bepgp.SendChatMessage(out,"WHISPER",nil,channel)
     end
   end
 end

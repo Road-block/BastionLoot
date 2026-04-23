@@ -156,7 +156,7 @@ local item_interact = function(rowFrame, cellFrame, data, cols, row, realrow, co
       if IsModifiedClick("DRESSUP") then
         return DressUpItemLink(link)
       elseif IsModifiedClick("CHATLINK") then
-        if ( ChatEdit_InsertLink(link) ) then
+        if ( bepgp.ChatEdit_InsertLink(link) ) then
           return true
         end
       else
@@ -404,7 +404,7 @@ function bepgp_browser:softReserveSend(id)
     local link = itemAsync:GetItemLink()
     if bepgp._ML and bepgp:inRaid(bepgp._ML) then
       local msg = format("%s %s",L["res"],link)
-      SendChatMessage(msg,"WHISPER",nil,bepgp._ML)
+      bepgp.SendChatMessage(msg,"WHISPER",nil,bepgp._ML)
     end
   end)
 end
