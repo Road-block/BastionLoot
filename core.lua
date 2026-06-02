@@ -567,14 +567,14 @@ do
       },
       progress_sorting = {"T16", "T15", "T14"},
       progressmap = {
-        ["T16.5"] = {"T16.5","T16","T15.5"},
-        ["T16"]   = {"T16.5","T16"},
+        ["T16.5"] = {"T16.5","T16"},
+        ["T16"]   = {"T16.5","T16","T15.5"},
         ["T15.5"] = {"T15.5","T15","T14.5"},
         ["T15"]   = {"T15.5", "T15"},
         ["T14.5"] = {"T14.5","T14"},
         ["T14"]   = {"T14.5","T14"},
       },
-      tierlist = {["T16.5"]="560+",["T16"]="540-552",["T15.5"]="535-539",["T15"]="522-534",["T14.5"]="509-521",["T14"]="489-508"},
+      tierlist = {["T16.5"]="560+",["T16"]="540-559",["T15.5"]="535-539",["T15"]="522-534",["T14.5"]="509-521",["T14"]="489-508"},
       tiersort = {"T16.5","T16","T15.5","T15","T14.5","T14"},
       modlist = {["T16"]="T16",["T15"]="T15",["T14"]="T14"},
       modsort = {"T16","T15","T14"},
@@ -4744,10 +4744,10 @@ local alertCache = {}
 function bepgp:Alert(text)
   local now = GetTime()
   local lastAlert = alertCache[text]
-  if not lastAlert or ((now - lastAlert) > 30) then
+  if not lastAlert or ((now - lastAlert) > 10) then
     --local id = GetChatTypeIndex("LOOT")
     PlaySound(SOUNDKIT.ALARM_CLOCK_WARNING_3,"Master")
-    UIErrorsFrame:SetTimeVisible(6)
+    UIErrorsFrame:SetTimeVisible(10)
     UIErrorsFrame:AddMessage(text, 1.0, 1.0, 0.0, 1.0) --, id) new signature (text[,r,g,b,a,id])
     C_TimerAfter(2,function()
       UIErrorsFrame:SetTimeVisible(2) -- back to defaults

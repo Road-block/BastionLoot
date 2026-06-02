@@ -5929,7 +5929,7 @@ local function calcTier(ilevel)
     tier = "T15"
   elseif ilevel <= 539 then
     tier = "T15.5"
-  elseif ilevel <= 552 then
+  elseif ilevel <= 559 then
     tier = "T16"
   elseif ilevel >= 560 then
     tier = "T16.5"
