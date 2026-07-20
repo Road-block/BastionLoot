@@ -24,7 +24,7 @@ local loot_old_to_new = {
   needbeforegreed = (Enum.LootMethod.Needbeforegreed or 4),
 }
 local loot_new_to_old = {
-  [(Enum.LootMethod.Freeforall or 0)]      = "master",
+  [(Enum.LootMethod.Freeforall or 0)]      = "freeforall",
   [(Enum.LootMethod.Roundrobin or 1)]      = "roundrobin",
   [(Enum.LootMethod.Masterlooter or 2)]    = "master",
   [(Enum.LootMethod.Group or 3)]           = "group",

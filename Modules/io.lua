@@ -48,6 +48,15 @@ function bepgp_io:OnEnable()
       if bepgp:table_count(LootReserve.Client.CharacterFavorites)>0 then
         bepgp_io._iobrowserimport.addonBtn:SetDisabled(false)
         bepgp_io._iobrowserimport.addonBtn:SetText("LootReserve")
+        thirdparty.frame:SetAttributeNoHandler("addon_name", "LootReserve")
+      end
+    elseif LootHunterAPI and LootHunterDB and LootHunterDB.Characters then
+      local charKey = UnitName("player") .. " - " .. (GetRealmName and GetRealmName() or "Unknown")
+      if bepgp:table_count(LootHunterDB.Characters[charKey])>0 then
+        bepgp_io._iobrowserimport.addonBtn:SetDisabled(false)
+        bepgp_io._iobrowserimport.addonBtn:SetText("LootHunter")
+        thirdparty.frame:SetAttributeNoHandler("addon_name", "LootHunter")
+        thirdparty.frame:SetAttributeNoHandler("char_key", charKey)
       end
     end
   end)
@@ -67,9 +76,20 @@ end
 
 function bepgp_io:addonImport()
   local text
-  for k,v in pairs(LootReserve.Client.CharacterFavorites) do
-    if v then
-      text = text and (text..format("\nitem=%d",k)) or format("item=%d",k)
+  local addonBtnFrame = bepgp_io._iobrowserimport.addonBtn.frame
+  local addon_name = addonBtnFrame and addonBtnFrame:GetAttribute("addon_name")
+  if addon_name == "LootReserve" then
+    for k,v in pairs(LootReserve.Client.CharacterFavorites) do
+      if v then
+        text = text and (text..format("\nitem=%d",k)) or format("item=%d",k)
+      end
+    end
+  elseif addon_name == "LootHunter" then
+    local charKey = addonBtnFrame:GetAttribute("char_key")
+    if charKey then
+      for k,v in pairs(LootHunterDB.Characters[charKey]) do
+        text = text and (text..format("\nitem=%d",k)) or format("item=%d",k)
+      end
     end
   end
   if text then
@@ -168,8 +188,12 @@ function bepgp_io:Logs()
   self:export("Logs", temp_data, ";")
 end
 
-local url_link = "=HYPERLINK(\"https://www.wowhead.com/cata/item=%d\";%q)"
-local wowhead_url = "https://www.wowhead.com/cata/item=%d"
+local url_link = "=HYPERLINK(\"https://www.wowhead.com/mop-classic/item=%d\";%q)"
+local wowhead_url = "https://www.wowhead.com/mop-classic/item=%d"
+if bepgp._cata then
+  url_link = "=HYPERLINK(\"https://www.wowhead.com/cata/item=%d\";%q)"
+  wowhead_url = "https://www.wowhead.com/cata/item=%d"
+end
 if bepgp._wrath then
   url_link = "=HYPERLINK(\"https://www.wowhead.com/wotlk/item=%d\";%q)"
   wowhead_url = "https://www.wowhead.com/wotlk/item=%d"

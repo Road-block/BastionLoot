@@ -2,7 +2,7 @@
 ## Author: Roadblock
 ## Title: BastionLoot
 ## Notes: In-game EPGP loot helper, supports standby, main/alt shared pool, minEP, offpecGP.|nPluggable price list.|nAlternative +wincount mode.
-## Version: 5.1.9
+## Version: 5.2.0
 ## Category: Loot
 ## IconTexture: 133473
 ## X-Alpha:
